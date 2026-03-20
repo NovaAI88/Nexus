@@ -3,7 +3,7 @@ import { DragDropContext } from '../App';
 import SectionCard from './SectionCard';
 import TimelineBlock from './TimelineBlock';
 
-function TimelinePanel({ blocks, currentTime, currentBlockId, nextBlockId, onAddBlock }) {
+function TimelinePanel({ blocks, currentTime, currentBlockId, nextBlockId, onAddBlock, onRemoveBlock }) {
   const {
     draggedTaskId,
     dragOverMinutes,
@@ -75,7 +75,7 @@ function TimelinePanel({ blocks, currentTime, currentBlockId, nextBlockId, onAdd
               else if (block.id === nextBlockId) state = 'next';
               else if (block._isPast) state = 'past';
 
-              return <TimelineBlock key={block.id} block={block} state={state} />;
+              return <TimelineBlock key={block.id} block={block} state={state} onRemoveBlock={onRemoveBlock} />;
             })}
           </div>
         </div>

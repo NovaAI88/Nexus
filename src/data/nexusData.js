@@ -193,7 +193,8 @@ const nexusData = {
         step: 5,
         size: 'small',
         actionType: 'schedule',
-        blockType: 'break'
+        blockType: 'break',
+        validTime: ['morning', 'afternoon']
       },
       {
         id: 'pause-walk',
@@ -211,15 +212,16 @@ const nexusData = {
     Meal: [
       {
         id: 'meal-quick',
-        title: 'Quick meal',
-        description: 'Short meal before the next work session.',
+        title: 'Quick breakfast',
+        description: 'Short breakfast block before the next work session.',
         defaultDuration: 20,
         minDuration: 15,
         maxDuration: 30,
         step: 5,
         size: 'small',
         actionType: 'schedule',
-        blockType: 'meal'
+        blockType: 'meal',
+        validTime: ['morning']
       },
       {
         id: 'meal-light',
@@ -231,19 +233,21 @@ const nexusData = {
         step: 5,
         size: 'medium',
         actionType: 'schedule',
-        blockType: 'meal'
+        blockType: 'meal',
+        validTime: ['midday']
       },
       {
         id: 'meal-full',
         title: 'Full meal',
-        description: 'Longer meal if the afternoon remains open.',
+        description: 'Longer meal if the afternoon or evening remains open.',
         defaultDuration: 45,
         minDuration: 30,
         maxDuration: 60,
         step: 15,
         size: 'medium',
         actionType: 'schedule',
-        blockType: 'meal'
+        blockType: 'meal',
+        validTime: ['midday', 'evening']
       }
     ],
     Sport: [
@@ -257,7 +261,8 @@ const nexusData = {
         step: 5,
         size: 'small',
         actionType: 'schedule',
-        blockType: 'gym'
+        blockType: 'gym',
+        validTime: ['afternoon', 'evening']
       },
       {
         id: 'sport-run',
@@ -269,7 +274,8 @@ const nexusData = {
         step: 15,
         size: 'medium',
         actionType: 'schedule',
-        blockType: 'gym'
+        blockType: 'gym',
+        validTime: ['afternoon', 'evening']
       },
       {
         id: 'sport-gym',
@@ -281,7 +287,8 @@ const nexusData = {
         step: 15,
         size: 'medium',
         actionType: 'schedule',
-        blockType: 'gym'
+        blockType: 'gym',
+        validTime: ['afternoon', 'evening']
       }
     ],
     Recovery: [
@@ -295,7 +302,8 @@ const nexusData = {
         step: 5,
         size: 'small',
         actionType: 'schedule',
-        blockType: 'recovery'
+        blockType: 'recovery',
+        validTime: ['afternoon', 'evening']
       },
       {
         id: 'recovery-noscreen',
@@ -307,7 +315,8 @@ const nexusData = {
         step: 5,
         size: 'small',
         actionType: 'schedule',
-        blockType: 'recovery'
+        blockType: 'recovery',
+        validTime: ['afternoon', 'evening']
       },
       {
         id: 'recovery-unwind',
@@ -319,7 +328,8 @@ const nexusData = {
         step: 5,
         size: 'medium',
         actionType: 'schedule',
-        blockType: 'recovery'
+        blockType: 'recovery',
+        validTime: ['afternoon', 'evening']
       }
     ]
   },

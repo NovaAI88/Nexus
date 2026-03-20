@@ -53,6 +53,12 @@ function moveItem(list, fromIndex, toIndex) {
   next.splice(toIndex, 0, item);
   return next;
 }
+function getTimeBucket(minutes) {
+  if (minutes < 11 * 60) return 'morning';
+  if (minutes < 14 * 60) return 'midday';
+  if (minutes < 18 * 60) return 'afternoon';
+  return 'evening';
+}
 
 export const DragDropContext = createContext({
   draggedTaskId: null,
@@ -198,6 +204,7 @@ function App() {
   const currentGap = useMemo(() => freeGaps.find((gap) => gap.start <= currentMinutes && currentMinutes < gap.end)
       || freeGaps.find((gap) => gap.start > currentMinutes)
       || null, [currentMinutes, freeGaps]);
+  const currentTimeBucket = useMemo(() => getTimeBucket(currentMinutes), [currentMinutes]);
 
   const recommendationCatalog = useMemo(() => {
     const options = [];
@@ -205,6 +212,7 @@ function App() {
       items.forEach((item) => {
         const state = recommendationState[item.id] || {};
         if (state.status === 'declined' || state.status === 'accepted') return;
+        if (item.validTime && !item.validTime.includes(currentTimeBucket)) return;
         const duration = state.selectedDuration || item.defaultDuration;
         const suggestedGap = freeGaps.find((gap) => gap.duration >= duration) || null;
         options.push({ ...item, group: 'life', groupLabel: 'Life / Schedule', category, selectedDuration: duration, status: state.status || 'open', suggestedGap, suggestedLabel: suggestedGap ? `${formatMinutesToTime(suggestedGap.start)}–${formatMinutesToTime(suggestedGap.start + duration)}` : null });
@@ -221,7 +229,7 @@ function App() {
       options.push(...ranked);
     });
     return options;
-  }, [currentGap, freeGaps, recommendationState]);
+  }, [currentGap, currentTimeBucket, freeGaps, recommendationState]);
 
   const selectedCategoryOptions = useMemo(() => recommendationCatalog.filter((option) => option.category === selectedRecommendationCategory && option.status === 'open'), [recommendationCatalog, selectedRecommendationCategory]);
   const laterOptions = useMemo(() => recommendationCatalog.filter((option) => option.category === selectedRecommendationCategory && option.status === 'postponed'), [recommendationCatalog, selectedRecommendationCategory]);
@@ -367,6 +375,12 @@ function App() {
     setTaskFeedback((current) => ({ ...current, __global: `Added block ${block.start}–${block.end}` }));
   };
 
+  const handleRemoveBlock = (blockId) => {
+    setScheduleBlocks((currentBlocks) => currentBlocks.filter((block) => block.id !== blockId));
+    setDailyTasks((currentTasks) => currentTasks.map((task) => task.blockId === blockId ? { ...task, blockId: null } : task));
+    if (activeBlockId === blockId) setActiveBlockId(null);
+  };
+
   const handleExitFocus = () => {
     setFocusMode(false);
     setActiveBlockId(null);
@@ -469,7 +483,7 @@ function App() {
     const commonProps = { primaryAction: nexusData.primaryAction, tracking: nexusData.tracking, date, viewMode, activePage, currentBlock: timelineState.currentBlock, nextBlock: timelineState.nextBlock };
     switch (activePage) {
       case 'today':
-        return <TodayPage page={nexusData.pages.today} activeTasks={tasksWithBlockMeta} doneTasks={doneTasks} onToggleTask={handleToggleTask} onMoveTask={handleMoveTask} onStartNowTask={handleStartNowTask} onScheduleTask={handleScheduleTask} onCompleteTask={completeTaskById} taskFeedback={taskFeedback} onSelectTask={handleSelectTask} scheduleBlocks={timelineState.normalizedBlocks} currentTime={currentTime} currentBlock={timelineState.currentBlock} nextBlock={timelineState.nextBlock} activeBlock={timelineState.currentBlock || todayScheduleBlocks.find((block) => block.id === activeBlockId) || null} recommendationCategories={nexusData.recommendationCategories} selectedRecommendationCategory={selectedRecommendationCategory} recommendationOptions={selectedCategoryOptions} laterRecommendationOptions={laterOptions} recommendationFeedback={recommendationFeedback} onSelectRecommendationCategory={setSelectedRecommendationCategory} onAdjustRecommendationDuration={handleAdjustRecommendationDuration} onStartNowRecommendation={handleStartNowRecommendation} onAcceptRecommendation={handleAcceptRecommendation} onDeclineRecommendation={handleDeclineRecommendation} onPostponeRecommendation={handlePostponeRecommendation} focusMode={focusMode} activeTask={activeTask} timerDisplay={timerState.display} timerProgress={timerState.progress} onStartBlock={handleStartBlock} onAddBlock={handleAddBlock} onExitFocus={handleExitFocus} onExtendActiveBlock={handleExtendActiveBlock} onCompleteActiveTask={handleCompleteActiveTask} draggedTaskId={draggedTaskId} dragOverMinutes={dragOverMinutes} canDropTaskAtMinutes={canDropTaskAtMinutes} onTaskDragStart={handleTaskDragStart} onTaskDragEnd={handleTaskDragEnd} onTimelineDragOver={handleTimelineDragOver} onTimelineDragLeave={handleTimelineDragLeave} onTimelineDrop={handleTimelineDrop} {...commonProps} />;
+        return <TodayPage page={nexusData.pages.today} activeTasks={tasksWithBlockMeta} doneTasks={doneTasks} onToggleTask={handleToggleTask} onMoveTask={handleMoveTask} onStartNowTask={handleStartNowTask} onScheduleTask={handleScheduleTask} onCompleteTask={completeTaskById} taskFeedback={taskFeedback} onSelectTask={handleSelectTask} scheduleBlocks={timelineState.normalizedBlocks} currentTime={currentTime} currentBlock={timelineState.currentBlock} nextBlock={timelineState.nextBlock} activeBlock={timelineState.currentBlock || todayScheduleBlocks.find((block) => block.id === activeBlockId) || null} recommendationCategories={nexusData.recommendationCategories} selectedRecommendationCategory={selectedRecommendationCategory} recommendationOptions={selectedCategoryOptions} laterRecommendationOptions={laterOptions} recommendationFeedback={recommendationFeedback} onSelectRecommendationCategory={setSelectedRecommendationCategory} onAdjustRecommendationDuration={handleAdjustRecommendationDuration} onStartNowRecommendation={handleStartNowRecommendation} onAcceptRecommendation={handleAcceptRecommendation} onDeclineRecommendation={handleDeclineRecommendation} onPostponeRecommendation={handlePostponeRecommendation} focusMode={focusMode} activeTask={activeTask} timerDisplay={timerState.display} timerProgress={timerState.progress} onStartBlock={handleStartBlock} onAddBlock={handleAddBlock} onRemoveBlock={handleRemoveBlock} onExitFocus={handleExitFocus} onExtendActiveBlock={handleExtendActiveBlock} onCompleteActiveTask={handleCompleteActiveTask} draggedTaskId={draggedTaskId} dragOverMinutes={dragOverMinutes} canDropTaskAtMinutes={canDropTaskAtMinutes} onTaskDragStart={handleTaskDragStart} onTaskDragEnd={handleTaskDragEnd} onTimelineDragOver={handleTimelineDragOver} onTimelineDragLeave={handleTimelineDragLeave} onTimelineDrop={handleTimelineDrop} {...commonProps} />;
       case 'weekly':
         return <WeeklyPage page={nexusData.pages.weekly} weeklyTasks={weeklyTasks} {...commonProps} />;
       case 'history':

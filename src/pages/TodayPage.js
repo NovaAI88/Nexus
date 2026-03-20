@@ -43,6 +43,7 @@ function TodayPage({
   timerProgress,
   onStartBlock,
   onAddBlock,
+  onRemoveBlock,
   onSelectTask,
   onExitFocus,
   onExtendActiveBlock,
@@ -63,99 +64,108 @@ function TodayPage({
       date={date}
       primaryAction={<PrimaryActionPanel {...primaryAction} onStartBlock={onStartBlock} />}
     >
-      <div className={focusMode ? 'today-three-zone-layout upgraded is-focus-mode' : 'today-three-zone-layout upgraded'}>
-        <aside className="today-zone timeline-zone">
-          <TimelinePanel
-            blocks={scheduleBlocks}
-            currentTime={currentTime}
-            currentBlockId={currentBlock?.id}
-            nextBlockId={nextBlock?.id}
-            onAddBlock={onAddBlock}
-          />
-        </aside>
+      <div className="today-workspace-shell">
+        <div className={focusMode ? 'today-three-zone-layout upgraded is-focus-mode' : 'today-three-zone-layout upgraded'}>
+          <aside className="today-zone timeline-zone">
+            <div className="today-column-scroll timeline-column-scroll">
+              <TimelinePanel
+                blocks={scheduleBlocks}
+                currentTime={currentTime}
+                currentBlockId={currentBlock?.id}
+                nextBlockId={nextBlock?.id}
+                onAddBlock={onAddBlock}
+                onRemoveBlock={onRemoveBlock}
+              />
+            </div>
+          </aside>
 
-        <section className="today-zone work-zone execution-zone">
-          <section className="active-now-panel">
-            <div className="active-now-header">
-              <span className="label">Active Now</span>
-              <div className="active-now-meta">
-                <span>{activeNowMeta}</span>
-                <strong className="active-now-time">{activeBlock ? timerDisplay : '--:--'}</strong>
+          <section className="today-zone work-zone execution-zone">
+            <section className="active-now-panel">
+              <div className="active-now-header">
+                <span className="label">Active Now</span>
+                <div className="active-now-meta">
+                  <span>{activeNowMeta}</span>
+                  <strong className="active-now-time">{activeBlock ? timerDisplay : '--:--'}</strong>
+                </div>
               </div>
-            </div>
-            <h1 className="active-now-title">{activeNowTitle}</h1>
-            <div className="active-now-subtext">{activeNowSub}</div>
-            <div className="focus-progress-bar compact">
-              <div className="focus-progress-fill" style={{ width: `${activeBlock ? timerProgress : 0}%` }} />
-            </div>
-            <div className="active-now-controls">
-              <button className="secondary-button" onClick={onExitFocus}>Stop / Exit</button>
-              <button className="secondary-button" onClick={onExtendActiveBlock} disabled={!activeBlock}>Extend</button>
-              <button className="primary-action-button" onClick={onCompleteActiveTask} disabled={!activeTask}>Complete Task</button>
+              <h1 className="active-now-title">{activeNowTitle}</h1>
+              <div className="active-now-subtext">{activeNowSub}</div>
+              <div className="focus-progress-bar compact">
+                <div className="focus-progress-fill" style={{ width: `${activeBlock ? timerProgress : 0}%` }} />
+              </div>
+              <div className="active-now-controls">
+                <button className="secondary-button" onClick={onExitFocus}>Stop / Exit</button>
+                <button className="secondary-button" onClick={onExtendActiveBlock} disabled={!activeBlock}>Extend</button>
+                <button className="primary-action-button" onClick={onCompleteActiveTask} disabled={!activeTask}>Complete Task</button>
+              </div>
+            </section>
+
+            <div className="today-column-scroll center-column-scroll">
+              {focusMode ? (
+                <section className="focus-work-panel">
+                  <span className="label">Current Block</span>
+                  <div className="focus-block-line">
+                    <strong>{currentBlock ? currentBlock.label : 'No active block'}</strong>
+                    <span>{currentBlock ? `${currentBlock.start}–${currentBlock.end}` : '--:--'}</span>
+                  </div>
+                  <div className="focus-timer">{activeBlock ? timerDisplay : '00:00'}</div>
+                  <div className="focus-progress-bar">
+                    <div className="focus-progress-fill" style={{ width: `${activeBlock ? timerProgress : 0}%` }} />
+                  </div>
+                  <div className="panel-group">
+                    <h3>Active Task</h3>
+                    <p>{activeTask ? activeTask.title : activeBlock ? 'No linked task for this block.' : 'No active task selected.'}</p>
+                  </div>
+                  <div className="focus-controls">
+                    <button className="primary-action-button" onClick={onCompleteActiveTask} disabled={!activeTask}>
+                      Complete Task
+                    </button>
+                    <button className="secondary-button" onClick={onExitFocus}>
+                      Exit Focus
+                    </button>
+                  </div>
+                </section>
+              ) : (
+                <TodayPanel
+                  tasks={activeTasks}
+                  focusBlocks={page.focusBlocks}
+                  onToggleTask={onToggleTask}
+                  onMoveTask={onMoveTask}
+                  onStartNowTask={onStartNowTask}
+                  onScheduleTask={onScheduleTask}
+                  onCompleteTask={onCompleteTask}
+                  taskFeedback={taskFeedback}
+                  onSelectTask={onSelectTask}
+                  activeTaskId={activeTask?.id}
+                />
+              )}
             </div>
           </section>
 
-          {focusMode ? (
-            <section className="focus-work-panel">
-              <span className="label">Current Block</span>
-              <div className="focus-block-line">
-                <strong>{currentBlock ? currentBlock.label : 'No active block'}</strong>
-                <span>{currentBlock ? `${currentBlock.start}–${currentBlock.end}` : '--:--'}</span>
-              </div>
-              <div className="focus-timer">{activeBlock ? timerDisplay : '00:00'}</div>
-              <div className="focus-progress-bar">
-                <div className="focus-progress-fill" style={{ width: `${activeBlock ? timerProgress : 0}%` }} />
-              </div>
-              <div className="panel-group">
-                <h3>Active Task</h3>
-                <p>{activeTask ? activeTask.title : activeBlock ? 'No linked task for this block.' : 'No active task selected.'}</p>
-              </div>
-              <div className="focus-controls">
-                <button className="primary-action-button" onClick={onCompleteActiveTask} disabled={!activeTask}>
-                  Complete Task
-                </button>
-                <button className="secondary-button" onClick={onExitFocus}>
-                  Exit Focus
-                </button>
-              </div>
-            </section>
-          ) : (
-            <TodayPanel
-              tasks={activeTasks}
-              focusBlocks={page.focusBlocks}
-              onToggleTask={onToggleTask}
-              onMoveTask={onMoveTask}
-              onStartNowTask={onStartNowTask}
-              onScheduleTask={onScheduleTask}
-              onCompleteTask={onCompleteTask}
-              taskFeedback={taskFeedback}
-              onSelectTask={onSelectTask}
-              activeTaskId={activeTask?.id}
-            />
-          )}
-        </section>
-
-        <aside className="today-zone intelligence-zone secondary-zone">
-          {!focusMode ? (
-            <RecommendationsPanel
-              categories={recommendationCategories}
-              selectedCategory={selectedRecommendationCategory}
-              onSelectCategory={onSelectRecommendationCategory}
-              options={recommendationOptions}
-              laterOptions={laterRecommendationOptions}
-              feedbackById={recommendationFeedback}
-              onAdjustDuration={onAdjustRecommendationDuration}
-              onStartNow={onStartNowRecommendation}
-              onAccept={onAcceptRecommendation}
-              onDecline={onDeclineRecommendation}
-              onPostpone={onPostponeRecommendation}
-            />
-          ) : null}
-          <DoneTodayPanel items={doneTasks} onToggleTask={onToggleTask} />
-          {!focusMode ? <WeeklyPriorityPanel priority={primaryAction.weeklyPriority} outcomes={[]} /> : null}
-          {!focusMode ? <PhaseProgressPanel {...tracking.phaseProgress} /> : null}
-          {!focusMode ? <BlockSummaryPanel currentBlock={currentBlock} nextBlock={nextBlock} /> : null}
-        </aside>
+          <aside className="today-zone intelligence-zone secondary-zone">
+            <div className="today-column-scroll right-column-scroll">
+              {!focusMode ? (
+                <RecommendationsPanel
+                  categories={recommendationCategories}
+                  selectedCategory={selectedRecommendationCategory}
+                  onSelectCategory={onSelectRecommendationCategory}
+                  options={recommendationOptions}
+                  laterOptions={laterRecommendationOptions}
+                  feedbackById={recommendationFeedback}
+                  onAdjustDuration={onAdjustRecommendationDuration}
+                  onStartNow={onStartNowRecommendation}
+                  onAccept={onAcceptRecommendation}
+                  onDecline={onDeclineRecommendation}
+                  onPostpone={onPostponeRecommendation}
+                />
+              ) : null}
+              <DoneTodayPanel items={doneTasks} onToggleTask={onToggleTask} />
+              {!focusMode ? <WeeklyPriorityPanel priority={primaryAction.weeklyPriority} outcomes={[]} /> : null}
+              {!focusMode ? <PhaseProgressPanel {...tracking.phaseProgress} /> : null}
+              {!focusMode ? <BlockSummaryPanel currentBlock={currentBlock} nextBlock={nextBlock} /> : null}
+            </div>
+          </aside>
+        </div>
       </div>
     </PageContainer>
   );
