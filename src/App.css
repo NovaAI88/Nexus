@@ -61,6 +61,7 @@ button, input { font: inherit; }
 .task-list { list-style: none; padding: 0; margin: 0; }
 .task-item + .task-item { margin-top: 10px; }
 .task-item { border: 1px solid #2d3342; border-radius: 12px; padding: 12px; background: #141822; }
+.task-item.is-dragging-task { opacity: 0.45; border-style: dashed; }
 .active-task-item { border-color: #5a62c9; background: #1b2030; }
 .task-main { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .task-meta { display: flex; flex-wrap: wrap; gap: 8px; color: #9aa3b7; font-size: 13px; }
@@ -68,6 +69,11 @@ button, input { font: inherit; }
 .task-checkbox-row input { width: 18px; height: 18px; margin: 0; }
 .done-item span { color: #7ecb8a; text-decoration: line-through; }
 .timeline-now-marker { margin-bottom: 16px; padding: 12px 14px; border: 1px solid #2c3240; border-radius: 12px; background: #141822; }
+.timeline-drop-slots { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-bottom: 14px; }
+.timeline-drop-slot { border: 1px dashed #384156; background: #11151e; color: #8b93a7; border-radius: 10px; padding: 8px 10px; opacity: 0.35; transition: opacity 0.15s ease, border-color 0.15s ease, background 0.15s ease, color 0.15s ease; cursor: default; }
+.timeline-drop-slot.is-visible { opacity: 1; }
+.timeline-drop-slot.is-active { border-color: #5a62c9; background: #1d2340; color: #dfe3ff; }
+.timeline-drop-slot.is-invalid { border-color: #7a4f4f; color: #cfa5a5; }
 .timeline-list { display: flex; flex-direction: column; gap: 10px; }
 .timeline-block { border: 1px solid #262b36; border-left: 4px solid #3d4658; border-radius: 12px; padding: 12px; background: #141822; }
 .timeline-block.is-current { border-color: #5a62c9; border-left-color: #5a62c9; background: #1a1f2c; }

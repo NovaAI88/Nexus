@@ -1,3 +1,5 @@
+import { useContext } from 'react';
+import { DragDropContext } from '../App';
 import SectionCard from './SectionCard';
 
 function TodayPanel({
@@ -12,6 +14,8 @@ function TodayPanel({
   activeTaskId,
   taskFeedback,
 }) {
+  const { draggedTaskId, onTaskDragStart, onTaskDragEnd } = useContext(DragDropContext);
+
   return (
     <SectionCard title="Today Tasks">
       <div className="panel-group">
@@ -21,7 +25,17 @@ function TodayPanel({
             {tasks.map((task, index) => (
               <li
                 key={task.id}
-                className={task.id === activeTaskId ? 'task-item active-task-item' : 'task-item'}
+                className={[
+                  task.id === activeTaskId ? 'task-item active-task-item' : 'task-item',
+                  draggedTaskId === task.id ? 'is-dragging-task' : ''
+                ].filter(Boolean).join(' ')}
+                draggable
+                onDragStart={(event) => {
+                  event.dataTransfer.effectAllowed = 'move';
+                  event.dataTransfer.setData('text/plain', task.id);
+                  onTaskDragStart(task.id);
+                }}
+                onDragEnd={onTaskDragEnd}
               >
                 <div className="task-row">
                   <div className="task-main">

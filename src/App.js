@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { createContext, useEffect, useMemo, useState } from 'react';
 import './App.css';
 import nexusData from './data/nexusData';
 import Sidebar from './components/Sidebar';
@@ -54,6 +54,17 @@ function moveItem(list, fromIndex, toIndex) {
   return next;
 }
 
+export const DragDropContext = createContext({
+  draggedTaskId: null,
+  dragOverMinutes: null,
+  canDropTaskAtMinutes: () => false,
+  onTaskDragStart: () => {},
+  onTaskDragEnd: () => {},
+  onTimelineDragOver: () => {},
+  onTimelineDragLeave: () => {},
+  onTimelineDrop: () => {},
+});
+
 function App() {
   const [activePage, setActivePage] = useState('dashboard');
   const [viewMode, setViewMode] = useState('overview');
@@ -69,6 +80,8 @@ function App() {
   const [selectedRecommendationCategory, setSelectedRecommendationCategory] = useState('Pause');
   const [recommendationState, setRecommendationState] = useState({});
   const [taskFeedback, setTaskFeedback] = useState({});
+  const [draggedTaskId, setDraggedTaskId] = useState(null);
+  const [dragOverMinutes, setDragOverMinutes] = useState(null);
 
   useEffect(() => {
     const intervalId = window.setInterval(() => setNow(new Date()), 60000);
@@ -174,6 +187,14 @@ function App() {
     return gaps.filter((gap) => gap.end > currentMinutes);
   }, [currentMinutes, todayScheduleBlocks]);
 
+  const canPlaceDurationAtMinutes = (startMinutes, duration) => {
+    const dayStart = toMinutes(nexusData.inputs.wakeTime);
+    const dayEnd = 22 * 60;
+    const endMinutes = startMinutes + duration;
+    if (startMinutes < dayStart || endMinutes > dayEnd) return false;
+    return !todayScheduleBlocks.some((block) => startMinutes < toMinutes(block.end) && endMinutes > toMinutes(block.start));
+  };
+
   const currentGap = useMemo(() => freeGaps.find((gap) => gap.start <= currentMinutes && currentMinutes < gap.end)
       || freeGaps.find((gap) => gap.start > currentMinutes)
       || null, [currentMinutes, freeGaps]);
@@ -239,15 +260,19 @@ function App() {
     return { start: formatMinutesToTime(gap.start), end: formatMinutesToTime(gap.start + duration) };
   };
 
-  const createScheduledBlock = ({ id, label, type, duration, taskId, forceNow = false }) => {
-    const slot = forceNow
-      ? (() => {
-          const end = currentMinutes + duration;
-          const overlaps = todayScheduleBlocks.some((block) => currentMinutes < toMinutes(block.end) && end > toMinutes(block.start));
-          if (overlaps) return null;
-          return { start: formatMinutesToTime(currentMinutes), end: formatMinutesToTime(end) };
-        })()
-      : findSlotForDuration(duration);
+  const createScheduledBlock = ({ id, label, type, duration, taskId, forceNow = false, slotMinutes = null }) => {
+    const slot = slotMinutes !== null
+      ? (canPlaceDurationAtMinutes(slotMinutes, duration)
+          ? { start: formatMinutesToTime(slotMinutes), end: formatMinutesToTime(slotMinutes + duration) }
+          : null)
+      : forceNow
+        ? (() => {
+            const end = currentMinutes + duration;
+            const overlaps = todayScheduleBlocks.some((block) => currentMinutes < toMinutes(block.end) && end > toMinutes(block.start));
+            if (overlaps) return null;
+            return { start: formatMinutesToTime(currentMinutes), end: formatMinutesToTime(end) };
+          })()
+        : findSlotForDuration(duration);
     if (!slot) return null;
     const block = { id, date, label, type, start: slot.start, end: slot.end, fixed: false, taskId: taskId || null };
     setScheduleBlocks((currentBlocks) => currentBlocks.some((item) => item.id === id) ? currentBlocks : [...currentBlocks, block].sort((a, b) => `${a.date}-${a.start}`.localeCompare(`${b.date}-${b.start}`)));
@@ -310,15 +335,19 @@ function App() {
     setFocusMode(true);
   };
 
-  const handleScheduleTask = (taskId) => {
+  const handleScheduleTask = (taskId, slotMinutes = null) => {
     const task = dailyTasks.find((item) => item.id === taskId);
-    if (!task) return;
+    if (!task) return false;
     const duration = task.durationMinutes || 30;
     const blockId = task.blockId || `task-block-${taskId}`;
-    const block = createScheduledBlock({ id: blockId, label: task.title, type: 'work', duration, taskId, forceNow: false });
-    if (!block) { setTaskFeedback((current) => ({ ...current, [taskId]: 'No valid free gap available' })); return; }
+    const block = createScheduledBlock({ id: blockId, label: task.title, type: 'work', duration, taskId, forceNow: false, slotMinutes });
+    if (!block) {
+      setTaskFeedback((current) => ({ ...current, [taskId]: slotMinutes !== null ? 'Invalid drop target' : 'No valid free gap available' }));
+      return false;
+    }
     setDailyTasks((currentTasks) => currentTasks.map((item) => item.id === taskId ? { ...item, blockId, durationMinutes: duration } : item));
     setTaskFeedback((current) => ({ ...current, [taskId]: `Scheduled at ${block.start}–${block.end}` }));
+    return true;
   };
 
   const handleStartBlock = () => {
@@ -407,11 +436,40 @@ function App() {
   const handleDeclineRecommendation = (optionId) => markRecommendationStatus(optionId, 'declined');
   const handlePostponeRecommendation = (optionId) => markRecommendationStatus(optionId, 'postponed');
 
+  const handleTaskDragStart = (taskId) => setDraggedTaskId(taskId);
+  const handleTaskDragEnd = () => {
+    setDraggedTaskId(null);
+    setDragOverMinutes(null);
+  };
+
+  const canDropTaskAtMinutes = (taskId, slotMinutes) => {
+    const task = dailyTasks.find((item) => item.id === taskId);
+    if (!task) return false;
+    const duration = task.durationMinutes || 30;
+    return canPlaceDurationAtMinutes(slotMinutes, duration);
+  };
+
+  const handleTimelineDragOver = (slotMinutes) => {
+    if (!draggedTaskId) return false;
+    setDragOverMinutes(slotMinutes);
+    return canDropTaskAtMinutes(draggedTaskId, slotMinutes);
+  };
+
+  const handleTimelineDragLeave = () => setDragOverMinutes(null);
+
+  const handleTimelineDrop = (slotMinutes) => {
+    if (!draggedTaskId) return false;
+    const didSchedule = handleScheduleTask(draggedTaskId, slotMinutes);
+    setDraggedTaskId(null);
+    setDragOverMinutes(null);
+    return didSchedule;
+  };
+
   const pageContent = useMemo(() => {
     const commonProps = { primaryAction: nexusData.primaryAction, tracking: nexusData.tracking, date, viewMode, activePage, currentBlock: timelineState.currentBlock, nextBlock: timelineState.nextBlock };
     switch (activePage) {
       case 'today':
-        return <TodayPage page={nexusData.pages.today} activeTasks={tasksWithBlockMeta} doneTasks={doneTasks} onToggleTask={handleToggleTask} onMoveTask={handleMoveTask} onStartNowTask={handleStartNowTask} onScheduleTask={handleScheduleTask} onCompleteTask={completeTaskById} taskFeedback={taskFeedback} onSelectTask={handleSelectTask} scheduleBlocks={timelineState.normalizedBlocks} currentTime={currentTime} currentBlock={timelineState.currentBlock} nextBlock={timelineState.nextBlock} activeBlock={timelineState.currentBlock || todayScheduleBlocks.find((block) => block.id === activeBlockId) || null} recommendationCategories={nexusData.recommendationCategories} selectedRecommendationCategory={selectedRecommendationCategory} recommendationOptions={selectedCategoryOptions} laterRecommendationOptions={laterOptions} recommendationFeedback={recommendationFeedback} onSelectRecommendationCategory={setSelectedRecommendationCategory} onAdjustRecommendationDuration={handleAdjustRecommendationDuration} onStartNowRecommendation={handleStartNowRecommendation} onAcceptRecommendation={handleAcceptRecommendation} onDeclineRecommendation={handleDeclineRecommendation} onPostponeRecommendation={handlePostponeRecommendation} focusMode={focusMode} activeTask={activeTask} timerDisplay={timerState.display} timerProgress={timerState.progress} onStartBlock={handleStartBlock} onAddBlock={handleAddBlock} onExitFocus={handleExitFocus} onExtendActiveBlock={handleExtendActiveBlock} onCompleteActiveTask={handleCompleteActiveTask} {...commonProps} />;
+        return <TodayPage page={nexusData.pages.today} activeTasks={tasksWithBlockMeta} doneTasks={doneTasks} onToggleTask={handleToggleTask} onMoveTask={handleMoveTask} onStartNowTask={handleStartNowTask} onScheduleTask={handleScheduleTask} onCompleteTask={completeTaskById} taskFeedback={taskFeedback} onSelectTask={handleSelectTask} scheduleBlocks={timelineState.normalizedBlocks} currentTime={currentTime} currentBlock={timelineState.currentBlock} nextBlock={timelineState.nextBlock} activeBlock={timelineState.currentBlock || todayScheduleBlocks.find((block) => block.id === activeBlockId) || null} recommendationCategories={nexusData.recommendationCategories} selectedRecommendationCategory={selectedRecommendationCategory} recommendationOptions={selectedCategoryOptions} laterRecommendationOptions={laterOptions} recommendationFeedback={recommendationFeedback} onSelectRecommendationCategory={setSelectedRecommendationCategory} onAdjustRecommendationDuration={handleAdjustRecommendationDuration} onStartNowRecommendation={handleStartNowRecommendation} onAcceptRecommendation={handleAcceptRecommendation} onDeclineRecommendation={handleDeclineRecommendation} onPostponeRecommendation={handlePostponeRecommendation} focusMode={focusMode} activeTask={activeTask} timerDisplay={timerState.display} timerProgress={timerState.progress} onStartBlock={handleStartBlock} onAddBlock={handleAddBlock} onExitFocus={handleExitFocus} onExtendActiveBlock={handleExtendActiveBlock} onCompleteActiveTask={handleCompleteActiveTask} draggedTaskId={draggedTaskId} dragOverMinutes={dragOverMinutes} canDropTaskAtMinutes={canDropTaskAtMinutes} onTaskDragStart={handleTaskDragStart} onTaskDragEnd={handleTaskDragEnd} onTimelineDragOver={handleTimelineDragOver} onTimelineDragLeave={handleTimelineDragLeave} onTimelineDrop={handleTimelineDrop} {...commonProps} />;
       case 'weekly':
         return <WeeklyPage page={nexusData.pages.weekly} weeklyTasks={weeklyTasks} {...commonProps} />;
       case 'history':
@@ -433,11 +491,24 @@ function App() {
   const appClassName = [viewMode === 'focus' ? 'app-shell focus-mode' : 'app-shell'];
   if (focusMode) appClassName.push('today-focus-active');
 
+  const dragDropValue = {
+    draggedTaskId,
+    dragOverMinutes,
+    canDropTaskAtMinutes,
+    onTaskDragStart: handleTaskDragStart,
+    onTaskDragEnd: handleTaskDragEnd,
+    onTimelineDragOver: handleTimelineDragOver,
+    onTimelineDragLeave: handleTimelineDragLeave,
+    onTimelineDrop: handleTimelineDrop,
+  };
+
   return (
-    <div className={appClassName.join(' ')}>
-      <Sidebar navigation={nexusData.navigation} activePage={activePage} viewMode={viewMode} onNavigate={setActivePage} onViewChange={setViewMode} />
-      <main className="main-shell">{pageContent}</main>
-    </div>
+    <DragDropContext.Provider value={dragDropValue}>
+      <div className={appClassName.join(' ')}>
+        <Sidebar navigation={nexusData.navigation} activePage={activePage} viewMode={viewMode} onNavigate={setActivePage} onViewChange={setViewMode} />
+        <main className="main-shell">{pageContent}</main>
+      </div>
+    </DragDropContext.Provider>
   );
 }
 
