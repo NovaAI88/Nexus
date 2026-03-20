@@ -45,19 +45,24 @@ function TodayPanel({
                         checked={task.status === 'done'}
                         onChange={() => onToggleTask(task.id)}
                       />
-                      <span>{task.title}</span>
+                      <div className="task-copy">
+                        <span className="task-title">{task.title}</span>
+                        <div className="task-meta">
+                          {task.blockLabel ? <span>{task.blockLabel}</span> : <span>Unscheduled</span>}
+                          {taskFeedback[task.id] ? <span>{taskFeedback[task.id]}</span> : null}
+                        </div>
+                      </div>
                     </label>
-                    <div className="task-meta">
-                      {task.blockLabel ? <span>{task.blockLabel}</span> : <span>Unscheduled</span>}
-                      {taskFeedback[task.id] ? <span>{taskFeedback[task.id]}</span> : null}
-                    </div>
                   </div>
                   <div className="task-controls">
                     <button className="task-focus-button primary" onClick={() => onStartNowTask(task.id)}>
                       Start Now
                     </button>
-                    <button className="task-focus-button" onClick={() => onScheduleTask(task.id)}>
+                    <button className="secondary-button" onClick={() => onScheduleTask(task.id)}>
                       Schedule
+                    </button>
+                    <button className="task-focus-button" onClick={() => onSelectTask(task.id)}>
+                      Focus
                     </button>
                     <button className="task-focus-button" onClick={() => onCompleteTask(task.id)}>
                       Complete
@@ -67,9 +72,6 @@ function TodayPanel({
                     </button>
                     <button className="task-focus-button" onClick={() => onMoveTask(task.id, 1)} disabled={index === tasks.length - 1}>
                       ↓
-                    </button>
-                    <button className="task-focus-button" onClick={() => onSelectTask(task.id)}>
-                      Focus
                     </button>
                   </div>
                 </div>

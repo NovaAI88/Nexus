@@ -25,57 +25,63 @@ function TimelinePanel({ blocks, currentTime, currentBlockId, nextBlockId, onAdd
 
   return (
     <SectionCard title="Timeline">
-      <div className="timeline-now-marker">
-        <span className="label">Current Time</span>
-        <strong>{currentTime}</strong>
-      </div>
-      <div className="timeline-drop-slots">
-        {dropSlots.map((slotMinutes) => {
-          const isActive = dragOverMinutes === slotMinutes;
-          const canDrop = draggedTaskId ? canDropTaskAtMinutes(draggedTaskId, slotMinutes) : false;
-          return (
-            <button
-              key={`drop-slot-${slotMinutes}`}
-              type="button"
-              className={[
-                'timeline-drop-slot',
-                draggedTaskId ? 'is-visible' : '',
-                isActive ? 'is-active' : '',
-                draggedTaskId && !canDrop ? 'is-invalid' : ''
-              ].filter(Boolean).join(' ')}
-              onDragOver={(event) => {
-                event.preventDefault();
-                event.dataTransfer.dropEffect = canDrop ? 'move' : 'none';
-                onTimelineDragOver(slotMinutes);
-              }}
-              onDragEnter={(event) => {
-                event.preventDefault();
-                onTimelineDragOver(slotMinutes);
-              }}
-              onDragLeave={() => {
-                if (isActive) onTimelineDragLeave();
-              }}
-              onDrop={(event) => {
-                event.preventDefault();
-                onTimelineDrop(slotMinutes);
-              }}
-            >
-              <span>{String(Math.floor(slotMinutes / 60)).padStart(2, '0')}:{String(slotMinutes % 60).padStart(2, '0')}</span>
-            </button>
-          );
-        })}
-      </div>
-      <div className="timeline-list">
-        {blocks.map((block) => {
-          let state = 'upcoming';
-          if (block.id === currentBlockId) state = 'current';
-          else if (block.id === nextBlockId) state = 'next';
-          else if (block._isPast) state = 'past';
+      <div className="timeline-panel">
+        <div className="timeline-now-marker">
+          <span className="label">Current Time</span>
+          <strong>{currentTime}</strong>
+        </div>
 
-          return <TimelineBlock key={block.id} block={block} state={state} />;
-        })}
+        <div className="timeline-surface">
+          <div className="timeline-drop-slots">
+            {dropSlots.map((slotMinutes) => {
+              const isActive = dragOverMinutes === slotMinutes;
+              const canDrop = draggedTaskId ? canDropTaskAtMinutes(draggedTaskId, slotMinutes) : false;
+              return (
+                <button
+                  key={`drop-slot-${slotMinutes}`}
+                  type="button"
+                  className={[
+                    'timeline-drop-slot',
+                    draggedTaskId ? 'is-visible' : '',
+                    isActive ? 'is-active' : '',
+                    draggedTaskId && !canDrop ? 'is-invalid' : ''
+                  ].filter(Boolean).join(' ')}
+                  onDragOver={(event) => {
+                    event.preventDefault();
+                    event.dataTransfer.dropEffect = canDrop ? 'move' : 'none';
+                    onTimelineDragOver(slotMinutes);
+                  }}
+                  onDragEnter={(event) => {
+                    event.preventDefault();
+                    onTimelineDragOver(slotMinutes);
+                  }}
+                  onDragLeave={() => {
+                    if (isActive) onTimelineDragLeave();
+                  }}
+                  onDrop={(event) => {
+                    event.preventDefault();
+                    onTimelineDrop(slotMinutes);
+                  }}
+                  aria-label={`Drop at ${String(Math.floor(slotMinutes / 60)).padStart(2, '0')}:${String(slotMinutes % 60).padStart(2, '0')}`}
+                />
+              );
+            })}
+          </div>
+
+          <div className="timeline-list">
+            {blocks.map((block) => {
+              let state = 'upcoming';
+              if (block.id === currentBlockId) state = 'current';
+              else if (block.id === nextBlockId) state = 'next';
+              else if (block._isPast) state = 'past';
+
+              return <TimelineBlock key={block.id} block={block} state={state} />;
+            })}
+          </div>
+        </div>
+
+        <button className="timeline-add-button" onClick={onAddBlock}>Add Block</button>
       </div>
-      <button className="timeline-add-button" onClick={onAddBlock}>Add Block</button>
     </SectionCard>
   );
 }

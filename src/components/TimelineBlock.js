@@ -14,8 +14,10 @@ function TimelineBlock({ block, state }) {
           {state === 'current' ? <span className="timeline-badge current">Now</span> : null}
           {state === 'next' ? <span className="timeline-badge next">Next</span> : null}
         </div>
-        <span className="timeline-type">{block.type}</span>
-        {block.taskTitle ? <div className="timeline-linked-task">Task: {block.taskTitle}</div> : null}
+        <div className="timeline-meta-stack">
+          <span className="timeline-type">{block.type}</span>
+          {block.taskTitle ? <div className="timeline-linked-task">Task · {block.taskTitle}</div> : null}
+        </div>
       </div>
     </div>
   );

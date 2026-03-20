@@ -25,11 +25,11 @@ function RecommendationCard({ option, feedback, onAdjustDuration, onStartNow, on
         <button className="recommendation-button primary" onClick={() => onStartNow(option.id)}>
           Start Now
         </button>
-        <button className="recommendation-button accept" onClick={() => onAccept(option.id)}>
+        <button className="secondary-button" onClick={() => onAccept(option.id)}>
           Accept
         </button>
         <button className="recommendation-button" onClick={() => onPostpone(option.id)}>
-          Postpone
+          Later
         </button>
         <button className="recommendation-button decline" onClick={() => onDecline(option.id)}>
           Decline

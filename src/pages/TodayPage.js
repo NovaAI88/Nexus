@@ -64,7 +64,7 @@ function TodayPage({
       primaryAction={<PrimaryActionPanel {...primaryAction} onStartBlock={onStartBlock} />}
     >
       <div className={focusMode ? 'today-three-zone-layout upgraded is-focus-mode' : 'today-three-zone-layout upgraded'}>
-        <div className="today-zone timeline-zone">
+        <aside className="today-zone timeline-zone">
           <TimelinePanel
             blocks={scheduleBlocks}
             currentTime={currentTime}
@@ -72,16 +72,18 @@ function TodayPage({
             nextBlockId={nextBlock?.id}
             onAddBlock={onAddBlock}
           />
-        </div>
+        </aside>
 
-        <div className="today-zone work-zone execution-zone">
+        <section className="today-zone work-zone execution-zone">
           <section className="active-now-panel">
-            <span className="label">Active Now</span>
-            <div className="active-now-title">{activeNowTitle}</div>
-            <div className="active-now-meta">
-              <span>{activeNowMeta}</span>
-              <span>{activeBlock ? timerDisplay : '--:--'}</span>
+            <div className="active-now-header">
+              <span className="label">Active Now</span>
+              <div className="active-now-meta">
+                <span>{activeNowMeta}</span>
+                <strong className="active-now-time">{activeBlock ? timerDisplay : '--:--'}</strong>
+              </div>
             </div>
+            <h1 className="active-now-title">{activeNowTitle}</h1>
             <div className="active-now-subtext">{activeNowSub}</div>
             <div className="focus-progress-bar compact">
               <div className="focus-progress-fill" style={{ width: `${activeBlock ? timerProgress : 0}%` }} />
@@ -131,9 +133,9 @@ function TodayPage({
               activeTaskId={activeTask?.id}
             />
           )}
-        </div>
+        </section>
 
-        <div className="today-zone intelligence-zone secondary-zone">
+        <aside className="today-zone intelligence-zone secondary-zone">
           {!focusMode ? (
             <RecommendationsPanel
               categories={recommendationCategories}
@@ -153,7 +155,7 @@ function TodayPage({
           {!focusMode ? <WeeklyPriorityPanel priority={primaryAction.weeklyPriority} outcomes={[]} /> : null}
           {!focusMode ? <PhaseProgressPanel {...tracking.phaseProgress} /> : null}
           {!focusMode ? <BlockSummaryPanel currentBlock={currentBlock} nextBlock={nextBlock} /> : null}
-        </div>
+        </aside>
       </div>
     </PageContainer>
   );
