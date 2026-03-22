@@ -10,6 +10,10 @@ import SystemPage from './pages/SystemPage';
 import NexusDepartmentPage from './pages/NexusDepartmentPage';
 import HephaestusPage from './pages/HephaestusPage';
 import XenonPage from './pages/XenonPage';
+import DepartmentPage from './pages/DepartmentPage';
+import { useProjects } from './core/projects/useProjects';
+import { useDepartments } from './core/departments/useDepartments';
+import { useFocusProject } from './core/projects/useFocusProject';
 
 function toMinutes(value) {
   const [hours, minutes] = value.split(':').map(Number);
@@ -60,6 +64,19 @@ function getTimeBucket(minutes) {
   return 'evening';
 }
 
+// ProjectsContext — provides live project + department state to any descendant.
+// Consumers: DepartmentPage, DashboardPage (future), Today, planner, checkpoints.
+export const ProjectsContext = createContext({
+  projects: [],
+  departments: [],
+  updateProject: () => {},
+  getProject: () => undefined,
+  getDepartment: () => undefined,
+  focusProjectId: null,
+  setFocusProject: () => {},
+  clearFocusProject: () => {},
+});
+
 export const DragDropContext = createContext({
   draggedTaskId: null,
   dragOverMinutes: null,
@@ -72,6 +89,12 @@ export const DragDropContext = createContext({
 });
 
 function App() {
+  // Phase 1/2 — live project + department state (persisted via localStorage)
+  const { projects, updateProject, getProject } = useProjects();
+  const { departments, getDepartment } = useDepartments();
+  // Phase 5 — active focus project (persisted)
+  const { focusProjectId, setFocusProject, clearFocusProject } = useFocusProject();
+
   const [activePage, setActivePage] = useState('dashboard');
   const [viewMode, setViewMode] = useState('overview');
   const [now, setNow] = useState(new Date());
@@ -491,16 +514,46 @@ function App() {
       case 'system':
         return <SystemPage page={nexusData.pages.system} {...commonProps} />;
       case 'nexus-department':
-        return <NexusDepartmentPage page={nexusData.pages.departments.nexus} {...commonProps} />;
+        return <DepartmentPage
+          departmentId="nexus"
+          departments={departments}
+          projects={projects}
+          getDepartment={getDepartment}
+          updateProject={updateProject}
+          focusProjectId={focusProjectId}
+          setFocusProject={setFocusProject}
+          date={date}
+          fallbackPage={nexusData.pages.departments.nexus}
+        />;
       case 'hephaestus':
-        return <HephaestusPage page={nexusData.pages.departments.hephaestus} date={date} />;
+        return <DepartmentPage
+          departmentId="hephaestus"
+          departments={departments}
+          projects={projects}
+          getDepartment={getDepartment}
+          updateProject={updateProject}
+          focusProjectId={focusProjectId}
+          setFocusProject={setFocusProject}
+          date={date}
+          fallbackPage={nexusData.pages.departments.hephaestus}
+        />;
       case 'xenon':
-        return <XenonPage page={nexusData.pages.departments.xenon} date={date} />;
+        return <DepartmentPage
+          departmentId="xenon"
+          departments={departments}
+          projects={projects}
+          getDepartment={getDepartment}
+          updateProject={updateProject}
+          focusProjectId={focusProjectId}
+          setFocusProject={setFocusProject}
+          date={date}
+          fallbackPage={nexusData.pages.departments.xenon}
+        />;
       case 'dashboard':
       default:
         return <DashboardPage dashboard={nexusData.dashboard} openRecommendation={topRecommendation} weeklyGoal={nexusData.pages.weekly.priority} keyStatus={keyStatus} {...commonProps} />;
     }
-  }, [activePage, activeBlockId, activeTask, currentTime, date, doneTasks, focusMode, keyStatus, laterOptions, recommendationFeedback, selectedCategoryOptions, selectedRecommendationCategory, taskFeedback, timerState.display, timerState.progress, timelineState.currentBlock, timelineState.nextBlock, timelineState.normalizedBlocks, todayScheduleBlocks, topRecommendation, tasksWithBlockMeta, viewMode, weeklyTasks, completedHistory]);
+  }, [activePage, activeBlockId, activeTask, clearFocusProject, currentTime, date, departments, doneTasks, focusMode, focusProjectId, getDepartment, keyStatus, laterOptions, projects, recommendationFeedback, selectedCategoryOptions, selectedRecommendationCategory, setFocusProject, taskFeedback, timerState.display, timerState.progress, timelineState.currentBlock, timelineState.nextBlock, timelineState.normalizedBlocks, todayScheduleBlocks, topRecommendation, tasksWithBlockMeta, updateProject, viewMode, weeklyTasks, completedHistory]);
 
   const appClassName = [viewMode === 'focus' ? 'app-shell focus-mode' : 'app-shell'];
   if (focusMode) appClassName.push('today-focus-active');
@@ -516,13 +569,26 @@ function App() {
     onTimelineDrop: handleTimelineDrop,
   };
 
+  const projectsContextValue = useMemo(() => ({
+    projects,
+    departments,
+    updateProject,
+    getProject,
+    getDepartment,
+    focusProjectId,
+    setFocusProject,
+    clearFocusProject,
+  }), [projects, departments, updateProject, getProject, getDepartment, focusProjectId, setFocusProject, clearFocusProject]);
+
   return (
-    <DragDropContext.Provider value={dragDropValue}>
-      <div className={appClassName.join(' ')}>
-        <Sidebar navigation={nexusData.navigation} activePage={activePage} viewMode={viewMode} onNavigate={setActivePage} onViewChange={setViewMode} />
-        <main className="main-shell">{pageContent}</main>
-      </div>
-    </DragDropContext.Provider>
+    <ProjectsContext.Provider value={projectsContextValue}>
+      <DragDropContext.Provider value={dragDropValue}>
+        <div className={appClassName.join(' ')}>
+          <Sidebar navigation={nexusData.navigation} activePage={activePage} viewMode={viewMode} onNavigate={setActivePage} onViewChange={setViewMode} />
+          <main className="main-shell">{pageContent}</main>
+        </div>
+      </DragDropContext.Provider>
+    </ProjectsContext.Provider>
   );
 }
 
