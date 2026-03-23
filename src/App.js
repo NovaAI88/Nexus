@@ -1,19 +1,35 @@
-import { createContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
 import './App.css';
-import nexusData from './data/nexusData';
+import nexusData from './data/nexusData'; // navigation + department fallback data only
+
+// ── Layout components ────────────────────────────────────────────────────────
 import Sidebar from './components/Sidebar';
+import ThemeToggle from './components/ThemeToggle';
+
+// ── Pages ────────────────────────────────────────────────────────────────────
 import DashboardPage from './pages/DashboardPage';
 import TodayPage from './pages/TodayPage';
 import WeeklyPage from './pages/WeeklyPage';
 import HistoryPage from './pages/HistoryPage';
-import SystemPage from './pages/SystemPage';
-import NexusDepartmentPage from './pages/NexusDepartmentPage';
-import HephaestusPage from './pages/HephaestusPage';
-import XenonPage from './pages/XenonPage';
 import DepartmentPage from './pages/DepartmentPage';
+
+// ── Panels passed as props (renderable children) ─────────────────────────────
+import PlannerBlocksPanel from './components/PlannerBlocksPanel';
+import TaskEnginePanel from './components/TaskEnginePanel';
+import QuickLogInput from './components/QuickLogInput';
+
+// ── Core hooks ───────────────────────────────────────────────────────────────
 import { useProjects } from './core/projects/useProjects';
 import { useDepartments } from './core/departments/useDepartments';
 import { useFocusProject } from './core/projects/useFocusProject';
+import { usePlannerBlocks } from './core/planner/usePlannerBlocks';
+import { useTaskEngine } from './core/tasks/useTaskEngine';
+import { useTheme } from './core/theme/useTheme';
+import { useActivityLog } from './core/log/useActivityLog';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Utilities
+// ─────────────────────────────────────────────────────────────────────────────
 
 function toMinutes(value) {
   const [hours, minutes] = value.split(':').map(Number);
@@ -38,34 +54,17 @@ function formatSeconds(seconds) {
 function formatMinutesToTime(totalMinutes) {
   return `${String(Math.floor(totalMinutes / 60)).padStart(2, '0')}:${String(totalMinutes % 60).padStart(2, '0')}`;
 }
-function createDailyTaskFromWeekly(weeklyTask, date) {
-  return {
-    id: `daily-${weeklyTask.id}`,
-    date,
-    title: weeklyTask.title,
-    status: 'active',
-    blockId: null,
-    sourceWeeklyTaskId: weeklyTask.id,
-    startedAt: null,
-    completedAt: null,
-    durationMinutes: null,
-  };
-}
 function moveItem(list, fromIndex, toIndex) {
   const next = [...list];
   const [item] = next.splice(fromIndex, 1);
   next.splice(toIndex, 0, item);
   return next;
 }
-function getTimeBucket(minutes) {
-  if (minutes < 11 * 60) return 'morning';
-  if (minutes < 14 * 60) return 'midday';
-  if (minutes < 18 * 60) return 'afternoon';
-  return 'evening';
-}
 
-// ProjectsContext — provides live project + department state to any descendant.
-// Consumers: DepartmentPage, DashboardPage (future), Today, planner, checkpoints.
+// ─────────────────────────────────────────────────────────────────────────────
+// Contexts
+// ─────────────────────────────────────────────────────────────────────────────
+
 export const ProjectsContext = createContext({
   projects: [],
   departments: [],
@@ -75,6 +74,15 @@ export const ProjectsContext = createContext({
   focusProjectId: null,
   setFocusProject: () => {},
   clearFocusProject: () => {},
+  tasks: [],
+  addTask: () => {},
+  updateTask: () => {},
+  setTaskStatus: () => {},
+  removeTask: () => {},
+  getTasksForProject: () => [],
+  activityLog: [],
+  addLogEntry: () => {},
+  getProjectLog: () => [],
 });
 
 export const DragDropContext = createContext({
@@ -88,33 +96,44 @@ export const DragDropContext = createContext({
   onTimelineDrop: () => {},
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// App
+// ─────────────────────────────────────────────────────────────────────────────
+
 function App() {
-  // Phase 1/2 — live project + department state (persisted via localStorage)
+  // ── Persistent domain state ────────────────────────────────────────────────
   const { projects, updateProject, getProject } = useProjects();
   const { departments, getDepartment } = useDepartments();
-  // Phase 5 — active focus project (persisted)
   const { focusProjectId, setFocusProject, clearFocusProject } = useFocusProject();
+  const { tasks, getTasksForDate, getTasksForProject, addTask, updateTask, setTaskStatus, removeTask } = useTaskEngine();
+  const { log: activityLog, addEntry: addLogEntry, getProjectLog } = useActivityLog();
+  const { theme, toggleTheme } = useTheme();
+  const {
+    getPlannerBlocks,
+    addBlock: addPlannerBlock,
+    updateBlock: updatePlannerBlock,
+    removeBlock: removePlannerBlock,
+    stopWork,
+    setStopWork,
+  } = usePlannerBlocks();
 
+  // ── UI state ───────────────────────────────────────────────────────────────
   const [activePage, setActivePage] = useState('dashboard');
-  const [viewMode, setViewMode] = useState('overview');
   const [now, setNow] = useState(new Date());
   const [timerNow, setTimerNow] = useState(new Date());
-  const [scheduleBlocks, setScheduleBlocks] = useState(nexusData.scheduleBlocks);
-  const [dailyTasks, setDailyTasks] = useState(nexusData.dailyTasks);
-  const [weeklyTasks, setWeeklyTasks] = useState(nexusData.weeklyTasks);
-  const [completedHistory, setCompletedHistory] = useState(nexusData.completedHistory);
+
+  // Timeline/focus state (local — not persisted, resets on reload intentionally)
   const [focusMode, setFocusMode] = useState(false);
-  const [activeTaskId, setActiveTaskId] = useState(null);
   const [activeBlockId, setActiveBlockId] = useState(null);
-  const [selectedRecommendationCategory, setSelectedRecommendationCategory] = useState('Pause');
-  const [recommendationState, setRecommendationState] = useState({});
-  const [taskFeedback, setTaskFeedback] = useState({});
-  const [draggedTaskId, setDraggedTaskId] = useState(null);
+
+  // DnD state
+  const [draggedBlockId, setDraggedBlockId] = useState(null);
   const [dragOverMinutes, setDragOverMinutes] = useState(null);
 
+  // ── Clock ──────────────────────────────────────────────────────────────────
   useEffect(() => {
-    const intervalId = window.setInterval(() => setNow(new Date()), 60000);
-    return () => window.clearInterval(intervalId);
+    const id = window.setInterval(() => setNow(new Date()), 60000);
+    return () => window.clearInterval(id);
   }, []);
   useEffect(() => { setTimerNow(now); }, [now]);
 
@@ -122,37 +141,14 @@ function App() {
   const currentTime = useMemo(() => formatTime(now), [now]);
   const currentMinutes = useMemo(() => now.getHours() * 60 + now.getMinutes(), [now]);
 
-  useEffect(() => {
-    setWeeklyTasks((currentWeeklyTasks) => {
-      const promotableTasks = currentWeeklyTasks.filter((task) => task.plannedDay === date && task.status === 'planned');
-      if (promotableTasks.length === 0) return currentWeeklyTasks;
-      setDailyTasks((currentDailyTasks) => {
-        const existingSourceIds = new Set(currentDailyTasks.map((task) => task.sourceWeeklyTaskId).filter(Boolean));
-        const newDailyTasks = promotableTasks.filter((task) => !existingSourceIds.has(task.id)).map((task) => createDailyTaskFromWeekly(task, date));
-        return newDailyTasks.length > 0 ? [...currentDailyTasks, ...newDailyTasks] : currentDailyTasks;
-      });
-      return currentWeeklyTasks.map((task) => task.plannedDay === date && task.status === 'planned' ? { ...task, status: 'moved-to-today' } : task);
-    });
-  }, [date]);
-
+  // ── Timeline blocks (planner blocks = source of truth) ────────────────────
   const todayScheduleBlocks = useMemo(() => {
-    const wakeBlock = { id: 'fixed-wake-generated', date, label: 'Wake / Setup', type: 'system', start: nexusData.inputs.wakeTime, end: '08:00', fixed: true, taskId: null };
-    const sideJobBlocks = nexusData.inputs.sideJobBlocks.map((block) => ({ ...block, date, fixed: true, taskId: null }));
-    const sourceBlocks = scheduleBlocks.filter((block) => block.date === date && block.id !== 'fixed-wake');
-    const merged = [wakeBlock, ...sideJobBlocks, ...sourceBlocks.filter((block) => block.id !== 'fixed-side-job')];
-    const uniqueMap = new Map();
-    merged.forEach((block) => uniqueMap.set(block.id, block));
-    return [...uniqueMap.values()].sort((a, b) => toMinutes(a.start) - toMinutes(b.start));
-  }, [date, scheduleBlocks]);
-
-  const todayDailyTasks = useMemo(() => dailyTasks.filter((task) => task.date === date), [dailyTasks, date]);
-  const activeTasks = useMemo(() => todayDailyTasks.filter((task) => task.status === 'active'), [todayDailyTasks]);
-  const doneTasks = useMemo(() => todayDailyTasks.filter((task) => task.status === 'done'), [todayDailyTasks]);
-
-  const tasksWithBlockMeta = useMemo(() => activeTasks.map((task) => {
-    const block = todayScheduleBlocks.find((item) => item.id === task.blockId);
-    return { ...task, blockLabel: block ? `${block.start}–${block.end} · ${block.label}` : null };
-  }), [activeTasks, todayScheduleBlocks]);
+    const plannerBlocks = getPlannerBlocks(date).map((b) => ({
+      id: b.id, date: b.date, label: b.label, type: b.type,
+      start: b.start, end: b.end, fixed: true, taskId: null,
+    }));
+    return plannerBlocks.sort((a, b) => toMinutes(a.start) - toMinutes(b.start));
+  }, [date, getPlannerBlocks]);
 
   const timelineState = useMemo(() => {
     let currentBlock = null;
@@ -162,24 +158,22 @@ function App() {
       const endMinutes = toMinutes(block.end);
       const isPast = currentMinutes > endMinutes;
       const isCurrent = startMinutes <= currentMinutes && currentMinutes <= endMinutes;
-      const linkedTask = todayDailyTasks.find((task) => task.id === block.taskId) || null;
-      const normalized = { ...block, taskTitle: linkedTask?.title || null, _startMinutes: startMinutes, _endMinutes: endMinutes, _isPast: isPast };
+      const normalized = { ...block, _startMinutes: startMinutes, _endMinutes: endMinutes, _isPast: isPast };
       if (isCurrent || block.id === activeBlockId) currentBlock = normalized;
       return normalized;
     });
-    nextBlock = normalizedBlocks.find((block) => block._startMinutes > currentMinutes) || null;
-    if (!currentBlock && activeBlockId) currentBlock = normalizedBlocks.find((block) => block.id === activeBlockId) || null;
+    nextBlock = normalizedBlocks.find((b) => b._startMinutes > currentMinutes) || null;
+    if (!currentBlock && activeBlockId) {
+      currentBlock = normalizedBlocks.find((b) => b.id === activeBlockId) || null;
+    }
     return { normalizedBlocks, currentBlock, nextBlock };
-  }, [activeBlockId, currentMinutes, todayDailyTasks, todayScheduleBlocks]);
+  }, [activeBlockId, currentMinutes, todayScheduleBlocks]);
 
-  const activeTask = useMemo(() => tasksWithBlockMeta.find((task) => task.id === activeTaskId)
-    || tasksWithBlockMeta.find((task) => task.blockId === activeBlockId)
-    || null, [activeBlockId, activeTaskId, tasksWithBlockMeta]);
-
+  // ── Focus timer (only when focus mode + active block) ─────────────────────
   useEffect(() => {
     if (!focusMode || !timelineState.currentBlock) return undefined;
-    const intervalId = window.setInterval(() => setTimerNow(new Date()), 1000);
-    return () => window.clearInterval(intervalId);
+    const id = window.setInterval(() => setTimerNow(new Date()), 1000);
+    return () => window.clearInterval(id);
   }, [focusMode, timelineState.currentBlock]);
 
   const focusSecondsRemaining = useMemo(() => {
@@ -197,12 +191,17 @@ function App() {
     const nowSeconds = timerNow.getHours() * 3600 + timerNow.getMinutes() * 60 + timerNow.getSeconds();
     const total = Math.max(endSeconds - startSeconds, 1);
     const elapsed = Math.max(0, Math.min(nowSeconds - startSeconds, total));
-    return { display: formatSeconds(focusSecondsRemaining), progress: Math.max(0, Math.min((elapsed / total) * 100, 100)) };
+    return {
+      display: formatSeconds(focusSecondsRemaining),
+      progress: Math.max(0, Math.min((elapsed / total) * 100, 100)),
+    };
   }, [focusSecondsRemaining, timelineState.currentBlock, timerNow]);
 
+  // ── Free gaps (used by recommendations) ───────────────────────────────────
   const freeGaps = useMemo(() => {
-    const dayStart = toMinutes(nexusData.inputs.wakeTime);
-    const dayEnd = 22 * 60;
+    const plannerSorted = getPlannerBlocks(date).slice().sort((a, b) => toMinutes(a.start) - toMinutes(b.start));
+    const dayStart = plannerSorted.length > 0 ? toMinutes(plannerSorted[0].start) : 7 * 60 + 30;
+    const dayEnd = stopWork.enabled ? toMinutes(stopWork.time) : 22 * 60;
     const blocks = [...todayScheduleBlocks].sort((a, b) => toMinutes(a.start) - toMinutes(b.start));
     const gaps = [];
     let cursor = dayStart;
@@ -213,379 +212,310 @@ function App() {
       cursor = Math.max(cursor, end);
     });
     if (cursor < dayEnd) gaps.push({ start: cursor, end: dayEnd, duration: dayEnd - cursor });
-    return gaps.filter((gap) => gap.end > currentMinutes);
-  }, [currentMinutes, todayScheduleBlocks]);
+    return gaps.filter((g) => g.end > currentMinutes);
+  }, [currentMinutes, date, getPlannerBlocks, stopWork, todayScheduleBlocks]);
 
-  const canPlaceDurationAtMinutes = (startMinutes, duration) => {
-    const dayStart = toMinutes(nexusData.inputs.wakeTime);
-    const dayEnd = 22 * 60;
+  const canPlaceDurationAtMinutes = useCallback((startMinutes, duration) => {
+    const dayEnd = stopWork.enabled ? toMinutes(stopWork.time) : 22 * 60;
     const endMinutes = startMinutes + duration;
-    if (startMinutes < dayStart || endMinutes > dayEnd) return false;
-    return !todayScheduleBlocks.some((block) => startMinutes < toMinutes(block.end) && endMinutes > toMinutes(block.start));
-  };
+    if (endMinutes > dayEnd) return false;
+    return !todayScheduleBlocks.some((b) => startMinutes < toMinutes(b.end) && endMinutes > toMinutes(b.start));
+  }, [stopWork, todayScheduleBlocks]);
 
-  const currentGap = useMemo(() => freeGaps.find((gap) => gap.start <= currentMinutes && currentMinutes < gap.end)
-      || freeGaps.find((gap) => gap.start > currentMinutes)
-      || null, [currentMinutes, freeGaps]);
-  const currentTimeBucket = useMemo(() => getTimeBucket(currentMinutes), [currentMinutes]);
+  const currentGap = useMemo(() =>
+    freeGaps.find((g) => g.start <= currentMinutes && currentMinutes < g.end)
+    || freeGaps.find((g) => g.start > currentMinutes)
+    || null,
+    [currentMinutes, freeGaps]
+  );
 
+  // ── Project-aware recommendation engine (no legacy nexusData catalog) ──────
   const recommendationCatalog = useMemo(() => {
-    const options = [];
-    Object.entries(nexusData.lifeOptions).forEach(([category, items]) => {
-      items.forEach((item) => {
-        const state = recommendationState[item.id] || {};
-        if (state.status === 'declined' || state.status === 'accepted') return;
-        if (item.validTime && !item.validTime.includes(currentTimeBucket)) return;
-        const duration = state.selectedDuration || item.defaultDuration;
-        const suggestedGap = freeGaps.find((gap) => gap.duration >= duration) || null;
-        options.push({ ...item, group: 'life', groupLabel: 'Life / Schedule', category, selectedDuration: duration, status: state.status || 'open', suggestedGap, suggestedLabel: suggestedGap ? `${formatMinutesToTime(suggestedGap.start)}–${formatMinutesToTime(suggestedGap.start + duration)}` : null });
+    const pastStopWork = stopWork.enabled && currentMinutes >= toMinutes(stopWork.time);
+    if (pastStopWork) return [];
+
+    const focusProject = focusProjectId ? projects.find((p) => p.id === focusProjectId) : null;
+    const items = [];
+
+    if (focusProject && focusProject.status === 'active') {
+      items.push({
+        id: `rec-${focusProject.id}`,
+        projectId: focusProject.id,
+        isFocusProject: true,
+        title: `Work on ${focusProject.name}`,
+        description: focusProject.nextAction,
+        duration: 60,
+        minDuration: 30,
+        maxDuration: 120,
+        step: 15,
+        actionType: 'schedule',
+        group: 'project',
+        groupLabel: focusProject.name,
+        category: focusProject.name,
       });
-    });
-    Object.entries(nexusData.departmentQueues).forEach(([category, items]) => {
-      const ranked = [...items].map((item) => {
-        const state = recommendationState[item.id] || {};
-        const duration = state.selectedDuration || item.duration;
-        const bestGap = freeGaps.find((gap) => gap.duration >= duration) || currentGap;
-        const gapFit = bestGap ? Math.abs(bestGap.duration - duration) : 9999;
-        return { ...item, group: 'department', groupLabel: 'Department', category, defaultDuration: item.duration, minDuration: Math.max(10, item.duration - 10), maxDuration: item.duration + 15, step: 5, actionType: 'both', selectedDuration: duration, status: state.status || 'open', suggestedGap: bestGap, suggestedLabel: bestGap ? `${formatMinutesToTime(bestGap.start)}–${formatMinutesToTime(bestGap.start + duration)}` : null, fitScore: gapFit };
-      }).filter((item) => item.status !== 'declined' && item.status !== 'accepted').sort((a, b) => a.fitScore - b.fitScore).slice(0, 5);
-      options.push(...ranked);
-    });
-    return options;
-  }, [currentGap, currentTimeBucket, freeGaps, recommendationState]);
-
-  const selectedCategoryOptions = useMemo(() => recommendationCatalog.filter((option) => option.category === selectedRecommendationCategory && option.status === 'open'), [recommendationCatalog, selectedRecommendationCategory]);
-  const laterOptions = useMemo(() => recommendationCatalog.filter((option) => option.category === selectedRecommendationCategory && option.status === 'postponed'), [recommendationCatalog, selectedRecommendationCategory]);
-  const recommendationFeedback = useMemo(() => {
-    const feedback = {};
-    recommendationCatalog.forEach((option) => {
-      if (option.actionType === 'task') feedback[option.id] = 'Will be added as a Today task';
-      else if (option.suggestedGap && option.suggestedGap.duration >= option.selectedDuration) feedback[option.id] = `Will be scheduled at ${formatMinutesToTime(option.suggestedGap.start)}–${formatMinutesToTime(option.suggestedGap.start + option.selectedDuration)}`;
-      else if (option.actionType === 'both') feedback[option.id] = 'No valid slot → will be added as task only';
-      else feedback[option.id] = 'No valid slot → will stay in Later';
-    });
-    return feedback;
-  }, [recommendationCatalog]);
-
-  const topRecommendation = useMemo(() => recommendationCatalog.find((option) => option.status === 'open') || null, [recommendationCatalog]);
-  const keyStatus = `${activeTasks.length} active tasks · ${doneTasks.length} done today`;
-
-  const writeHistoryEntry = (task, completedAt) => {
-    setCompletedHistory((currentHistory) => {
-      const entriesForDate = currentHistory[task.date] || [];
-      if (entriesForDate.some((entry) => entry.taskId === task.id)) return currentHistory;
-      const durationMinutes = task.startedAt ? Math.max(toMinutes(completedAt) - toMinutes(task.startedAt), 0) : null;
-      return { ...currentHistory, [task.date]: [...entriesForDate, { id: `history-${task.id}`, taskId: task.id, title: task.title, startedAt: task.startedAt, completedAt, durationMinutes, blockId: task.blockId }] };
-    });
-  };
-  const removeHistoryEntry = (task) => setCompletedHistory((currentHistory) => ({ ...currentHistory, [task.date]: (currentHistory[task.date] || []).filter((entry) => entry.taskId !== task.id) }));
-
-  const findSlotForDuration = (duration, fromNow = false) => {
-    const candidateGaps = freeGaps.map((gap) => {
-      if (!fromNow || currentMinutes < gap.start) return gap;
-      if (gap.start <= currentMinutes && currentMinutes < gap.end) return { start: currentMinutes, end: gap.end, duration: gap.end - currentMinutes };
-      return gap;
-    });
-    const gap = candidateGaps.find((item) => item.duration >= duration);
-    if (!gap) return null;
-    return { start: formatMinutesToTime(gap.start), end: formatMinutesToTime(gap.start + duration) };
-  };
-
-  const createScheduledBlock = ({ id, label, type, duration, taskId, forceNow = false, slotMinutes = null }) => {
-    const slot = slotMinutes !== null
-      ? (canPlaceDurationAtMinutes(slotMinutes, duration)
-          ? { start: formatMinutesToTime(slotMinutes), end: formatMinutesToTime(slotMinutes + duration) }
-          : null)
-      : forceNow
-        ? (() => {
-            const end = currentMinutes + duration;
-            const overlaps = todayScheduleBlocks.some((block) => currentMinutes < toMinutes(block.end) && end > toMinutes(block.start));
-            if (overlaps) return null;
-            return { start: formatMinutesToTime(currentMinutes), end: formatMinutesToTime(end) };
-          })()
-        : findSlotForDuration(duration);
-    if (!slot) return null;
-    const block = { id, date, label, type, start: slot.start, end: slot.end, fixed: false, taskId: taskId || null };
-    setScheduleBlocks((currentBlocks) => currentBlocks.some((item) => item.id === id) ? currentBlocks : [...currentBlocks, block].sort((a, b) => `${a.date}-${a.start}`.localeCompare(`${b.date}-${b.start}`)));
-    return block;
-  };
-
-  const markRecommendationStatus = (optionId, status) => {
-    setRecommendationState((current) => ({ ...current, [optionId]: { ...(current[optionId] || {}), selectedDuration: current[optionId]?.selectedDuration || recommendationCatalog.find((item) => item.id === optionId)?.selectedDuration, status } }));
-  };
-
-  const completeTaskById = (taskId) => {
-    const completionTime = currentTime;
-    setDailyTasks((currentTasks) => currentTasks.map((task) => {
-      if (task.id !== taskId) return task;
-      const updatedTask = { ...task, status: 'done', completedAt: completionTime };
-      writeHistoryEntry(updatedTask, completionTime);
-      return updatedTask;
-    }));
-    if (activeTaskId === taskId) setActiveTaskId(null);
-  };
-
-  const handleToggleTask = (taskId) => {
-    const task = dailyTasks.find((item) => item.id === taskId);
-    if (!task) return;
-    if (task.status === 'done') {
-      setDailyTasks((currentTasks) => currentTasks.map((item) => item.id === taskId ? { ...item, status: 'active', completedAt: null } : item));
-      removeHistoryEntry(task);
-    } else completeTaskById(taskId);
-  };
-
-  const handleMoveTask = (taskId, direction) => {
-    setDailyTasks((currentTasks) => {
-      const todayIndexes = currentTasks.map((task, index) => ({ task, index })).filter(({ task }) => task.date === date && task.status === 'active');
-      const currentPosition = todayIndexes.findIndex(({ task }) => task.id === taskId);
-      const nextPosition = currentPosition + direction;
-      if (currentPosition < 0 || nextPosition < 0 || nextPosition >= todayIndexes.length) return currentTasks;
-      return moveItem(currentTasks, todayIndexes[currentPosition].index, todayIndexes[nextPosition].index);
-    });
-  };
-
-  const handleSelectTask = (taskId) => {
-    setActiveTaskId(taskId);
-    const task = dailyTasks.find((item) => item.id === taskId);
-    if (task?.blockId) setActiveBlockId(task.blockId);
-    setFocusMode(true);
-    setDailyTasks((currentTasks) => currentTasks.map((taskItem) => taskItem.id === taskId && taskItem.startedAt === null ? { ...taskItem, startedAt: currentTime } : taskItem));
-  };
-
-  const handleStartNowTask = (taskId) => {
-    const task = dailyTasks.find((item) => item.id === taskId);
-    if (!task) return;
-    const duration = task.durationMinutes || 30;
-    const blockId = task.blockId || `task-block-${taskId}`;
-    const block = createScheduledBlock({ id: blockId, label: task.title, type: 'work', duration, taskId, forceNow: true });
-    if (!block) { setTaskFeedback((current) => ({ ...current, [taskId]: 'No free slot right now' })); return; }
-    setDailyTasks((currentTasks) => currentTasks.map((item) => item.id === taskId ? { ...item, blockId, startedAt: item.startedAt || currentTime, durationMinutes: duration } : item));
-    setTaskFeedback((current) => ({ ...current, [taskId]: `Started now · ${block.start}–${block.end}` }));
-    setActiveTaskId(taskId);
-    setActiveBlockId(blockId);
-    setFocusMode(true);
-  };
-
-  const handleScheduleTask = (taskId, slotMinutes = null) => {
-    const task = dailyTasks.find((item) => item.id === taskId);
-    if (!task) return false;
-    const duration = task.durationMinutes || 30;
-    const blockId = task.blockId || `task-block-${taskId}`;
-    const block = createScheduledBlock({ id: blockId, label: task.title, type: 'work', duration, taskId, forceNow: false, slotMinutes });
-    if (!block) {
-      setTaskFeedback((current) => ({ ...current, [taskId]: slotMinutes !== null ? 'Invalid drop target' : 'No valid free gap available' }));
-      return false;
     }
-    setDailyTasks((currentTasks) => currentTasks.map((item) => item.id === taskId ? { ...item, blockId, durationMinutes: duration } : item));
-    setTaskFeedback((current) => ({ ...current, [taskId]: `Scheduled at ${block.start}–${block.end}` }));
-    return true;
-  };
 
-  const handleStartBlock = () => {
-    setActivePage('today');
-    const duration = 30;
-    const block = createScheduledBlock({ id: `manual-block-${Date.now()}`, label: 'Focused Work', type: 'work', duration, forceNow: true });
-    if (!block) return;
-    setActiveBlockId(block.id);
-    setActiveTaskId(null);
-    setFocusMode(true);
-  };
+    projects
+      .filter((p) => p.status === 'active' && p.id !== focusProjectId)
+      .forEach((p) => {
+        items.push({
+          id: `rec-${p.id}`,
+          projectId: p.id,
+          isFocusProject: false,
+          title: `Work on ${p.name}`,
+          description: p.nextAction,
+          duration: 45,
+          minDuration: 20,
+          maxDuration: 90,
+          step: 15,
+          actionType: 'schedule',
+          group: 'project',
+          groupLabel: p.name,
+          category: p.name,
+        });
+      });
 
-  const handleAddBlock = () => {
-    const block = createScheduledBlock({ id: `manual-block-${Date.now()}`, label: 'Manual Block', type: 'work', duration: 30, forceNow: false });
-    if (!block) return;
-    setActiveBlockId(block.id);
-    setTaskFeedback((current) => ({ ...current, __global: `Added block ${block.start}–${block.end}` }));
-  };
+    return items.map((item) => {
+      const bestGap = freeGaps.find((g) => g.duration >= item.duration) || currentGap;
+      const fitScore = (bestGap ? Math.abs(bestGap.duration - item.duration) : 9999)
+        + (item.isFocusProject ? -500 : 0);
+      return {
+        ...item,
+        selectedDuration: item.duration,
+        status: 'open',
+        suggestedGap: bestGap,
+        suggestedLabel: bestGap
+          ? `${formatMinutesToTime(bestGap.start)}–${formatMinutesToTime(bestGap.start + item.duration)}`
+          : null,
+        fitScore,
+      };
+    }).sort((a, b) => a.fitScore - b.fitScore);
+  }, [currentGap, currentMinutes, focusProjectId, freeGaps, projects, stopWork]);
 
-  const handleRemoveBlock = (blockId) => {
-    setScheduleBlocks((currentBlocks) => currentBlocks.filter((block) => block.id !== blockId));
-    setDailyTasks((currentTasks) => currentTasks.map((task) => task.blockId === blockId ? { ...task, blockId: null } : task));
-    if (activeBlockId === blockId) setActiveBlockId(null);
-  };
+  // ── DnD handlers ──────────────────────────────────────────────────────────
+  const handleDragStart = useCallback((blockId) => setDraggedBlockId(blockId), []);
+  const handleDragEnd = useCallback(() => { setDraggedBlockId(null); setDragOverMinutes(null); }, []);
 
-  const handleExitFocus = () => {
-    setFocusMode(false);
-    setActiveBlockId(null);
-    setActiveTaskId(null);
-  };
-
-  const handleExtendActiveBlock = () => {
-    if (!activeBlockId) return;
-    setScheduleBlocks((currentBlocks) => currentBlocks.map((block) => {
-      if (block.id !== activeBlockId) return block;
-      const proposedEnd = toMinutes(block.end) + 10;
-      const overlaps = currentBlocks.some((other) => other.id !== block.id && block.date === other.date && toMinutes(other.start) < proposedEnd && toMinutes(other.end) > toMinutes(block.end));
-      if (overlaps) return block;
-      return { ...block, end: formatMinutesToTime(proposedEnd) };
-    }));
-  };
-
-  const handleCompleteActiveTask = () => {
-    if (activeTask) completeTaskById(activeTask.id);
-  };
-
-  const handleAdjustRecommendationDuration = (optionId, direction) => {
-    const option = recommendationCatalog.find((item) => item.id === optionId);
-    if (!option) return;
-    setRecommendationState((current) => {
-      const previous = current[optionId] || {};
-      const currentDuration = previous.selectedDuration || option.selectedDuration;
-      const nextDuration = Math.max(option.minDuration, Math.min(option.maxDuration, currentDuration + direction * option.step));
-      return { ...current, [optionId]: { ...previous, selectedDuration: nextDuration, status: previous.status || 'open' } };
-    });
-  };
-
-  const createTaskFromOption = (option, blockId = null, started = null) => {
-    const taskId = `accepted-task-${option.id}`;
-    setDailyTasks((currentTasks) => currentTasks.some((task) => task.id === taskId) ? currentTasks : [...currentTasks, { id: taskId, date, title: option.title, status: 'active', blockId, sourceWeeklyTaskId: null, startedAt: started, completedAt: null, durationMinutes: option.selectedDuration }]);
-    return taskId;
-  };
-
-  const handleAcceptRecommendation = (optionId) => {
-    const option = recommendationCatalog.find((item) => item.id === optionId);
-    if (!option) return;
-    let block = null;
-    let taskId = null;
-    if (option.actionType === 'task' || option.actionType === 'both') taskId = createTaskFromOption(option, null, null);
-    if (option.actionType === 'schedule' || option.actionType === 'both') block = createScheduledBlock({ id: `accepted-block-${option.id}`, label: option.title, type: option.group === 'department' ? 'work' : option.blockType, duration: option.selectedDuration, taskId, forceNow: false });
-    if (block && taskId) setDailyTasks((currentTasks) => currentTasks.map((task) => task.id === taskId ? { ...task, blockId: block.id } : task));
-    if (option.actionType === 'schedule' && !block) { markRecommendationStatus(optionId, 'postponed'); return; }
-    if (option.actionType === 'both' && !block && !taskId) { markRecommendationStatus(optionId, 'postponed'); return; }
-    markRecommendationStatus(optionId, 'accepted');
-  };
-
-  const handleStartNowRecommendation = (optionId) => {
-    const option = recommendationCatalog.find((item) => item.id === optionId);
-    if (!option) return;
-    const maybeTaskId = option.actionType === 'task' || option.actionType === 'both' ? `accepted-task-${option.id}` : null;
-    const block = createScheduledBlock({ id: `accepted-block-${option.id}`, label: option.title, type: option.group === 'department' ? 'work' : option.blockType, duration: option.selectedDuration, taskId: maybeTaskId, forceNow: true });
-    if (!block && option.actionType === 'schedule') { markRecommendationStatus(optionId, 'postponed'); return; }
-    let taskId = null;
-    if (option.actionType === 'task' || option.actionType === 'both') taskId = createTaskFromOption(option, block?.id || null, currentTime);
-    if (block && taskId) setScheduleBlocks((currentBlocks) => currentBlocks.map((item) => item.id === block.id ? { ...item, taskId } : item));
-    setActiveTaskId(taskId);
-    setActiveBlockId(block?.id || null);
-    setFocusMode(true);
-    markRecommendationStatus(optionId, 'accepted');
-  };
-
-  const handleDeclineRecommendation = (optionId) => markRecommendationStatus(optionId, 'declined');
-  const handlePostponeRecommendation = (optionId) => markRecommendationStatus(optionId, 'postponed');
-
-  const handleTaskDragStart = (taskId) => setDraggedTaskId(taskId);
-  const handleTaskDragEnd = () => {
-    setDraggedTaskId(null);
-    setDragOverMinutes(null);
-  };
-
-  const canDropTaskAtMinutes = (taskId, slotMinutes) => {
-    const task = dailyTasks.find((item) => item.id === taskId);
-    if (!task) return false;
-    const duration = task.durationMinutes || 30;
-    return canPlaceDurationAtMinutes(slotMinutes, duration);
-  };
-
-  const handleTimelineDragOver = (slotMinutes) => {
-    if (!draggedTaskId) return false;
+  const handleTimelineDragOver = useCallback((slotMinutes) => {
     setDragOverMinutes(slotMinutes);
-    return canDropTaskAtMinutes(draggedTaskId, slotMinutes);
-  };
+    return false; // planner blocks are fixed in this model — DnD moves within PlannerBlocksPanel
+  }, []);
 
-  const handleTimelineDragLeave = () => setDragOverMinutes(null);
+  const handleTimelineDragLeave = useCallback(() => setDragOverMinutes(null), []);
+  const handleTimelineDrop = useCallback(() => { setDraggedBlockId(null); setDragOverMinutes(null); return false; }, []);
 
-  const handleTimelineDrop = (slotMinutes) => {
-    if (!draggedTaskId) return false;
-    const didSchedule = handleScheduleTask(draggedTaskId, slotMinutes);
-    setDraggedTaskId(null);
-    setDragOverMinutes(null);
-    return didSchedule;
-  };
+  // ── Focus mode controls ───────────────────────────────────────────────────
+  const handleStartBlock = useCallback(() => { setActivePage('today'); setFocusMode(true); }, []);
+  const handleExitFocus = useCallback(() => { setFocusMode(false); setActiveBlockId(null); }, []);
 
+  // ── Page rendering ─────────────────────────────────────────────────────────
+  const focusProject = useMemo(() =>
+    focusProjectId ? projects.find((p) => p.id === focusProjectId) ?? null : null,
+    [focusProjectId, projects]
+  );
+
+  const todayTasks = useMemo(() => getTasksForDate(date), [date, getTasksForDate]);
+  const openTodayCount = useMemo(() => todayTasks.filter((t) => t.status !== 'done' && t.status !== 'cancelled').length, [todayTasks]);
+  const doneTodayCount = useMemo(() => todayTasks.filter((t) => t.status === 'done').length, [todayTasks]);
+  const focusTasks = useMemo(() => focusProjectId ? getTasksForProject(focusProjectId) : [], [focusProjectId, getTasksForProject]);
+  const recentLog = useMemo(() =>
+    focusProjectId
+      ? activityLog.filter((e) => e.projectId === focusProjectId).slice(0, 5)
+      : activityLog.slice(0, 5),
+    [activityLog, focusProjectId]
+  );
+
+  const quickLogPanel = useMemo(() => (
+    <QuickLogInput
+      focusProject={focusProject}
+      addEntry={addLogEntry}
+      recentEntries={recentLog}
+      compact
+    />
+  ), [focusProject, addLogEntry, recentLog]);
+
+  const plannerPanel = useMemo(() => (
+    <PlannerBlocksPanel
+      date={date}
+      plannerBlocks={getPlannerBlocks(date)}
+      addBlock={addPlannerBlock}
+      updateBlock={updatePlannerBlock}
+      removeBlock={removePlannerBlock}
+      stopWork={stopWork}
+      setStopWork={setStopWork}
+    />
+  ), [date, getPlannerBlocks, addPlannerBlock, updatePlannerBlock, removePlannerBlock, stopWork, setStopWork]);
+
+  const taskPanel = useMemo(() => (
+    <TaskEnginePanel
+      date={date}
+      tasks={todayTasks}
+      focusProject={focusProject}
+      focusTasks={focusTasks}
+      addTask={addTask}
+      setTaskStatus={setTaskStatus}
+      updateTask={updateTask}
+      removeTask={removeTask}
+    />
+  ), [addTask, date, focusProject, focusTasks, removeTask, setTaskStatus, todayTasks, updateTask]);
+
+  const dashLogPanel = useMemo(() => (
+    <QuickLogInput
+      focusProject={focusProject}
+      addEntry={addLogEntry}
+      recentEntries={recentLog}
+    />
+  ), [addLogEntry, focusProject, recentLog]);
+
+  // ── Route ─────────────────────────────────────────────────────────────────
   const pageContent = useMemo(() => {
-    const commonProps = { primaryAction: nexusData.primaryAction, tracking: nexusData.tracking, date, viewMode, activePage, currentBlock: timelineState.currentBlock, nextBlock: timelineState.nextBlock };
     switch (activePage) {
       case 'today':
-        return <TodayPage page={nexusData.pages.today} activeTasks={tasksWithBlockMeta} doneTasks={doneTasks} onToggleTask={handleToggleTask} onMoveTask={handleMoveTask} onStartNowTask={handleStartNowTask} onScheduleTask={handleScheduleTask} onCompleteTask={completeTaskById} taskFeedback={taskFeedback} onSelectTask={handleSelectTask} scheduleBlocks={timelineState.normalizedBlocks} currentTime={currentTime} currentBlock={timelineState.currentBlock} nextBlock={timelineState.nextBlock} activeBlock={timelineState.currentBlock || todayScheduleBlocks.find((block) => block.id === activeBlockId) || null} recommendationCategories={nexusData.recommendationCategories} selectedRecommendationCategory={selectedRecommendationCategory} recommendationOptions={selectedCategoryOptions} laterRecommendationOptions={laterOptions} recommendationFeedback={recommendationFeedback} onSelectRecommendationCategory={setSelectedRecommendationCategory} onAdjustRecommendationDuration={handleAdjustRecommendationDuration} onStartNowRecommendation={handleStartNowRecommendation} onAcceptRecommendation={handleAcceptRecommendation} onDeclineRecommendation={handleDeclineRecommendation} onPostponeRecommendation={handlePostponeRecommendation} focusMode={focusMode} activeTask={activeTask} timerDisplay={timerState.display} timerProgress={timerState.progress} onStartBlock={handleStartBlock} onAddBlock={handleAddBlock} onRemoveBlock={handleRemoveBlock} onExitFocus={handleExitFocus} onExtendActiveBlock={handleExtendActiveBlock} onCompleteActiveTask={handleCompleteActiveTask} draggedTaskId={draggedTaskId} dragOverMinutes={dragOverMinutes} canDropTaskAtMinutes={canDropTaskAtMinutes} onTaskDragStart={handleTaskDragStart} onTaskDragEnd={handleTaskDragEnd} onTimelineDragOver={handleTimelineDragOver} onTimelineDragLeave={handleTimelineDragLeave} onTimelineDrop={handleTimelineDrop} {...commonProps} />;
+        return (
+          <TodayPage
+            date={date}
+            currentTime={currentTime}
+            currentBlock={timelineState.currentBlock}
+            nextBlock={timelineState.nextBlock}
+            scheduleBlocks={timelineState.normalizedBlocks}
+            focusMode={focusMode}
+            activeBlock={timelineState.currentBlock || (activeBlockId ? todayScheduleBlocks.find((b) => b.id === activeBlockId) || null : null)}
+            timerDisplay={timerState.display}
+            timerProgress={timerState.progress}
+            recommendations={recommendationCatalog}
+            onStartBlock={handleStartBlock}
+            onExitFocus={handleExitFocus}
+            onAddBlock={addPlannerBlock}
+            onRemoveBlock={(blockId) => removePlannerBlock(date, blockId)}
+            draggedBlockId={draggedBlockId}
+            dragOverMinutes={dragOverMinutes}
+            canDropTaskAtMinutes={canPlaceDurationAtMinutes}
+            onTimelineDragOver={handleTimelineDragOver}
+            onTimelineDragLeave={handleTimelineDragLeave}
+            onTimelineDrop={handleTimelineDrop}
+            taskEnginePanel={taskPanel}
+            dayConstraintsPanel={plannerPanel}
+            quickLogPanel={quickLogPanel}
+            focusProjectId={focusProjectId}
+          />
+        );
       case 'weekly':
-        return <WeeklyPage page={nexusData.pages.weekly} weeklyTasks={weeklyTasks} {...commonProps} />;
+        return <WeeklyPage date={date} projects={projects} focusProjectId={focusProjectId} />;
       case 'history':
-        return <HistoryPage page={nexusData.pages.history} date={date} completedHistory={completedHistory} />;
-      case 'system':
-        return <SystemPage page={nexusData.pages.system} {...commonProps} />;
+        return <HistoryPage date={date} activityLog={activityLog} tasks={tasks} />;
       case 'nexus-department':
-        return <DepartmentPage
-          departmentId="nexus"
-          departments={departments}
-          projects={projects}
-          getDepartment={getDepartment}
-          updateProject={updateProject}
-          focusProjectId={focusProjectId}
-          setFocusProject={setFocusProject}
-          date={date}
-          fallbackPage={nexusData.pages.departments.nexus}
-        />;
+        return (
+          <DepartmentPage
+            departmentId="nexus"
+            departments={departments}
+            projects={projects}
+            getDepartment={getDepartment}
+            updateProject={updateProject}
+            focusProjectId={focusProjectId}
+            setFocusProject={setFocusProject}
+            date={date}
+            fallbackPage={nexusData.pages.departments.nexus}
+          />
+        );
       case 'hephaestus':
-        return <DepartmentPage
-          departmentId="hephaestus"
-          departments={departments}
-          projects={projects}
-          getDepartment={getDepartment}
-          updateProject={updateProject}
-          focusProjectId={focusProjectId}
-          setFocusProject={setFocusProject}
-          date={date}
-          fallbackPage={nexusData.pages.departments.hephaestus}
-        />;
+        return (
+          <DepartmentPage
+            departmentId="hephaestus"
+            departments={departments}
+            projects={projects}
+            getDepartment={getDepartment}
+            updateProject={updateProject}
+            focusProjectId={focusProjectId}
+            setFocusProject={setFocusProject}
+            date={date}
+            fallbackPage={nexusData.pages.departments.hephaestus}
+          />
+        );
       case 'xenon':
-        return <DepartmentPage
-          departmentId="xenon"
-          departments={departments}
-          projects={projects}
-          getDepartment={getDepartment}
-          updateProject={updateProject}
-          focusProjectId={focusProjectId}
-          setFocusProject={setFocusProject}
-          date={date}
-          fallbackPage={nexusData.pages.departments.xenon}
-        />;
+        return (
+          <DepartmentPage
+            departmentId="xenon"
+            departments={departments}
+            projects={projects}
+            getDepartment={getDepartment}
+            updateProject={updateProject}
+            focusProjectId={focusProjectId}
+            setFocusProject={setFocusProject}
+            date={date}
+            fallbackPage={nexusData.pages.departments.xenon}
+          />
+        );
       case 'dashboard':
       default:
-        return <DashboardPage dashboard={nexusData.dashboard} openRecommendation={topRecommendation} weeklyGoal={nexusData.pages.weekly.priority} keyStatus={keyStatus} {...commonProps} />;
+        return (
+          <DashboardPage
+            date={date}
+            projects={projects}
+            departments={departments}
+            focusProjectId={focusProjectId}
+            getDepartment={getDepartment}
+            todayTaskCount={openTodayCount}
+            doneTodayCount={doneTodayCount}
+            onNavigate={setActivePage}
+            logPanel={dashLogPanel}
+          />
+        );
     }
-  }, [activePage, activeBlockId, activeTask, clearFocusProject, currentTime, date, departments, doneTasks, focusMode, focusProjectId, getDepartment, keyStatus, laterOptions, projects, recommendationFeedback, selectedCategoryOptions, selectedRecommendationCategory, setFocusProject, taskFeedback, timerState.display, timerState.progress, timelineState.currentBlock, timelineState.nextBlock, timelineState.normalizedBlocks, todayScheduleBlocks, topRecommendation, tasksWithBlockMeta, updateProject, viewMode, weeklyTasks, completedHistory]);
+  }, [
+    activePage, activityLog, activeBlockId, addPlannerBlock, canPlaceDurationAtMinutes,
+    currentTime, date, departments, doneTodayCount, draggedBlockId, dragOverMinutes,
+    focusMode, focusProjectId, getDepartment, handleExitFocus, handleStartBlock,
+    handleTimelineDragLeave, handleTimelineDragOver, handleTimelineDrop,
+    openTodayCount, plannerPanel, projects, quickLogPanel, recommendationCatalog,
+    removePlannerBlock, setFocusProject, dashLogPanel, taskPanel, tasks,
+    timerState.display, timerState.progress, timelineState.currentBlock,
+    timelineState.nextBlock, timelineState.normalizedBlocks, todayScheduleBlocks,
+    updateProject,
+  ]);
 
-  const appClassName = [viewMode === 'focus' ? 'app-shell focus-mode' : 'app-shell'];
-  if (focusMode) appClassName.push('today-focus-active');
+  // ── Context values ─────────────────────────────────────────────────────────
+  const projectsContextValue = useMemo(() => ({
+    projects, departments, updateProject, getProject, getDepartment,
+    focusProjectId, setFocusProject, clearFocusProject,
+    tasks, addTask, updateTask, setTaskStatus, removeTask, getTasksForProject,
+    activityLog, addLogEntry, getProjectLog,
+  }), [
+    projects, departments, updateProject, getProject, getDepartment,
+    focusProjectId, setFocusProject, clearFocusProject,
+    tasks, addTask, updateTask, setTaskStatus, removeTask, getTasksForProject,
+    activityLog, addLogEntry, getProjectLog,
+  ]);
 
-  const dragDropValue = {
-    draggedTaskId,
+  const dragDropValue = useMemo(() => ({
+    draggedTaskId: draggedBlockId,
     dragOverMinutes,
-    canDropTaskAtMinutes,
-    onTaskDragStart: handleTaskDragStart,
-    onTaskDragEnd: handleTaskDragEnd,
+    canDropTaskAtMinutes: canPlaceDurationAtMinutes,
+    onTaskDragStart: handleDragStart,
+    onTaskDragEnd: handleDragEnd,
     onTimelineDragOver: handleTimelineDragOver,
     onTimelineDragLeave: handleTimelineDragLeave,
     onTimelineDrop: handleTimelineDrop,
-  };
+  }), [draggedBlockId, dragOverMinutes, canPlaceDurationAtMinutes, handleDragStart, handleDragEnd, handleTimelineDragOver, handleTimelineDragLeave, handleTimelineDrop]);
 
-  const projectsContextValue = useMemo(() => ({
-    projects,
-    departments,
-    updateProject,
-    getProject,
-    getDepartment,
-    focusProjectId,
-    setFocusProject,
-    clearFocusProject,
-  }), [projects, departments, updateProject, getProject, getDepartment, focusProjectId, setFocusProject, clearFocusProject]);
+  const appClass = ['app-shell', theme].join(' ');
 
   return (
     <ProjectsContext.Provider value={projectsContextValue}>
       <DragDropContext.Provider value={dragDropValue}>
-        <div className={appClassName.join(' ')}>
-          <Sidebar navigation={nexusData.navigation} activePage={activePage} viewMode={viewMode} onNavigate={setActivePage} onViewChange={setViewMode} />
-          <main className="main-shell">{pageContent}</main>
+        <div className={appClass}>
+          <Sidebar
+            navigation={nexusData.navigation}
+            activePage={activePage}
+            viewMode="overview"
+            onNavigate={setActivePage}
+            onViewChange={() => {}}
+          />
+          <main className="main-shell">
+            <div className="app-theme-toggle-wrapper">
+              <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
+            </div>
+            {pageContent}
+          </main>
         </div>
       </DragDropContext.Provider>
     </ProjectsContext.Provider>

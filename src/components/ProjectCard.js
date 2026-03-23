@@ -3,20 +3,29 @@ import { useState, useCallback } from 'react';
 /**
  * ProjectCard
  *
- * Displays a single project with:
- *   - name, department label, status, phase, priority, lastUpdated (read-only)
- *   - currentState and nextAction (inline editable, persisted via updateProject)
+ * Displays a single project with full operational controls:
  *
- * Editing is local-first: changes live in component state until the user
- * saves explicitly (Save button). This avoids persisting every keystroke
- * and keeps the hook call surface small.
+ * Phase 4:
+ *   - name, department label, status, phase, priority, lastUpdated (read)
+ *   - currentState and nextAction (inline editable)
+ *
+ * Phase 5:
+ *   - status controls: active | paused | blocked | completed
+ *   - priority controls: critical | high | normal
+ *   - focus project: set this project as the active focus (persisted)
  *
  * Props:
- *   project         — project object from useProjects
- *   departmentLabel — human label for the owning department (e.g. "03_HEPHAESTUS")
- *   updateProject   — updateProject(id, updates) from useProjects
+ *   project          — project object from useProjects
+ *   departmentLabel  — human label for the owning department
+ *   updateProject    — updateProject(id, updates) from useProjects
+ *   isFocus          — boolean: is this the current focus project?
+ *   setFocusProject  — setFocusProject(id) from useFocusProject (via context)
  */
-function ProjectCard({ project, departmentLabel, updateProject }) {
+
+const STATUS_OPTIONS = ['active', 'paused', 'blocked', 'completed'];
+const PRIORITY_OPTIONS = ['critical', 'high', 'normal'];
+
+function ProjectCard({ project, departmentLabel, updateProject, isFocus, setFocusProject }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState({
     currentState: project.currentState,
@@ -24,7 +33,8 @@ function ProjectCard({ project, departmentLabel, updateProject }) {
   });
   const [saved, setSaved] = useState(false);
 
-  // Reset draft to current persisted values and exit editing mode.
+  // ── Text field editing ──────────────────────────────────────────────────────
+
   const handleCancel = useCallback(() => {
     setDraft({
       currentState: project.currentState,
@@ -34,7 +44,6 @@ function ProjectCard({ project, departmentLabel, updateProject }) {
     setSaved(false);
   }, [project.currentState, project.nextAction]);
 
-  // Persist draft to localStorage via updateProject hook.
   const handleSave = useCallback(() => {
     const trimmed = {
       currentState: draft.currentState.trim(),
@@ -44,32 +53,65 @@ function ProjectCard({ project, departmentLabel, updateProject }) {
     updateProject(project.id, trimmed);
     setEditing(false);
     setSaved(true);
-    // Clear the saved indicator after 2 seconds.
     setTimeout(() => setSaved(false), 2000);
   }, [draft, project.id, updateProject]);
 
-  const statusClass = `project-status-badge project-status-${project.status}`;
+  // ── Status control ──────────────────────────────────────────────────────────
+
+  const handleStatusChange = useCallback((status) => {
+    updateProject(project.id, { status });
+  }, [project.id, updateProject]);
+
+  // ── Priority control ────────────────────────────────────────────────────────
+
+  const handlePriorityChange = useCallback((priority) => {
+    updateProject(project.id, { priority });
+  }, [project.id, updateProject]);
+
+  // ── Focus project ───────────────────────────────────────────────────────────
+
+  const handleSetFocus = useCallback(() => {
+    setFocusProject(project.id);
+  }, [project.id, setFocusProject]);
+
+  // ── Render ──────────────────────────────────────────────────────────────────
+
+  const statusBadgeClass = `project-status-badge project-status-${project.status}`;
 
   return (
-    <div className="project-card">
+    <div className={`project-card${isFocus ? ' project-card-is-focus' : ''}`}>
 
-      {/* Header row — name + status badge */}
+      {/* Header — name, status badge, focus indicator, edit button */}
       <div className="project-card-header">
         <div className="project-card-title-group">
           <span className="project-card-name">{project.name}</span>
-          <span className={statusClass}>{project.status.toUpperCase()}</span>
+          <span className={statusBadgeClass}>{project.status.toUpperCase()}</span>
+          {isFocus && (
+            <span className="project-focus-indicator">● FOCUS</span>
+          )}
         </div>
-        {!editing && (
-          <button
-            className="secondary-button project-card-edit-button"
-            onClick={() => { setEditing(true); setSaved(false); }}
-          >
-            Edit
-          </button>
-        )}
+        <div className="project-card-header-actions">
+          {!isFocus && (
+            <button
+              className="secondary-button project-card-focus-button"
+              onClick={handleSetFocus}
+              title="Set as active focus project"
+            >
+              Set Focus
+            </button>
+          )}
+          {!editing && (
+            <button
+              className="secondary-button project-card-edit-button"
+              onClick={() => { setEditing(true); setSaved(false); }}
+            >
+              Edit
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Meta row — department / phase / priority / last updated */}
+      {/* Meta — department / phase / priority / last updated */}
       <div className="project-card-meta">
         <span className="label">Department</span>
         <span className="project-meta-value">{departmentLabel}</span>
@@ -84,6 +126,40 @@ function ProjectCard({ project, departmentLabel, updateProject }) {
         <span className="project-meta-value">
           {new Date(project.lastUpdated).toLocaleString()}
         </span>
+      </div>
+
+      {/* Status controls */}
+      <div className="panel-group">
+        <h3>Status</h3>
+        <div className="project-control-row">
+          {STATUS_OPTIONS.map((s) => (
+            <button
+              key={s}
+              className={`project-control-button project-control-status-${s}${project.status === s ? ' is-active' : ''}`}
+              onClick={() => handleStatusChange(s)}
+              disabled={project.status === s}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Priority controls */}
+      <div className="panel-group">
+        <h3>Priority</h3>
+        <div className="project-control-row">
+          {PRIORITY_OPTIONS.map((p) => (
+            <button
+              key={p}
+              className={`project-control-button project-control-priority-${p}${project.priority === p ? ' is-active' : ''}`}
+              onClick={() => handlePriorityChange(p)}
+              disabled={project.priority === p}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Current State */}
@@ -118,23 +194,16 @@ function ProjectCard({ project, departmentLabel, updateProject }) {
         )}
       </div>
 
-      {/* Edit controls */}
+      {/* Edit save/cancel */}
       {editing && (
         <div className="project-card-actions">
-          <button className="primary-action-button" onClick={handleSave}>
-            Save
-          </button>
-          <button className="secondary-button" onClick={handleCancel}>
-            Cancel
-          </button>
+          <button className="primary-action-button" onClick={handleSave}>Save</button>
+          <button className="secondary-button" onClick={handleCancel}>Cancel</button>
         </div>
       )}
 
-      {/* Saved confirmation */}
       {saved && !editing && (
-        <div className="project-card-saved-indicator">
-          ✓ Saved
-        </div>
+        <div className="project-card-saved-indicator">✓ Saved</div>
       )}
 
     </div>

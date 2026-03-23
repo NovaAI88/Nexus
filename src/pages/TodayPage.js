@@ -1,173 +1,126 @@
 import PageContainer from '../components/PageContainer';
-import PrimaryActionPanel from '../components/PrimaryActionPanel';
 import TimelinePanel from '../components/TimelinePanel';
-import TodayPanel from '../components/TodayPanel';
-import DoneTodayPanel from '../components/DoneTodayPanel';
-import RecommendationsPanel from '../components/RecommendationsPanel';
-import WeeklyPriorityPanel from '../components/WeeklyPriorityPanel';
-import PhaseProgressPanel from '../components/PhaseProgressPanel';
 import BlockSummaryPanel from '../components/BlockSummaryPanel';
 
+/**
+ * TodayPage — Phase 8.75
+ *
+ * Props provided by App.js (new clean surface):
+ *   date, currentTime, currentBlock, nextBlock, scheduleBlocks
+ *   focusMode, activeBlock, timerDisplay, timerProgress
+ *   recommendations             — project-aware rec array
+ *   onStartBlock, onExitFocus
+ *   onAddBlock, onRemoveBlock   — planner block controls
+ *   draggedBlockId, dragOverMinutes, canDropTaskAtMinutes
+ *   onTimelineDragOver, onTimelineDragLeave, onTimelineDrop
+ *   taskEnginePanel             — <TaskEnginePanel />
+ *   dayConstraintsPanel         — <PlannerBlocksPanel />
+ *   quickLogPanel               — <QuickLogInput compact />
+ *   focusProjectId
+ */
 function TodayPage({
-  page,
-  primaryAction,
-  tracking,
   date,
-  activeTasks,
-  doneTasks,
-  onToggleTask,
-  onMoveTask,
-  onStartNowTask,
-  onScheduleTask,
-  onCompleteTask,
-  taskFeedback,
-  scheduleBlocks,
   currentTime,
   currentBlock,
   nextBlock,
-  activeBlock,
-  recommendationCategories,
-  selectedRecommendationCategory,
-  recommendationOptions,
-  laterRecommendationOptions,
-  recommendationFeedback,
-  onSelectRecommendationCategory,
-  onAdjustRecommendationDuration,
-  onStartNowRecommendation,
-  onAcceptRecommendation,
-  onDeclineRecommendation,
-  onPostponeRecommendation,
+  scheduleBlocks,
   focusMode,
-  activeTask,
+  activeBlock,
   timerDisplay,
   timerProgress,
+  recommendations,
   onStartBlock,
+  onExitFocus,
   onAddBlock,
   onRemoveBlock,
-  onSelectTask,
-  onExitFocus,
-  onExtendActiveBlock,
-  onCompleteActiveTask,
+  draggedBlockId,
+  dragOverMinutes,
+  canDropTaskAtMinutes,
+  onTimelineDragOver,
+  onTimelineDragLeave,
+  onTimelineDrop,
+  taskEnginePanel,
+  dayConstraintsPanel,
+  quickLogPanel,
+  focusProjectId,
 }) {
-  const activeNowTitle = activeTask?.title || activeBlock?.label || 'No active block';
-  const activeNowMeta = activeBlock ? `${activeBlock.start}–${activeBlock.end}` : 'Start or schedule a block';
-  const activeNowSub = activeTask && activeBlock
-    ? `Linked to ${activeBlock.label}`
-    : activeBlock && !activeTask
-      ? 'Block active without linked task'
-      : 'No task or block is active right now';
+  const activeNowTitle = activeBlock?.label || 'No active block';
+  const activeNowMeta = activeBlock ? `${activeBlock.start}–${activeBlock.end}` : 'No block running';
+  const topRec = recommendations?.[0] ?? null;
 
   return (
-    <PageContainer
-      title={page.title}
-      subtitle={page.subtitle}
-      date={date}
-      primaryAction={<PrimaryActionPanel {...primaryAction} onStartBlock={onStartBlock} />}
-    >
-      <div className="today-workspace-shell">
-        <div className={focusMode ? 'today-three-zone-layout upgraded is-focus-mode' : 'today-three-zone-layout upgraded'}>
-          <aside className="today-zone timeline-zone">
-            <div className="today-column-scroll timeline-column-scroll">
-              <TimelinePanel
-                blocks={scheduleBlocks}
-                currentTime={currentTime}
-                currentBlockId={currentBlock?.id}
-                nextBlockId={nextBlock?.id}
-                onAddBlock={onAddBlock}
-                onRemoveBlock={onRemoveBlock}
-              />
+    <div className="today-workspace-shell">
+      <div className={`today-three-zone-layout upgraded${focusMode ? ' is-focus-mode' : ''}`}>
+
+        {/* ── Left: Timeline ─────────────────────────────────────────────── */}
+        <aside className="today-zone timeline-zone">
+          <div className="today-column-scroll timeline-column-scroll">
+            <TimelinePanel
+              blocks={scheduleBlocks}
+              currentTime={currentTime}
+              currentBlockId={currentBlock?.id}
+              nextBlockId={nextBlock?.id}
+              onAddBlock={onAddBlock}
+              onRemoveBlock={onRemoveBlock}
+            />
+          </div>
+        </aside>
+
+        {/* ── Center: Active Now + Tasks ──────────────────────────────────── */}
+        <section className="today-zone execution-zone">
+          {/* Active Now panel */}
+          <section className="active-now-panel">
+            <div className="active-now-header">
+              <span className="label">Active Now</span>
+              <div className="active-now-meta">
+                <span>{activeNowMeta}</span>
+                <strong className="active-now-time">{activeBlock ? timerDisplay : '--:--'}</strong>
+              </div>
             </div>
-          </aside>
-
-          <section className="today-zone work-zone execution-zone">
-            <section className="active-now-panel">
-              <div className="active-now-header">
-                <span className="label">Active Now</span>
-                <div className="active-now-meta">
-                  <span>{activeNowMeta}</span>
-                  <strong className="active-now-time">{activeBlock ? timerDisplay : '--:--'}</strong>
-                </div>
-              </div>
-              <h1 className="active-now-title">{activeNowTitle}</h1>
-              <div className="active-now-subtext">{activeNowSub}</div>
-              <div className="focus-progress-bar compact">
-                <div className="focus-progress-fill" style={{ width: `${activeBlock ? timerProgress : 0}%` }} />
-              </div>
-              <div className="active-now-controls">
-                <button className="secondary-button" onClick={onExitFocus}>Stop / Exit</button>
-                <button className="secondary-button" onClick={onExtendActiveBlock} disabled={!activeBlock}>Extend</button>
-                <button className="primary-action-button" onClick={onCompleteActiveTask} disabled={!activeTask}>Complete Task</button>
-              </div>
-            </section>
-
-            <div className="today-column-scroll center-column-scroll">
+            <h1 className="active-now-title">{activeNowTitle}</h1>
+            <div className="focus-progress-bar compact">
+              <div className="focus-progress-fill" style={{ width: `${activeBlock ? timerProgress : 0}%` }} />
+            </div>
+            <div className="active-now-controls">
               {focusMode ? (
-                <section className="focus-work-panel">
-                  <span className="label">Current Block</span>
-                  <div className="focus-block-line">
-                    <strong>{currentBlock ? currentBlock.label : 'No active block'}</strong>
-                    <span>{currentBlock ? `${currentBlock.start}–${currentBlock.end}` : '--:--'}</span>
-                  </div>
-                  <div className="focus-timer">{activeBlock ? timerDisplay : '00:00'}</div>
-                  <div className="focus-progress-bar">
-                    <div className="focus-progress-fill" style={{ width: `${activeBlock ? timerProgress : 0}%` }} />
-                  </div>
-                  <div className="panel-group">
-                    <h3>Active Task</h3>
-                    <p>{activeTask ? activeTask.title : activeBlock ? 'No linked task for this block.' : 'No active task selected.'}</p>
-                  </div>
-                  <div className="focus-controls">
-                    <button className="primary-action-button" onClick={onCompleteActiveTask} disabled={!activeTask}>
-                      Complete Task
-                    </button>
-                    <button className="secondary-button" onClick={onExitFocus}>
-                      Exit Focus
-                    </button>
-                  </div>
-                </section>
+                <button className="secondary-button" onClick={onExitFocus}>Exit Focus</button>
               ) : (
-                <TodayPanel
-                  tasks={activeTasks}
-                  focusBlocks={page.focusBlocks}
-                  onToggleTask={onToggleTask}
-                  onMoveTask={onMoveTask}
-                  onStartNowTask={onStartNowTask}
-                  onScheduleTask={onScheduleTask}
-                  onCompleteTask={onCompleteTask}
-                  taskFeedback={taskFeedback}
-                  onSelectTask={onSelectTask}
-                  activeTaskId={activeTask?.id}
-                />
+                <button className="primary-action-button" onClick={onStartBlock}>Start Block</button>
               )}
             </div>
           </section>
 
-          <aside className="today-zone intelligence-zone secondary-zone">
-            <div className="today-column-scroll right-column-scroll">
-              {!focusMode ? (
-                <RecommendationsPanel
-                  categories={recommendationCategories}
-                  selectedCategory={selectedRecommendationCategory}
-                  onSelectCategory={onSelectRecommendationCategory}
-                  options={recommendationOptions}
-                  laterOptions={laterRecommendationOptions}
-                  feedbackById={recommendationFeedback}
-                  onAdjustDuration={onAdjustRecommendationDuration}
-                  onStartNow={onStartNowRecommendation}
-                  onAccept={onAcceptRecommendation}
-                  onDecline={onDeclineRecommendation}
-                  onPostpone={onPostponeRecommendation}
-                />
-              ) : null}
-              <DoneTodayPanel items={doneTasks} onToggleTask={onToggleTask} />
-              {!focusMode ? <WeeklyPriorityPanel priority={primaryAction.weeklyPriority} outcomes={[]} /> : null}
-              {!focusMode ? <PhaseProgressPanel {...tracking.phaseProgress} /> : null}
-              {!focusMode ? <BlockSummaryPanel currentBlock={currentBlock} nextBlock={nextBlock} /> : null}
-            </div>
-          </aside>
-        </div>
+          {/* Task engine panel */}
+          <div className="today-column-scroll center-column-scroll">
+            {taskEnginePanel || null}
+
+            {/* Top recommendation (single-item push) */}
+            {!focusMode && topRec && (
+              <div className="today-rec-nudge">
+                <span className="label">Suggested</span>
+                <p className="today-rec-title">{topRec.title}</p>
+                {topRec.description && (
+                  <p className="today-rec-desc">{topRec.description}</p>
+                )}
+                {topRec.suggestedLabel && (
+                  <span className="today-rec-slot">{topRec.suggestedLabel}</span>
+                )}
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* ── Right: Quick Log + Planner + Block summary ──────────────────── */}
+        <aside className="today-zone intelligence-zone secondary-zone">
+          <div className="today-column-scroll right-column-scroll">
+            {quickLogPanel || null}
+            {dayConstraintsPanel || null}
+            <BlockSummaryPanel currentBlock={currentBlock} nextBlock={nextBlock} />
+          </div>
+        </aside>
+
       </div>
-    </PageContainer>
+    </div>
   );
 }
 

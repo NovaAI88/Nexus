@@ -970,3 +970,977 @@ p { margin: 0; line-height: 1.5; }
     grid-template-columns: auto 1fr;
   }
 }
+
+/* ─── Phase 5: Status / Priority controls + Focus project ──────────────────── */
+
+.project-card-is-focus {
+  border-color: var(--color-accent-line);
+  background: linear-gradient(180deg, rgba(107, 124, 255, 0.06), transparent 40%),
+    var(--color-surface-1);
+}
+
+.project-focus-indicator {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--color-accent);
+}
+
+.project-card-header-actions {
+  display: flex;
+  gap: var(--space-8);
+  flex-shrink: 0;
+  align-items: flex-start;
+}
+
+.project-card-focus-button {
+  padding: var(--space-4) var(--space-12);
+  font-size: 13px;
+}
+
+/* Control pill rows — status + priority */
+.project-control-row {
+  display: flex;
+  gap: var(--space-8);
+  flex-wrap: wrap;
+}
+
+.project-control-button {
+  border-radius: var(--radius-8);
+  padding: var(--space-4) var(--space-12);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  border: 1px solid var(--color-border-strong);
+  background: transparent;
+  color: var(--color-text-meta);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+.project-control-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-text-body);
+  transform: none;
+  filter: none;
+}
+
+/* Active (selected) state */
+.project-control-button.is-active {
+  cursor: default;
+  opacity: 1;
+}
+
+/* Status — active */
+.project-control-status-active.is-active {
+  background: rgba(80, 200, 120, 0.14);
+  border-color: rgba(80, 200, 120, 0.3);
+  color: #6fcf97;
+}
+/* Status — paused */
+.project-control-status-paused.is-active {
+  background: rgba(230, 180, 60, 0.12);
+  border-color: rgba(230, 180, 60, 0.28);
+  color: #e5c76b;
+}
+/* Status — blocked */
+.project-control-status-blocked.is-active {
+  background: var(--color-danger-soft);
+  border-color: rgba(184, 92, 108, 0.35);
+  color: #e08090;
+}
+/* Status — completed */
+.project-control-status-completed.is-active {
+  background: rgba(107, 124, 255, 0.1);
+  border-color: var(--color-accent-line);
+  color: #9aabff;
+}
+
+/* Priority — critical */
+.project-control-priority-critical.is-active {
+  background: rgba(220, 80, 80, 0.14);
+  border-color: rgba(220, 80, 80, 0.35);
+  color: #e89090;
+}
+/* Priority — high */
+.project-control-priority-high.is-active {
+  background: rgba(230, 180, 60, 0.12);
+  border-color: rgba(230, 180, 60, 0.28);
+  color: #e5c76b;
+}
+/* Priority — normal */
+.project-control-priority-normal.is-active {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--color-border-strong);
+  color: var(--color-text-body);
+}
+
+/* ─── Phase 6: DayConstraintsPanel ─────────────────────────────────────────── */
+
+.day-constraints-panel {
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-12);
+  padding: var(--space-16);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+.day-constraints-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.day-constraints-title {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-meta);
+}
+
+.constraint-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+}
+
+.constraint-row-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-size: 13px;
+  color: var(--color-text-body);
+  min-width: 0;
+}
+
+.constraint-icon {
+  font-size: 14px;
+  color: var(--color-text-meta);
+  flex-shrink: 0;
+}
+
+.constraint-disabled {
+  color: var(--color-text-meta);
+}
+
+.constraint-toggle {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--color-text-meta);
+  flex-shrink: 0;
+  transition: color var(--transition-fast);
+  line-height: 1;
+}
+.constraint-toggle.is-on {
+  color: var(--color-accent);
+}
+.constraint-toggle:hover:not(:disabled) {
+  transform: none;
+  filter: none;
+  color: var(--color-text-strong);
+}
+
+.constraint-time-input {
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-8);
+  color: var(--color-text-body);
+  padding: var(--space-4) var(--space-8);
+  font-size: 13px;
+  font-family: inherit;
+  width: 88px;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+.constraint-time-input:focus {
+  border-color: var(--color-accent-line);
+  color: var(--color-text-strong);
+}
+.constraint-time-input:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.constraint-time-range {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.constraint-range-sep {
+  font-size: 12px;
+  color: var(--color-text-meta);
+}
+
+.constraint-note {
+  font-size: 12px;
+  color: var(--color-text-meta);
+  margin: 0;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+/* ─── Phase 7: PlannerBlocksPanel ──────────────────────────────────────────── */
+
+.planner-blocks-panel {
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-12);
+  padding: var(--space-16);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-10);
+}
+
+.planner-blocks-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.planner-blocks-title {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-meta);
+}
+
+.planner-add-trigger {
+  font-size: 12px;
+  padding: var(--space-4) var(--space-8);
+}
+
+.planner-empty {
+  font-size: 12px;
+  color: var(--color-text-meta);
+  margin: 0;
+  padding: var(--space-8) 0;
+}
+
+/* Block row — view mode */
+.planner-block-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-12);
+  border-radius: var(--radius-8);
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-2);
+}
+.planner-block-row.is-editing {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-8);
+}
+
+.planner-block-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  min-width: 0;
+}
+
+.planner-type-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.planner-dot-work    { background: var(--color-accent); }
+.planner-dot-job     { background: #e5c76b; }
+.planner-dot-fitness { background: #6fcf97; }
+.planner-dot-life    { background: var(--color-text-meta); }
+.planner-dot-custom  { background: var(--color-text-meta); }
+
+.planner-block-label {
+  font-size: 13px;
+  color: var(--color-text-body);
+  font-weight: 500;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.planner-block-time {
+  font-size: 12px;
+  color: var(--color-text-meta);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.planner-block-controls {
+  display: flex;
+  gap: var(--space-4);
+  flex-shrink: 0;
+}
+
+/* Add form */
+.planner-add-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  padding: var(--space-12);
+  border-radius: var(--radius-8);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface-2);
+}
+.planner-add-row {
+  display: flex;
+  gap: var(--space-8);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.planner-type-select {
+  width: auto;
+  min-width: 80px;
+  background: var(--color-surface-3);
+}
+.planner-label-input {
+  flex: 1;
+  min-width: 80px;
+}
+
+.planner-block-actions {
+  display: flex;
+  gap: var(--space-8);
+}
+.planner-action-btn {
+  padding: var(--space-4) var(--space-12);
+  font-size: 12px;
+}
+
+/* Stop-work rule */
+.planner-stop-work {
+  border-top: 1px solid var(--color-border-subtle);
+  padding-top: var(--space-12);
+  margin-top: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+/* ─── Phase 8.5: Light theme variables ──────────────────────────────────────── */
+
+body.light {
+  color-scheme: light;
+  --color-bg: #f4f6fa;
+  --color-surface-1: #ffffff;
+  --color-surface-2: #f0f2f7;
+  --color-surface-3: #e8ecf4;
+  --color-surface-elevated: #ffffff;
+  --color-border-subtle: #dde2ec;
+  --color-border-strong: #c5ccd9;
+  --color-text-strong: #111827;
+  --color-text-body: #374151;
+  --color-text-meta: #6b7280;
+  --color-accent: #4f46e5;
+  --color-accent-soft: rgba(79, 70, 229, 0.10);
+  --color-accent-line: rgba(79, 70, 229, 0.35);
+  --color-danger: #dc2626;
+  --color-danger-soft: rgba(220, 38, 38, 0.10);
+  background: var(--color-bg);
+  color: var(--color-text-body);
+}
+
+body.light .app-shell {
+  background: var(--color-bg);
+}
+
+body.light .sidebar {
+  background: rgba(255, 255, 255, 0.95);
+  border-right-color: var(--color-border-subtle);
+}
+
+body.light .main-shell {
+  background: var(--color-bg);
+}
+
+body.light body {
+  background: var(--color-bg);
+}
+
+/* Softer radial in light mode */
+body.light {
+  background: var(--color-bg);
+}
+
+/* ─── Phase 8.5: Theme toggle button ────────────────────────────────────────── */
+
+.app-theme-toggle-wrapper {
+  position: absolute;
+  top: var(--space-24);
+  right: var(--space-32);
+  z-index: 10;
+}
+
+.theme-toggle-button {
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-8);
+  color: var(--color-text-meta);
+  padding: var(--space-4) var(--space-12);
+  font-size: 16px;
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+.theme-toggle-button:hover:not(:disabled) {
+  background: var(--color-surface-3);
+  color: var(--color-text-strong);
+  transform: none;
+  filter: none;
+}
+
+.main-shell {
+  position: relative;
+}
+
+/* ─── Phase 8: Task Engine Panel ─────────────────────────────────────────────── */
+
+.task-engine-panel {
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-12);
+  padding: var(--space-16);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-10);
+}
+
+.task-engine-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.task-engine-title {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-meta);
+}
+
+.task-add-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  padding: var(--space-12);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-8);
+  background: var(--color-surface-2);
+}
+
+.task-title-input {
+  width: 100%;
+  background: var(--color-surface-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-8);
+  color: var(--color-text-body);
+  padding: var(--space-8) var(--space-12);
+  font-size: 14px;
+  outline: none;
+  transition: border-color var(--transition-fast);
+  box-sizing: border-box;
+}
+.task-title-input:focus {
+  border-color: var(--color-accent-line);
+  color: var(--color-text-strong);
+}
+
+.task-add-controls {
+  display: flex;
+  gap: var(--space-8);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Task row */
+.task-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-4);
+  border-radius: var(--radius-8);
+  transition: background var(--transition-fast);
+}
+.task-row:hover {
+  background: var(--color-surface-2);
+}
+.task-row-active {
+  background: var(--color-accent-soft);
+  border: 1px solid var(--color-accent-line);
+}
+.task-row-active:hover {
+  background: var(--color-accent-soft);
+}
+.task-row-dimmed .task-title {
+  color: var(--color-text-meta);
+}
+.task-row-done .task-title-done {
+  color: var(--color-text-meta);
+  text-decoration: line-through;
+  font-size: 13px;
+}
+
+.task-complete-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-text-meta);
+  font-size: 15px;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  line-height: 1;
+  transition: color var(--transition-fast);
+}
+.task-complete-btn.is-active { color: var(--color-accent); }
+.task-complete-btn:hover:not(:disabled) {
+  transform: none;
+  filter: none;
+  color: var(--color-text-strong);
+}
+
+.task-priority-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.task-priority-high   { background: #e5c76b; }
+.task-priority-normal { background: var(--color-text-meta); }
+.task-priority-low    { background: var(--color-border-strong); }
+
+.task-title {
+  flex: 1;
+  font-size: 13px;
+  color: var(--color-text-body);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: default;
+}
+
+.task-inline-edit {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-accent-line);
+  color: var(--color-text-strong);
+  font-size: 13px;
+  outline: none;
+  padding: 0;
+}
+
+.task-row-actions {
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+.task-row:hover .task-row-actions { opacity: 1; }
+
+.task-done-check {
+  font-size: 12px;
+  color: #6fcf97;
+  flex-shrink: 0;
+}
+
+.task-section-label {
+  font-size: 11px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-text-meta);
+  font-weight: 600;
+  padding: var(--space-8) 0 var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
+  display: block;
+}
+
+.task-done-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ─── Improvement #1: SessionStartPanel + Dashboard ─────────────────────────── */
+
+.dashboard-shell {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-24);
+}
+
+.session-start-panel {
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-12);
+  padding: var(--space-32);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-24);
+}
+
+.session-staleness-warning {
+  font-size: 13px;
+  color: #e5c76b;
+  background: rgba(230, 180, 60, 0.10);
+  border: 1px solid rgba(230, 180, 60, 0.25);
+  border-radius: var(--radius-8);
+  padding: var(--space-8) var(--space-12);
+}
+
+.session-project-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-16);
+}
+
+.session-project-identity {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.session-dept-label {
+  font-size: 11px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--color-text-meta);
+  font-weight: 600;
+}
+
+.session-project-name {
+  margin: 0;
+  font-size: 36px;
+  font-weight: 720;
+  letter-spacing: -0.05em;
+  color: var(--color-text-strong);
+  line-height: 1;
+}
+
+.session-project-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  flex-wrap: wrap;
+}
+
+.session-phase {
+  font-size: 13px;
+  color: var(--color-text-body);
+}
+
+.session-staleness {
+  font-size: 12px;
+  color: var(--color-text-meta);
+}
+
+.session-meta-sep {
+  color: var(--color-text-meta);
+  font-size: 12px;
+}
+
+.session-change-focus {
+  flex-shrink: 0;
+  font-size: 13px;
+  padding: var(--space-4) var(--space-12);
+}
+
+.session-block-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-text-meta);
+  margin-bottom: var(--space-8);
+}
+
+.session-state-block,
+.session-next-action-block,
+.session-log-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.session-current-state {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--color-text-body);
+}
+
+.session-next-action {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--color-text-strong);
+  font-weight: 500;
+}
+
+.session-next-action-block {
+  padding: var(--space-16);
+  background: var(--color-accent-soft);
+  border: 1px solid var(--color-accent-line);
+  border-radius: var(--radius-8);
+}
+
+.session-next-action-block .session-block-label {
+  color: var(--color-accent);
+}
+
+.session-day-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-16);
+  padding-top: var(--space-8);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.session-day-stats {
+  display: flex;
+  gap: var(--space-16);
+}
+
+.session-stat {
+  font-size: 14px;
+  color: var(--color-text-meta);
+}
+.session-stat strong {
+  color: var(--color-text-body);
+}
+.session-done-stat strong { color: #6fcf97; }
+
+.session-go-today {
+  padding: var(--space-8) var(--space-24);
+  font-size: 14px;
+}
+
+/* Dashboard no-focus state */
+.dashboard-no-focus {
+  padding: var(--space-32) 0 var(--space-8);
+}
+.dashboard-no-focus-title {
+  margin: 0 0 var(--space-8);
+  font-size: 24px;
+  font-weight: 650;
+  color: var(--color-text-strong);
+}
+.dashboard-no-focus-sub {
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-text-meta);
+  line-height: 1.6;
+}
+
+.dashboard-project-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+.dashboard-project-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-16);
+  padding: var(--space-8) 0;
+}
+
+.dashboard-project-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+}
+
+.dashboard-project-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text-strong);
+}
+
+/* ─── Improvement #2: QuickLogInput ─────────────────────────────────────────── */
+
+.quick-log-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.quick-log-input-row {
+  display: flex;
+  gap: var(--space-8);
+}
+
+.quick-log-input {
+  flex: 1;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-8);
+  color: var(--color-text-body);
+  padding: var(--space-8) var(--space-12);
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+.quick-log-input:focus {
+  border-color: var(--color-accent-line);
+  color: var(--color-text-strong);
+}
+.quick-log-input::placeholder { color: var(--color-text-meta); }
+
+.quick-log-recent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.quick-log-entry {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-8);
+  padding: var(--space-4) var(--space-8);
+  border-radius: var(--radius-8);
+  background: var(--color-surface-2);
+}
+
+.quick-log-type-icon {
+  font-size: 11px;
+  flex-shrink: 0;
+  color: var(--color-text-meta);
+}
+
+.quick-log-entry-experiment .quick-log-type-icon { color: #9aabff; }
+.quick-log-entry-decision .quick-log-type-icon   { color: #e5c76b; }
+.quick-log-entry-progress .quick-log-type-icon   { color: #6fcf97; }
+
+.quick-log-text {
+  flex: 1;
+  font-size: 12px;
+  color: var(--color-text-body);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quick-log-time {
+  font-size: 11px;
+  color: var(--color-text-meta);
+  flex-shrink: 0;
+}
+
+.quick-log-project-tag {
+  font-size: 10px;
+  color: var(--color-accent);
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+/* ─── Phase 8.75: History log + Today nudge ─────────────────────────────────── */
+
+.history-log-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.history-log-entry {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-12);
+  border-radius: var(--radius-8);
+  background: var(--color-surface-2);
+}
+
+.history-log-icon {
+  font-size: 12px;
+  flex-shrink: 0;
+  color: var(--color-text-meta);
+  width: 14px;
+}
+.history-log-experiment .history-log-icon { color: #9aabff; }
+.history-log-decision .history-log-icon   { color: #e5c76b; }
+.history-log-progress .history-log-icon   { color: #6fcf97; }
+
+.history-log-text {
+  flex: 1;
+  font-size: 13px;
+  color: var(--color-text-body);
+  min-width: 0;
+}
+
+.history-log-time {
+  font-size: 11px;
+  color: var(--color-text-meta);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.history-log-project {
+  font-size: 10px;
+  color: var(--color-accent);
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+/* Today — single recommendation nudge */
+.today-rec-nudge {
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-8);
+  padding: var(--space-12) var(--space-16);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.today-rec-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-strong);
+}
+
+.today-rec-desc {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text-meta);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.today-rec-slot {
+  font-size: 11px;
+  color: var(--color-accent);
+  letter-spacing: 0.05em;
+}
