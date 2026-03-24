@@ -263,6 +263,65 @@ button:disabled {
 .page-grid.two-column { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .page-grid.single-column { grid-template-columns: 1fr; }
 
+.project-context-strip {
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-12);
+  padding: var(--space-12) var(--space-16);
+  margin-bottom: var(--space-16);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-12);
+  align-items: start;
+}
+
+.project-context-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  margin: var(--space-4) 0;
+}
+
+.project-context-status {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 999px;
+  padding: 2px 8px;
+  color: var(--color-text-meta);
+}
+
+.project-context-status-active { color: #6fcf97; border-color: rgba(80, 200, 120, 0.3); }
+.project-context-status-paused { color: #e5c76b; border-color: rgba(230, 180, 60, 0.28); }
+.project-context-status-blocked { color: #e08090; border-color: rgba(184, 92, 108, 0.35); }
+.project-context-status-completed { color: #9aabff; border-color: var(--color-accent-line); }
+
+.project-context-next {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text-body);
+}
+
+.project-context-expanded {
+  grid-column: 1 / -1;
+  border-top: 1px solid var(--color-border-subtle);
+  padding-top: var(--space-8);
+  display: grid;
+  gap: var(--space-8);
+}
+
+.project-context-expanded p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text-body);
+}
+
+.project-context-expanded .label {
+  margin-right: var(--space-8);
+  display: inline-block;
+}
+
 .today-three-zone-layout.upgraded {
   display: grid;
   grid-template-columns: minmax(220px, 0.56fr) minmax(640px, 1.7fr) minmax(240px, 0.56fr);
@@ -393,6 +452,13 @@ button:disabled {
 .active-now-subtext {
   color: var(--color-text-meta);
   margin-bottom: var(--space-16);
+}
+
+.active-now-budget {
+  margin: 0 0 var(--space-12);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--color-text-meta);
 }
 .active-now-controls {
   margin-top: var(--space-16);
@@ -1473,6 +1539,22 @@ body.light {
   gap: var(--space-8);
   align-items: center;
   flex-wrap: wrap;
+}
+
+.task-project-feedback {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  padding: var(--space-12);
+  border-radius: var(--radius-8);
+  border: 1px solid var(--color-accent-line);
+  background: var(--color-accent-soft);
+}
+
+.task-project-feedback-meta {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text-body);
 }
 
 /* Task row */

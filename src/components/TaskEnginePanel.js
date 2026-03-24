@@ -35,9 +35,12 @@ function TaskEnginePanel({
   setTaskStatus,
   updateTask,
   removeTask,
+  updateProject,
+  getProject,
 }) {
   const [adding, setAdding] = useState(false);
   const [draft, setDraft] = useState({ title: '', priority: TASK_PRIORITY.NORMAL, scope: 'today' });
+  const [projectFeedback, setProjectFeedback] = useState(null);
 
   const openTasks = tasks.filter((t) => t.status !== TASK_STATUS.DONE && t.status !== TASK_STATUS.CANCELLED);
   const doneTasks = tasks.filter((t) => t.status === TASK_STATUS.DONE);
@@ -62,6 +65,26 @@ function TaskEnginePanel({
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleAdd(); }
     if (e.key === 'Escape') setAdding(false);
+  };
+
+  const handleTaskDone = (task) => {
+    if (!task.projectId) return;
+    const linkedProject = getProject ? getProject(task.projectId) : null;
+    if (!linkedProject) return;
+    setProjectFeedback({
+      projectId: linkedProject.id,
+      projectName: linkedProject.name,
+      taskTitle: task.title,
+      value: linkedProject.nextAction || '',
+    });
+  };
+
+  const saveProjectFeedback = () => {
+    if (!projectFeedback?.projectId) return;
+    const nextAction = projectFeedback.value.trim();
+    if (!nextAction) return;
+    updateProject(projectFeedback.projectId, { nextAction });
+    setProjectFeedback(null);
   };
 
   return (
@@ -115,6 +138,26 @@ function TaskEnginePanel({
         </div>
       )}
 
+      {/* Task → project feedback loop */}
+      {projectFeedback && (
+        <div className="task-project-feedback">
+          <span className="label">Update next action?</span>
+          <p className="task-project-feedback-meta">
+            {projectFeedback.projectName} · completed: {projectFeedback.taskTitle}
+          </p>
+          <input
+            className="task-title-input"
+            value={projectFeedback.value}
+            onChange={(e) => setProjectFeedback((prev) => ({ ...prev, value: e.target.value }))}
+            placeholder="Set next action for project"
+          />
+          <div className="task-add-controls">
+            <button className="primary-action-button planner-action-btn" onClick={saveProjectFeedback}>Save</button>
+            <button className="secondary-button planner-action-btn" onClick={() => setProjectFeedback(null)}>Skip</button>
+          </div>
+        </div>
+      )}
+
       {/* Today open tasks */}
       {openTasks.length === 0 && !adding && openFocusTasks.length === 0 && (
         <p className="planner-empty">No tasks for today. Add one above.</p>
@@ -127,6 +170,7 @@ function TaskEnginePanel({
           setTaskStatus={setTaskStatus}
           updateTask={updateTask}
           removeTask={removeTask}
+          onTaskDone={handleTaskDone}
         />
       ))}
 
@@ -143,6 +187,7 @@ function TaskEnginePanel({
               setTaskStatus={setTaskStatus}
               updateTask={updateTask}
               removeTask={removeTask}
+              onTaskDone={handleTaskDone}
               dimmed
             />
           ))}
@@ -171,7 +216,7 @@ function TaskEnginePanel({
   );
 }
 
-function TaskRow({ task, setTaskStatus, updateTask, removeTask, dimmed = false }) {
+function TaskRow({ task, setTaskStatus, updateTask, removeTask, onTaskDone, dimmed = false }) {
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(task.title);
 
@@ -194,9 +239,14 @@ function TaskRow({ task, setTaskStatus, updateTask, removeTask, dimmed = false }
       <button
         className={`task-complete-btn${isActive ? ' is-active' : ''}`}
         title={isActive ? 'Mark done' : 'Start'}
-        onClick={() =>
-          setTaskStatus(task.id, isActive ? TASK_STATUS.DONE : TASK_STATUS.IN_PROGRESS)
-        }
+        onClick={() => {
+          if (isActive) {
+            setTaskStatus(task.id, TASK_STATUS.DONE);
+            onTaskDone?.(task);
+            return;
+          }
+          setTaskStatus(task.id, TASK_STATUS.IN_PROGRESS);
+        }}
       >
         {isActive ? '●' : '○'}
       </button>

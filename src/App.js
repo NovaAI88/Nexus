@@ -54,6 +54,20 @@ function formatSeconds(seconds) {
 function formatMinutesToTime(totalMinutes) {
   return `${String(Math.floor(totalMinutes / 60)).padStart(2, '0')}:${String(totalMinutes % 60).padStart(2, '0')}`;
 }
+function formatStaleness(isoDate) {
+  if (!isoDate) return 'last touched unknown';
+  const diffMs = Date.now() - new Date(isoDate).getTime();
+  const diffMinutes = Math.max(Math.floor(diffMs / 60000), 0);
+  if (diffMinutes < 60) return `last touched ${diffMinutes}m ago`;
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) return `last touched ${diffHours}h ago`;
+  const diffDays = Math.floor(diffHours / 24);
+  return `last touched ${diffDays}d ago`;
+}
+function truncateText(text, max = 92) {
+  if (!text) return '';
+  return text.length > max ? `${text.slice(0, max).trim()}…` : text;
+}
 function moveItem(list, fromIndex, toIndex) {
   const next = [...list];
   const [item] = next.splice(fromIndex, 1);
@@ -229,6 +243,7 @@ function App() {
     [currentMinutes, freeGaps]
   );
 
+
   // ── Project-aware recommendation engine (no legacy nexusData catalog) ──────
   const recommendationCatalog = useMemo(() => {
     const pastStopWork = stopWork.enabled && currentMinutes >= toMinutes(stopWork.time);
@@ -242,8 +257,8 @@ function App() {
         id: `rec-${focusProject.id}`,
         projectId: focusProject.id,
         isFocusProject: true,
-        title: `Work on ${focusProject.name}`,
-        description: focusProject.nextAction,
+        title: focusProject.nextAction,
+        description: formatStaleness(focusProject.lastUpdated),
         duration: 60,
         minDuration: 30,
         maxDuration: 120,
@@ -262,8 +277,8 @@ function App() {
           id: `rec-${p.id}`,
           projectId: p.id,
           isFocusProject: false,
-          title: `Work on ${p.name}`,
-          description: p.nextAction,
+          title: p.nextAction,
+          description: formatStaleness(p.lastUpdated),
           duration: 45,
           minDuration: 20,
           maxDuration: 90,
@@ -317,6 +332,14 @@ function App() {
   const todayTasks = useMemo(() => getTasksForDate(date), [date, getTasksForDate]);
   const openTodayCount = useMemo(() => todayTasks.filter((t) => t.status !== 'done' && t.status !== 'cancelled').length, [todayTasks]);
   const doneTodayCount = useMemo(() => todayTasks.filter((t) => t.status === 'done').length, [todayTasks]);
+  const sessionBudgetText = useMemo(() => {
+    const availableMinutes = freeGaps.reduce((sum, gap) => {
+      const effectiveStart = Math.max(gap.start, currentMinutes);
+      return sum + Math.max(gap.end - effectiveStart, 0);
+    }, 0);
+    const availableHours = (availableMinutes / 60).toFixed(1);
+    return `${availableHours}h available · ${openTodayCount} tasks open`;
+  }, [currentMinutes, freeGaps, openTodayCount]);
   const focusTasks = useMemo(() => focusProjectId ? getTasksForProject(focusProjectId) : [], [focusProjectId, getTasksForProject]);
   const recentLog = useMemo(() =>
     focusProjectId
@@ -356,8 +379,10 @@ function App() {
       setTaskStatus={setTaskStatus}
       updateTask={updateTask}
       removeTask={removeTask}
+      updateProject={updateProject}
+      getProject={getProject}
     />
-  ), [addTask, date, focusProject, focusTasks, removeTask, setTaskStatus, todayTasks, updateTask]);
+  ), [addTask, date, focusProject, focusTasks, getProject, removeTask, setTaskStatus, todayTasks, updateProject, updateTask]);
 
   const dashLogPanel = useMemo(() => (
     <QuickLogInput
@@ -397,6 +422,9 @@ function App() {
             dayConstraintsPanel={plannerPanel}
             quickLogPanel={quickLogPanel}
             focusProjectId={focusProjectId}
+            focusProject={focusProject}
+            sessionBudgetText={sessionBudgetText}
+            projectContextPreview={truncateText(focusProject?.nextAction || '', 96)}
           />
         );
       case 'weekly':
@@ -464,10 +492,10 @@ function App() {
   }, [
     activePage, activityLog, activeBlockId, addPlannerBlock, canPlaceDurationAtMinutes,
     currentTime, date, departments, doneTodayCount, draggedBlockId, dragOverMinutes,
-    focusMode, focusProjectId, getDepartment, handleExitFocus, handleStartBlock,
+    focusMode, focusProject, focusProjectId, getDepartment, handleExitFocus, handleStartBlock,
     handleTimelineDragLeave, handleTimelineDragOver, handleTimelineDrop,
     openTodayCount, plannerPanel, projects, quickLogPanel, recommendationCatalog,
-    removePlannerBlock, setFocusProject, dashLogPanel, taskPanel, tasks,
+    removePlannerBlock, sessionBudgetText, setFocusProject, dashLogPanel, taskPanel, tasks,
     timerState.display, timerState.progress, timelineState.currentBlock,
     timelineState.nextBlock, timelineState.normalizedBlocks, todayScheduleBlocks,
     updateProject,

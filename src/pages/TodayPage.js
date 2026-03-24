@@ -1,4 +1,4 @@
-import PageContainer from '../components/PageContainer';
+import { useState } from 'react';
 import TimelinePanel from '../components/TimelinePanel';
 import BlockSummaryPanel from '../components/BlockSummaryPanel';
 
@@ -42,14 +42,39 @@ function TodayPage({
   taskEnginePanel,
   dayConstraintsPanel,
   quickLogPanel,
-  focusProjectId,
+  focusProject,
+  sessionBudgetText,
+  projectContextPreview,
 }) {
+  const [contextExpanded, setContextExpanded] = useState(false);
   const activeNowTitle = activeBlock?.label || 'No active block';
   const activeNowMeta = activeBlock ? `${activeBlock.start}–${activeBlock.end}` : 'No block running';
   const topRec = recommendations?.[0] ?? null;
 
   return (
     <div className="today-workspace-shell">
+      {focusProject && (
+        <section className="project-context-strip">
+          <div className="project-context-main">
+            <span className="label">Focus Project</span>
+            <div className="project-context-row">
+              <strong>{focusProject.name}</strong>
+              <span className={`project-context-status project-context-status-${focusProject.status}`}>{focusProject.status}</span>
+            </div>
+            <p className="project-context-next">{projectContextPreview || 'No next action set.'}</p>
+          </div>
+          <button className="secondary-button" onClick={() => setContextExpanded((v) => !v)}>
+            {contextExpanded ? 'Hide context' : 'Expand context'}
+          </button>
+          {contextExpanded && (
+            <div className="project-context-expanded">
+              <p><span className="label">Current State</span>{focusProject.currentState}</p>
+              <p><span className="label">Next Action</span>{focusProject.nextAction}</p>
+            </div>
+          )}
+        </section>
+      )}
+
       <div className={`today-three-zone-layout upgraded${focusMode ? ' is-focus-mode' : ''}`}>
 
         {/* ── Left: Timeline ─────────────────────────────────────────────── */}
@@ -78,6 +103,7 @@ function TodayPage({
               </div>
             </div>
             <h1 className="active-now-title">{activeNowTitle}</h1>
+            <p className="active-now-budget">{sessionBudgetText}</p>
             <div className="focus-progress-bar compact">
               <div className="focus-progress-fill" style={{ width: `${activeBlock ? timerProgress : 0}%` }} />
             </div>
