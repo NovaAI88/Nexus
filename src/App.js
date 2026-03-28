@@ -380,10 +380,6 @@ function App() {
     />
   ), [currentZone, handleSelectLifeActivity]);
 
-  const dashLogPanel = useMemo(() => (
-    <QuickLogInput focusProject={focusProject} addEntry={addLogEntry} recentEntries={recentLog} />
-  ), [addLogEntry, focusProject, recentLog]);
-
   const pageContent = useMemo(() => {
     switch (activePage) {
       case 'today':
@@ -402,17 +398,10 @@ function App() {
             onExitFocus={handleExitFocus}
             onAddBlock={addPlannerBlock}
             onRemoveBlock={(blockId) => removePlannerBlock(date, blockId)}
-            draggedBlockId={draggedBlockId}
-            dragOverMinutes={dragOverMinutes}
-            canDropTaskAtMinutes={canPlaceDurationAtMinutes}
-            onTimelineDragOver={handleTimelineDragOver}
-            onTimelineDragLeave={handleTimelineDragLeave}
-            onTimelineDrop={handleTimelineDrop}
             taskEnginePanel={taskPanel}
             dayConstraintsPanel={plannerPanel}
             quickLogPanel={quickLogPanel}
             aureonPanel={aureonPanel}
-            focusProjectId={focusProjectId}
             focusProject={focusProject}
             sessionBudgetText={sessionBudgetText}
             projectContextPreview={truncateText(focusProject?.nextAction || '', 96)}
@@ -431,7 +420,6 @@ function App() {
           <WeeklyPage
             date={date}
             projects={projects}
-            focusProjectId={focusProjectId}
             departmentQueue={departmentQueue}
             engineReasoning={engineReasoning}
             addPlannerBlock={addPlannerBlock}
@@ -458,45 +446,7 @@ function App() {
           />
         );
       default:
-        return (
-          <TodayPage
-            date={date}
-            currentTime={currentTime}
-            currentBlock={timelineState.currentBlock}
-            nextBlock={timelineState.nextBlock}
-            scheduleBlocks={timelineState.normalizedBlocks}
-            focusMode={focusMode}
-            activeBlock={timelineState.currentBlock || (activeBlockId ? todayScheduleBlocks.find((b) => b.id === activeBlockId) || null : null)}
-            timerDisplay={timerState.display}
-            timerProgress={timerState.progress}
-            onStartBlock={handleStartBlock}
-            onExitFocus={handleExitFocus}
-            onAddBlock={addPlannerBlock}
-            onRemoveBlock={(blockId) => removePlannerBlock(date, blockId)}
-            draggedBlockId={draggedBlockId}
-            dragOverMinutes={dragOverMinutes}
-            canDropTaskAtMinutes={canPlaceDurationAtMinutes}
-            onTimelineDragOver={handleTimelineDragOver}
-            onTimelineDragLeave={handleTimelineDragLeave}
-            onTimelineDrop={handleTimelineDrop}
-            taskEnginePanel={taskPanel}
-            dayConstraintsPanel={plannerPanel}
-            quickLogPanel={quickLogPanel}
-            aureonPanel={aureonPanel}
-            focusProjectId={focusProjectId}
-            focusProject={focusProject}
-            sessionBudgetText={sessionBudgetText}
-            projectContextPreview={truncateText(focusProject?.nextAction || '', 96)}
-            enginePrimaryAction={enginePrimaryAction}
-            recommendedBlocks={recommendedBlocks}
-            lifeBlockSuggestions={lifeBlockSuggestions}
-            dismissDept={dismissDept}
-            engineReasoning={engineReasoning}
-            energyBar={energyBarPanel}
-            lifeBlockPicker={lifeBlockPickerPanel}
-            currentZone={currentZone}
-          />
-        );
+        return null;
     }
   }, [
     activePage,
@@ -504,15 +454,12 @@ function App() {
     activeBlockId,
     addPlannerBlock,
     aureonPanel,
-    canPlaceDurationAtMinutes,
     currentTime,
     currentZone,
     date,
     departments,
     departmentQueue,
     dismissDept,
-    draggedBlockId,
-    dragOverMinutes,
     energyBarPanel,
     enginePrimaryAction,
     engineReasoning,
@@ -524,9 +471,6 @@ function App() {
     getTasksForDate,
     handleExitFocus,
     handleStartBlock,
-    handleTimelineDragLeave,
-    handleTimelineDragOver,
-    handleTimelineDrop,
     lifeBlockPickerPanel,
     lifeBlockSuggestions,
     plannerPanel,

@@ -51,7 +51,6 @@ function getWeekDates(todayStr) {
 function WeeklyPage({
   date,
   projects,
-  focusProjectId,
   departmentQueue = [],
   engineReasoning,
   addPlannerBlock,

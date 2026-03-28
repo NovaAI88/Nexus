@@ -170,6 +170,13 @@ function TodayPage({
 
           {/* Quick log */}
           {quickLogPanel}
+
+          {/* Empty state when no blocks and no suggestions */}
+          {!activeBlock && allSuggestions.length === 0 && scheduleBlocks.length === 0 && (
+            <div className="today-empty-hint">
+              <p>No blocks scheduled yet. Add tasks above and drag them to the timeline, or let the engine suggest your next move.</p>
+            </div>
+          )}
         </div>
 
         {/* ──── RIGHT: Timeline & Scheduling ──── */}

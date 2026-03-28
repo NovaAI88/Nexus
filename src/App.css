@@ -542,6 +542,20 @@ button:disabled {
   gap: var(--space-8);
 }
 
+.today-empty-hint {
+  text-align: center;
+  padding: var(--space-24) var(--space-16);
+  color: var(--color-text-meta);
+  font-size: 13px;
+  line-height: 1.6;
+  border: 1px dashed var(--color-border-subtle);
+  border-radius: var(--radius-12);
+}
+
+.today-empty-hint p {
+  margin: 0;
+}
+
 /* Responsive */
 @media (max-width: 1080px) {
   .today-two-panel,
@@ -718,13 +732,7 @@ button:disabled {
   display: inline-block;
 }
 
-/* Legacy 3-zone layout kept for compatibility */
-.today-three-zone-layout.upgraded {
-  display: grid;
-  grid-template-columns: 1fr 360px;
-  gap: var(--space-24);
-  align-items: start;
-}
+/* Legacy layout — kept for any remaining component references */
 .today-zone {
   display: flex;
   flex-direction: column;
@@ -4195,4 +4203,19 @@ body.light ::-webkit-scrollbar-thumb:hover {
 .company-empty p {
   margin: 0;
   font-size: 14px;
+}
+
+@media (max-width: 640px) {
+  .company-header {
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+  .company-dept {
+    padding: var(--space-12);
+  }
+  .company-dept-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-8);
+  }
 }

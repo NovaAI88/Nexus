@@ -198,35 +198,48 @@ src/
 
 ---
 
+## Completed Web App Work
+
+### Phase A: Visual Polish ✓
+- [x] Softer color palette (warmer backgrounds, rgba borders, reduced shadows)
+- [x] Sidebar hover/active state refinements
+- [x] Consistent spacing and typography pass
+- [x] Smooth page-enter animation (280ms fade+slide)
+
+### Phase B: Weekly Timeline Page ✓
+- [x] 7-day column layout with today highlight
+- [x] Show scheduled blocks per day (color-coded by type)
+- [x] Department queue with quick-add to any weekday
+- [x] Weekly intent input + project progress bar
+- [x] Responsive: shrink labels on medium, 3-column on mobile
+
+### Phase C: Drag & Drop ✓
+- [x] Drag tasks from task list to timeline (creates planner block)
+- [x] Drag to reorder timeline blocks (remove + recreate)
+- [x] 15-minute snap grid (60 slots, 07:00–22:00)
+- [x] Visual drop zone indicators (time label, valid/invalid states)
+- [ ] Drag to resize block duration (future enhancement)
+
+### Phase D: Integration & Polish ✓
+- [x] Remove dead props, unused page files (DashboardPage, DepartmentPage)
+- [x] Deduplicate default route (was duplicating TodayPage)
+- [x] Clean dependency arrays in useMemo
+- [x] Empty state hints for TodayPage
+- [x] Responsive breakpoints for CompanyPage
+- [x] Remove unused dashLogPanel memo
+
+---
+
 ## Remaining Web App Work
 
-### Phase A: Visual Polish
-- [ ] Softer color palette, more whitespace
-- [ ] Sidebar hover/active state refinements
-- [ ] Consistent spacing and typography pass
-- [ ] Smooth transitions on page switches
-
-### Phase B: Weekly Timeline Page
-- [ ] 7-day column layout
-- [ ] Show scheduled blocks per day
-- [ ] Drag tasks between days
-- [ ] Weekly priority display
-- [ ] Energy pattern across the week
-
-### Phase C: Drag & Drop
-- [ ] Drag tasks from task list to timeline
-- [ ] Drag to reorder timeline blocks
+### Phase E: Advanced Features
 - [ ] Drag to resize block duration
-- [ ] 15-minute snap grid
-- [ ] Visual drop zone indicators
+- [ ] Drag tasks between days on WeeklyPage
+- [ ] Energy pattern visualization across the week
+- [ ] Search/filter across tasks and history
+- [ ] Keyboard shortcuts (n = new task, space = start/stop block)
 
-### Phase D: Integration & Polish
-- [ ] Test all flows end-to-end (create task → schedule → complete → history)
-- [ ] Edge cases (empty states, overflow, timezone)
-- [ ] Performance pass (unnecessary re-renders)
-- [ ] Final responsive design check
-
-### Phase E: Mac App Scaffolding
+### Phase F: Mac App Scaffolding
 - [ ] Create Xcode project with SwiftUI
 - [ ] Port energy model to Swift
 - [ ] Port execution engine to Swift
@@ -239,13 +252,13 @@ src/
 
 - **Dark-first** with light mode support
 - **Minimal chrome** — content over decoration
-- **Accent: #6b7cff** (soft indigo)
-- **Department colors**: Nexus (#6b7cff), Hephaestus (#22d3ee), Xenon (#a78bfa), Aureon (#34d399)
+- **Accent: #7b8cff** (soft indigo)
+- **Department colors**: Nexus (#7b8cff), Hephaestus (#22d3ee), Xenon (#a78bfa), Aureon (#34d399)
 - **Energy colors**: Peak (#ff4d6d), High (#f59e0b), Moderate (#eab308), Low (#3b82f6), Recovery (#a78bfa)
 - **Typography**: Inter, system-ui stack
 - **Spacing**: 4px base grid (4, 8, 12, 16, 20, 24, 32, 40, 48)
-- **Borders**: Subtle (#1d2430), Strong (#2a3342)
-- **Surfaces**: Layered dark (bg → surface-1 → surface-2 → surface-3)
+- **Borders**: rgba-based (subtle 6% white, strong 10% white)
+- **Surfaces**: Layered dark (#0e1117 → #161b22 → #1c2129 → #21262d)
 - **Motion**: Fast (140ms), Base (200ms), Slow (320ms)
 - **Layout**: 2-panel for Today (tasks | timeline), single column for Company/Log
 
