@@ -1,56 +1,82 @@
-/**
- * initialState.js — Projects
- * Seed data for the project model.
- * Used on first load when localStorage contains no project data.
- * Reflects real current state as of 2026-03-22.
- *
- * Projects belong to Departments via departmentId.
- * Department IDs match the id field in core/departments/initialState.js.
- */
-
 export const INITIAL_PROJECTS = [
-  {
-    id: 'vortex',
-    name: 'VORTEX',
-    departmentId: 'hephaestus',        // belongs to 03_HEPHAESTUS
-    status: 'paused',                  // active | paused | blocked | completed
-    phase: 'V4-P7B',
-    priority: 'high',                  // critical | high | normal
-    currentState:
-      'ATR-based exit system complete through Phase 7B. TREND strategy is structurally flawed — pullback window too narrow, neutral bias rate too high. RANGE strategy shows promise. Backtest run: 5 winners, 14 losses. Repo is clean, pushed, and stable.',
-    nextAction:
-      'Run TREND-only optimization sweep on 5m/1000-candle setup. Verify blocker profile shift via GET /api/diagnosis/trend-suppression. Do NOT activate RANGE stale/location filters until clean TREND measurement is complete.',
-    lastUpdated: '2026-03-22T22:42:00.000Z',
-    createdAt: '2026-03-19T00:00:00.000Z',
-  },
   {
     id: 'nexus',
     name: 'NEXUS',
-    departmentId: 'nexus',             // belongs to 02_NEXUS
+    departmentId: 'nexus',
     status: 'active',
-    phase: 'Phase 2 — Department Model',
+    phase: 'Phase 9 — Execution OS',
     priority: 'high',
     currentState:
-      'Phase 1 complete: localStore, useProjects, initialState in place. Phase 2 now adding department model (useDepartments, departmentId on projects). UI is untouched — data layer only.',
+      'Phase 8.75 complete. Foundation clean. Execution OS (Phase 3) implemented — engine, adapters, Company State board, suggested blocks, Weekly rebuild all live.',
     nextAction:
-      'Phase 3: wire useProjects + useDepartments into App.js, build ProjectPage with live editable state, rewrite Dashboard with real project cards.',
-    lastUpdated: '2026-03-23T00:17:00.000Z',
+      'Wire department pages to nexus:company-state. Fix AUREON department page. Integrate suggested blocks inline into Timeline.',
+    lastUpdated: '2026-03-27T14:00:00.000Z',
+    createdAt: '2026-03-19T00:00:00.000Z',
+  },
+  {
+    id: 'vortex',
+    name: 'VORTEX',
+    departmentId: 'hephaestus',
+    status: 'active',
+    phase: 'V4-P7C — RANGE Intelligence Phase 2',
+    priority: 'high',
+    currentState:
+      'Phase 2 implemented and verified. Context-first reversal confirmation live. 10/10 deterministic tests passing. Full suite: 13 files / 30 tests passed.',
+    nextAction:
+      'Resume with evidence-first verification sequence (path → git state → file presence → tests), then define Phase 3 RANGE plan.',
+    lastUpdated: '2026-03-25T00:00:00.000Z',
     createdAt: '2026-03-19T00:00:00.000Z',
   },
   {
     id: 'xenon',
     name: 'XENON',
-    departmentId: 'xenon',             // belongs to 04_XENON
+    departmentId: 'xenon',
     status: 'paused',
     phase: 'Phase 4 — Complete',
     priority: 'normal',
     currentState:
-      'Department structure complete. All files populated. Campaign template and channel tracker ready. Activation pending a decision on channel and content format.',
+      'Department structure complete. Campaign template and channel tracker ready. Activation pending a channel decision.',
     nextAction:
-      'Nicholas decides: channel (Twitter/X, LinkedIn, other) and first content format. This unblocks the first campaign.',
+      'Decide channel (Twitter/X or LinkedIn) and first content format to unblock first campaign.',
     lastUpdated: '2026-03-22T19:00:00.000Z',
     createdAt: '2026-03-20T00:00:00.000Z',
+  },
+  {
+    id: 'aureon',
+    name: 'AUREON',
+    departmentId: 'aureon',
+    status: 'active',
+    phase: 'Phase 1 — Active Execution',
+    priority: 'critical',
+    currentState:
+      'System built and operational. Offer: Abandoned Cart Recovery — €500 setup + €150/month. Target: €1,000 within 72 hours.',
+    nextAction:
+      'Run lead analysis on 10 Shopify stores and send 10 DMs today.',
+    lastUpdated: '2026-03-26T00:00:00.000Z',
+    createdAt: '2026-03-26T00:00:00.000Z',
   },
 ];
 
 export const PROJECTS_STORAGE_KEY = 'nexus:projects';
+
+/**
+ * migrateProjectsIfStale
+ * If stored projects are from before 2026-03-27, replace with current seed data.
+ */
+export function migrateProjectsIfStale() {
+  try {
+    const raw = window.localStorage.getItem(PROJECTS_STORAGE_KEY);
+    if (!raw) return;
+    const stored = JSON.parse(raw);
+    if (!Array.isArray(stored)) return;
+    const mostRecentUpdate = stored
+      .map((p) => new Date(p.lastUpdated || 0).getTime())
+      .reduce((max, t) => Math.max(max, t), 0);
+    const cutoff = new Date('2026-03-27T00:00:00.000Z').getTime();
+    if (mostRecentUpdate < cutoff) {
+      window.localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(INITIAL_PROJECTS));
+    }
+  } catch {
+    // silently fail
+  }
+}

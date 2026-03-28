@@ -1,26 +1,14 @@
 import SectionCard from '../components/SectionCard';
 import SessionStartPanel from '../components/SessionStartPanel';
 
-/**
- * DashboardPage
- *
- * Improvement #1: live session start screen.
- * If a focus project is set: show SessionStartPanel (project state + next action + quick log).
- * If no focus project: show project cards as entry point to set one.
- *
- * Props:
- *   date              — 'YYYY-MM-DD'
- *   projects          — live project array
- *   departments       — live department array
- *   focusProjectId    — string | null
- *   getDepartment     — getDepartment(id) fn
- *   todayTaskCount    — number
- *   doneTodayCount    — number
- *   onNavigate        — navigate to page fn
- *   logPanel          — <QuickLogInput /> (rendered by App.js)
- */
+const DEPT_COLORS = {
+  nexus: '#6b7cff',
+  hephaestus: '#22d3ee',
+  xenon: '#a78bfa',
+  aureon: '#34d399',
+};
+
 function DashboardPage({
-  date,
   projects,
   departments,
   focusProjectId,
@@ -29,17 +17,47 @@ function DashboardPage({
   doneTodayCount,
   onNavigate,
   logPanel,
+  departmentQueue = [],
+  engineReasoning,
 }) {
   const focusProject = focusProjectId ? projects.find((p) => p.id === focusProjectId) : null;
   const department = focusProject ? getDepartment(focusProject.departmentId) : null;
-
-  // Projects by status for the "no focus" fallback
   const activeProjects = projects.filter((p) => p.status === 'active');
   const pausedProjects = projects.filter((p) => p.status === 'paused');
 
   if (focusProject) {
     return (
       <div className="dashboard-shell">
+        {departmentQueue.length > 0 && (
+          <SectionCard title="Company State" variant="primary">
+            <div className="dashboard-engine-reasoning">{engineReasoning}</div>
+            <div className="dashboard-dept-grid">
+              {departmentQueue.map((dept) => {
+                const color = DEPT_COLORS[dept.id] ?? '#6b7cff';
+                return (
+                  <div
+                    key={dept.id}
+                    className={`dashboard-dept-card urgency-${dept.urgency}`}
+                    style={{ '--dept-color': color }}
+                  >
+                    <div className="dashboard-dept-header">
+                      <span className="dashboard-dept-name">{dept.name}</span>
+                      <span className={`urgency-badge urgency-${dept.urgency}`}>{dept.urgency.toUpperCase()}</span>
+                    </div>
+                    <p className="dashboard-dept-phase">{dept.phase}</p>
+                    <p className="dashboard-dept-next">{dept.nextAction}</p>
+                    {dept.blockers?.length > 0 && (
+                      <div className="dashboard-dept-blockers">
+                        {dept.blockers.map((b, i) => <span key={i} className="blocker-tag">{b}</span>)}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </SectionCard>
+        )}
+
         <SessionStartPanel
           focusProject={focusProject}
           department={department}
@@ -50,19 +68,61 @@ function DashboardPage({
             const deptPage = focusProject.departmentId === 'nexus'
               ? 'nexus-department'
               : focusProject.departmentId === 'xenon'
-              ? 'xenon'
-              : 'hephaestus';
+                ? 'xenon'
+                : focusProject.departmentId === 'aureon'
+                  ? 'aureon'
+                  : 'hephaestus';
             onNavigate(deptPage);
           }}
           logPanel={logPanel}
         />
+
+        <SectionCard title="Department Status" variant="muted">
+          <div className="dashboard-department-strip">
+            {departments.map((dept) => (
+              <div key={dept.id} className="dashboard-department-chip">
+                <span className={`status-dot status-dot-${dept.status}`} />
+                <span>{dept.name}</span>
+              </div>
+            ))}
+          </div>
+        </SectionCard>
       </div>
     );
   }
 
-  // No focus project — show overview and nudge to set one
   return (
     <div className="dashboard-shell">
+      {departmentQueue.length > 0 && (
+        <SectionCard title="Company State" variant="primary">
+          <div className="dashboard-engine-reasoning">{engineReasoning}</div>
+          <div className="dashboard-dept-grid">
+            {departmentQueue.map((dept) => {
+              const color = DEPT_COLORS[dept.id] ?? '#6b7cff';
+              return (
+                <div
+                  key={dept.id}
+                  className={`dashboard-dept-card urgency-${dept.urgency}`}
+                  style={{ '--dept-color': color }}
+                >
+                  <div className="dashboard-dept-header">
+                    <span className="dashboard-dept-name">{dept.name}</span>
+                    <span className={`urgency-badge urgency-${dept.urgency}`}>{dept.urgency.toUpperCase()}</span>
+                  </div>
+                  <p className="dashboard-dept-phase">{dept.phase}</p>
+                  <p className="dashboard-dept-next">{dept.nextAction}</p>
+                  {dept.blockers?.length > 0 && (
+                    <div className="dashboard-dept-blockers">
+                      {dept.blockers.map((b, i) => <span key={i} className="blocker-tag">{b}</span>)}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </SectionCard>
+      )}
+
       <div className="dashboard-no-focus">
         <h1 className="dashboard-no-focus-title">No focus project set</h1>
         <p className="dashboard-no-focus-sub">
@@ -86,7 +146,8 @@ function DashboardPage({
                     className="secondary-button"
                     onClick={() => {
                       const page = p.departmentId === 'nexus' ? 'nexus-department'
-                        : p.departmentId === 'xenon' ? 'xenon' : 'hephaestus';
+                        : p.departmentId === 'xenon' ? 'xenon'
+                          : p.departmentId === 'aureon' ? 'aureon' : 'hephaestus';
                       onNavigate(page);
                     }}
                   >
@@ -115,7 +176,8 @@ function DashboardPage({
                     className="secondary-button"
                     onClick={() => {
                       const page = p.departmentId === 'nexus' ? 'nexus-department'
-                        : p.departmentId === 'xenon' ? 'xenon' : 'hephaestus';
+                        : p.departmentId === 'xenon' ? 'xenon'
+                          : p.departmentId === 'aureon' ? 'aureon' : 'hephaestus';
                       onNavigate(page);
                     }}
                   >
@@ -125,12 +187,6 @@ function DashboardPage({
               );
             })}
           </div>
-        </SectionCard>
-      )}
-
-      {projects.length === 0 && (
-        <SectionCard title="No Projects">
-          <p>Navigate to a department to create your first project.</p>
         </SectionCard>
       )}
     </div>

@@ -2,7 +2,6 @@ import { useState, useCallback, useEffect } from 'react';
 import { load, save } from '../../storage/localStore';
 
 const THEME_KEY = 'nexus:theme';
-const DEFAULT_THEME = 'dark';
 
 /**
  * useTheme
@@ -16,7 +15,14 @@ const DEFAULT_THEME = 'dark';
  *   toggleTheme  — flip between dark / light
  */
 export function useTheme() {
-  const [theme, setThemeState] = useState(() => load(THEME_KEY, DEFAULT_THEME));
+  const [theme, setThemeState] = useState(() => {
+    const stored = load(THEME_KEY, null);
+    if (!stored) {
+      save(THEME_KEY, 'dark');
+      return 'dark';
+    }
+    return stored;
+  });
 
   // Apply theme class to <body> on every change.
   useEffect(() => {

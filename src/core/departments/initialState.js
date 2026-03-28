@@ -34,6 +34,14 @@ export const INITIAL_DEPARTMENTS = [
     status: 'active',
     createdAt: '2026-03-20T00:00:00.000Z',
   },
+  {
+    id: 'aureon',
+    name: 'AUREON',
+    label: '06_AUREON',
+    description: 'Capital generation engine. Abandoned cart recovery service.',
+    status: 'active',
+    createdAt: '2026-03-26T00:00:00.000Z',
+  },
 ];
 
 export const DEPARTMENTS_STORAGE_KEY = 'nexus:departments';

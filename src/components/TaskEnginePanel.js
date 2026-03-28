@@ -37,6 +37,7 @@ function TaskEnginePanel({
   removeTask,
   updateProject,
   getProject,
+  addLogEntry,
 }) {
   const [adding, setAdding] = useState(false);
   const [draft, setDraft] = useState({ title: '', priority: TASK_PRIORITY.NORMAL, scope: 'today' });
@@ -171,6 +172,7 @@ function TaskEnginePanel({
           updateTask={updateTask}
           removeTask={removeTask}
           onTaskDone={handleTaskDone}
+          addLogEntry={addLogEntry}
         />
       ))}
 
@@ -188,6 +190,7 @@ function TaskEnginePanel({
               updateTask={updateTask}
               removeTask={removeTask}
               onTaskDone={handleTaskDone}
+              addLogEntry={addLogEntry}
               dimmed
             />
           ))}
@@ -216,7 +219,7 @@ function TaskEnginePanel({
   );
 }
 
-function TaskRow({ task, setTaskStatus, updateTask, removeTask, onTaskDone, dimmed = false }) {
+function TaskRow({ task, setTaskStatus, updateTask, removeTask, onTaskDone, addLogEntry, dimmed = false }) {
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(task.title);
 
@@ -231,24 +234,25 @@ function TaskRow({ task, setTaskStatus, updateTask, removeTask, onTaskDone, dimm
     if (e.key === 'Escape') { setEditing(false); setEditTitle(task.title); }
   };
 
+  const handleComplete = () => {
+    setTaskStatus(task.id, TASK_STATUS.DONE);
+    if (addLogEntry) {
+      addLogEntry(`Completed: ${task.title}`, task.projectId ?? null);
+    }
+    onTaskDone?.(task);
+  };
+
   const priorityClass = `task-priority-dot task-priority-${task.priority}`;
-  const isActive = task.status === TASK_STATUS.IN_PROGRESS;
 
   return (
-    <div className={`task-row${dimmed ? ' task-row-dimmed' : ''}${isActive ? ' task-row-active' : ''}`}>
+    <div className={`task-row${dimmed ? ' task-row-dimmed' : ''}`}>
       <button
-        className={`task-complete-btn${isActive ? ' is-active' : ''}`}
-        title={isActive ? 'Mark done' : 'Start'}
-        onClick={() => {
-          if (isActive) {
-            setTaskStatus(task.id, TASK_STATUS.DONE);
-            onTaskDone?.(task);
-            return;
-          }
-          setTaskStatus(task.id, TASK_STATUS.IN_PROGRESS);
-        }}
+        className="task-complete-btn"
+        title="Mark complete"
+        onClick={handleComplete}
+        aria-label="Complete task"
       >
-        {isActive ? '●' : '○'}
+        ○
       </button>
       <span className={priorityClass} title={task.priority} />
       {editing ? (

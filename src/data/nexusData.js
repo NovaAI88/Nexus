@@ -10,7 +10,8 @@ const nexusData = {
     departments: [
       { id: 'nexus-department', label: 'Nexus', icon: '⌘' },
       { id: 'hephaestus', label: 'Hephaestus', icon: '▣' },
-      { id: 'xenon', label: 'Xenon', icon: '◇' }
+      { id: 'xenon', label: 'Xenon', icon: '◇' },
+      { id: 'aureon', label: 'AUREON', icon: '◈', page: 'aureon' }
     ],
     viewModes: [
       { id: 'focus', label: 'Focus Mode', icon: '◉' },
@@ -425,6 +426,19 @@ const nexusData = {
         ],
         done: [
           'Base structure created'
+        ]
+      },
+      aureon: {
+        title: 'AUREON',
+        subtitle: 'Capital generation execution support',
+        focus: 'Run outreach and follow-up loops to generate calls',
+        phase: 'Phase 1',
+        nextActions: [
+          'Respond to replies first',
+          'Execute pending FU1/FU2 follow-ups'
+        ],
+        done: [
+          'Execution layer initialized'
         ]
       }
     }

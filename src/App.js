@@ -1,35 +1,32 @@
 import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
 import './App.css';
-import nexusData from './data/nexusData'; // navigation + department fallback data only
+import nexusData from './data/nexusData';
 
-// ── Layout components ────────────────────────────────────────────────────────
 import Sidebar from './components/Sidebar';
 import ThemeToggle from './components/ThemeToggle';
 
-// ── Pages ────────────────────────────────────────────────────────────────────
 import DashboardPage from './pages/DashboardPage';
 import TodayPage from './pages/TodayPage';
 import WeeklyPage from './pages/WeeklyPage';
 import HistoryPage from './pages/HistoryPage';
 import DepartmentPage from './pages/DepartmentPage';
 
-// ── Panels passed as props (renderable children) ─────────────────────────────
 import PlannerBlocksPanel from './components/PlannerBlocksPanel';
 import TaskEnginePanel from './components/TaskEnginePanel';
 import QuickLogInput from './components/QuickLogInput';
+import AureonTodayPanel from './components/AureonTodayPanel';
 
-// ── Core hooks ───────────────────────────────────────────────────────────────
 import { useProjects } from './core/projects/useProjects';
+import { migrateProjectsIfStale } from './core/projects/initialState';
 import { useDepartments } from './core/departments/useDepartments';
 import { useFocusProject } from './core/projects/useFocusProject';
 import { usePlannerBlocks } from './core/planner/usePlannerBlocks';
 import { useTaskEngine } from './core/tasks/useTaskEngine';
 import { useTheme } from './core/theme/useTheme';
 import { useActivityLog } from './core/log/useActivityLog';
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Utilities
-// ─────────────────────────────────────────────────────────────────────────────
+import { useAureon } from './core/aureon/useAureon';
+import { useCompanyState } from './core/adapters/useCompanyState';
+import { useExecutionEngine } from './core/engine/useExecutionEngine';
 
 function toMinutes(value) {
   const [hours, minutes] = value.split(':').map(Number);
@@ -51,33 +48,10 @@ function formatSeconds(seconds) {
   const remainder = String(seconds % 60).padStart(2, '0');
   return `${minutes}:${remainder}`;
 }
-function formatMinutesToTime(totalMinutes) {
-  return `${String(Math.floor(totalMinutes / 60)).padStart(2, '0')}:${String(totalMinutes % 60).padStart(2, '0')}`;
-}
-function formatStaleness(isoDate) {
-  if (!isoDate) return 'last touched unknown';
-  const diffMs = Date.now() - new Date(isoDate).getTime();
-  const diffMinutes = Math.max(Math.floor(diffMs / 60000), 0);
-  if (diffMinutes < 60) return `last touched ${diffMinutes}m ago`;
-  const diffHours = Math.floor(diffMinutes / 60);
-  if (diffHours < 24) return `last touched ${diffHours}h ago`;
-  const diffDays = Math.floor(diffHours / 24);
-  return `last touched ${diffDays}d ago`;
-}
 function truncateText(text, max = 92) {
   if (!text) return '';
   return text.length > max ? `${text.slice(0, max).trim()}…` : text;
 }
-function moveItem(list, fromIndex, toIndex) {
-  const next = [...list];
-  const [item] = next.splice(fromIndex, 1);
-  next.splice(toIndex, 0, item);
-  return next;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Contexts
-// ─────────────────────────────────────────────────────────────────────────────
 
 export const ProjectsContext = createContext({
   projects: [],
@@ -110,17 +84,14 @@ export const DragDropContext = createContext({
   onTimelineDrop: () => {},
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// App
-// ─────────────────────────────────────────────────────────────────────────────
-
 function App() {
-  // ── Persistent domain state ────────────────────────────────────────────────
+  migrateProjectsIfStale();
   const { projects, updateProject, getProject } = useProjects();
   const { departments, getDepartment } = useDepartments();
   const { focusProjectId, setFocusProject, clearFocusProject } = useFocusProject();
   const { tasks, getTasksForDate, getTasksForProject, addTask, updateTask, setTaskStatus, removeTask } = useTaskEngine();
   const { log: activityLog, addEntry: addLogEntry, getProjectLog } = useActivityLog();
+  const { isConnected: aureonConnected, pipelineEntries, stats: aureonStats, primaryAction: aureonPrimaryAction } = useAureon();
   const { theme, toggleTheme } = useTheme();
   const {
     getPlannerBlocks,
@@ -131,20 +102,16 @@ function App() {
     setStopWork,
   } = usePlannerBlocks();
 
-  // ── UI state ───────────────────────────────────────────────────────────────
+  const { departments: companyDepts } = useCompanyState();
+
   const [activePage, setActivePage] = useState('dashboard');
   const [now, setNow] = useState(new Date());
   const [timerNow, setTimerNow] = useState(new Date());
-
-  // Timeline/focus state (local — not persisted, resets on reload intentionally)
   const [focusMode, setFocusMode] = useState(false);
   const [activeBlockId, setActiveBlockId] = useState(null);
-
-  // DnD state
   const [draggedBlockId, setDraggedBlockId] = useState(null);
   const [dragOverMinutes, setDragOverMinutes] = useState(null);
 
-  // ── Clock ──────────────────────────────────────────────────────────────────
   useEffect(() => {
     const id = window.setInterval(() => setNow(new Date()), 60000);
     return () => window.clearInterval(id);
@@ -155,11 +122,16 @@ function App() {
   const currentTime = useMemo(() => formatTime(now), [now]);
   const currentMinutes = useMemo(() => now.getHours() * 60 + now.getMinutes(), [now]);
 
-  // ── Timeline blocks (planner blocks = source of truth) ────────────────────
   const todayScheduleBlocks = useMemo(() => {
     const plannerBlocks = getPlannerBlocks(date).map((b) => ({
-      id: b.id, date: b.date, label: b.label, type: b.type,
-      start: b.start, end: b.end, fixed: true, taskId: null,
+      id: b.id,
+      date: b.date,
+      label: b.label,
+      type: b.type,
+      start: b.start,
+      end: b.end,
+      fixed: true,
+      taskId: null,
     }));
     return plannerBlocks.sort((a, b) => toMinutes(a.start) - toMinutes(b.start));
   }, [date, getPlannerBlocks]);
@@ -183,7 +155,6 @@ function App() {
     return { normalizedBlocks, currentBlock, nextBlock };
   }, [activeBlockId, currentMinutes, todayScheduleBlocks]);
 
-  // ── Focus timer (only when focus mode + active block) ─────────────────────
   useEffect(() => {
     if (!focusMode || !timelineState.currentBlock) return undefined;
     const id = window.setInterval(() => setTimerNow(new Date()), 1000);
@@ -211,7 +182,6 @@ function App() {
     };
   }, [focusSecondsRemaining, timelineState.currentBlock, timerNow]);
 
-  // ── Free gaps (used by recommendations) ───────────────────────────────────
   const freeGaps = useMemo(() => {
     const plannerSorted = getPlannerBlocks(date).slice().sort((a, b) => toMinutes(a.start) - toMinutes(b.start));
     const dayStart = plannerSorted.length > 0 ? toMinutes(plannerSorted[0].start) : 7 * 60 + 30;
@@ -229,6 +199,17 @@ function App() {
     return gaps.filter((g) => g.end > currentMinutes);
   }, [currentMinutes, date, getPlannerBlocks, stopWork, todayScheduleBlocks]);
 
+  const companyStateForEngine = useMemo(() => ({ departments: companyDepts }), [companyDepts]);
+  const timeContextForEngine = useMemo(() => ({ currentMinutes, freeGaps, stopWork }), [currentMinutes, freeGaps, stopWork]);
+
+  const {
+    primaryAction: enginePrimaryAction,
+    recommendedBlocks,
+    departmentQueue,
+    reasoning: engineReasoning,
+    dismissDept,
+  } = useExecutionEngine(companyStateForEngine, timeContextForEngine);
+
   const canPlaceDurationAtMinutes = useCallback((startMinutes, duration) => {
     const dayEnd = stopWork.enabled ? toMinutes(stopWork.time) : 22 * 60;
     const endMinutes = startMinutes + duration;
@@ -236,98 +217,18 @@ function App() {
     return !todayScheduleBlocks.some((b) => startMinutes < toMinutes(b.end) && endMinutes > toMinutes(b.start));
   }, [stopWork, todayScheduleBlocks]);
 
-  const currentGap = useMemo(() =>
-    freeGaps.find((g) => g.start <= currentMinutes && currentMinutes < g.end)
-    || freeGaps.find((g) => g.start > currentMinutes)
-    || null,
-    [currentMinutes, freeGaps]
-  );
-
-
-  // ── Project-aware recommendation engine (no legacy nexusData catalog) ──────
-  const recommendationCatalog = useMemo(() => {
-    const pastStopWork = stopWork.enabled && currentMinutes >= toMinutes(stopWork.time);
-    if (pastStopWork) return [];
-
-    const focusProject = focusProjectId ? projects.find((p) => p.id === focusProjectId) : null;
-    const items = [];
-
-    if (focusProject && focusProject.status === 'active') {
-      items.push({
-        id: `rec-${focusProject.id}`,
-        projectId: focusProject.id,
-        isFocusProject: true,
-        title: focusProject.nextAction,
-        description: formatStaleness(focusProject.lastUpdated),
-        duration: 60,
-        minDuration: 30,
-        maxDuration: 120,
-        step: 15,
-        actionType: 'schedule',
-        group: 'project',
-        groupLabel: focusProject.name,
-        category: focusProject.name,
-      });
-    }
-
-    projects
-      .filter((p) => p.status === 'active' && p.id !== focusProjectId)
-      .forEach((p) => {
-        items.push({
-          id: `rec-${p.id}`,
-          projectId: p.id,
-          isFocusProject: false,
-          title: p.nextAction,
-          description: formatStaleness(p.lastUpdated),
-          duration: 45,
-          minDuration: 20,
-          maxDuration: 90,
-          step: 15,
-          actionType: 'schedule',
-          group: 'project',
-          groupLabel: p.name,
-          category: p.name,
-        });
-      });
-
-    return items.map((item) => {
-      const bestGap = freeGaps.find((g) => g.duration >= item.duration) || currentGap;
-      const fitScore = (bestGap ? Math.abs(bestGap.duration - item.duration) : 9999)
-        + (item.isFocusProject ? -500 : 0);
-      return {
-        ...item,
-        selectedDuration: item.duration,
-        status: 'open',
-        suggestedGap: bestGap,
-        suggestedLabel: bestGap
-          ? `${formatMinutesToTime(bestGap.start)}–${formatMinutesToTime(bestGap.start + item.duration)}`
-          : null,
-        fitScore,
-      };
-    }).sort((a, b) => a.fitScore - b.fitScore);
-  }, [currentGap, currentMinutes, focusProjectId, freeGaps, projects, stopWork]);
-
-  // ── DnD handlers ──────────────────────────────────────────────────────────
   const handleDragStart = useCallback((blockId) => setDraggedBlockId(blockId), []);
   const handleDragEnd = useCallback(() => { setDraggedBlockId(null); setDragOverMinutes(null); }, []);
-
-  const handleTimelineDragOver = useCallback((slotMinutes) => {
-    setDragOverMinutes(slotMinutes);
-    return false; // planner blocks are fixed in this model — DnD moves within PlannerBlocksPanel
-  }, []);
-
+  const handleTimelineDragOver = useCallback((slotMinutes) => { setDragOverMinutes(slotMinutes); return false; }, []);
   const handleTimelineDragLeave = useCallback(() => setDragOverMinutes(null), []);
   const handleTimelineDrop = useCallback(() => { setDraggedBlockId(null); setDragOverMinutes(null); return false; }, []);
 
-  // ── Focus mode controls ───────────────────────────────────────────────────
   const handleStartBlock = useCallback(() => { setActivePage('today'); setFocusMode(true); }, []);
   const handleExitFocus = useCallback(() => { setFocusMode(false); setActiveBlockId(null); }, []);
 
-  // ── Page rendering ─────────────────────────────────────────────────────────
   const focusProject = useMemo(() =>
-    focusProjectId ? projects.find((p) => p.id === focusProjectId) ?? null : null,
-    [focusProjectId, projects]
-  );
+    (focusProjectId ? projects.find((p) => p.id === focusProjectId) ?? null : null),
+  [focusProjectId, projects]);
 
   const todayTasks = useMemo(() => getTasksForDate(date), [date, getTasksForDate]);
   const openTodayCount = useMemo(() => todayTasks.filter((t) => t.status !== 'done' && t.status !== 'cancelled').length, [todayTasks]);
@@ -340,21 +241,16 @@ function App() {
     const availableHours = (availableMinutes / 60).toFixed(1);
     return `${availableHours}h available · ${openTodayCount} tasks open`;
   }, [currentMinutes, freeGaps, openTodayCount]);
-  const focusTasks = useMemo(() => focusProjectId ? getTasksForProject(focusProjectId) : [], [focusProjectId, getTasksForProject]);
+
+  const focusTasks = useMemo(() => (focusProjectId ? getTasksForProject(focusProjectId) : []), [focusProjectId, getTasksForProject]);
   const recentLog = useMemo(() =>
-    focusProjectId
+    (focusProjectId
       ? activityLog.filter((e) => e.projectId === focusProjectId).slice(0, 5)
-      : activityLog.slice(0, 5),
-    [activityLog, focusProjectId]
-  );
+      : activityLog.slice(0, 5)),
+  [activityLog, focusProjectId]);
 
   const quickLogPanel = useMemo(() => (
-    <QuickLogInput
-      focusProject={focusProject}
-      addEntry={addLogEntry}
-      recentEntries={recentLog}
-      compact
-    />
+    <QuickLogInput focusProject={focusProject} addEntry={addLogEntry} recentEntries={recentLog} compact />
   ), [focusProject, addLogEntry, recentLog]);
 
   const plannerPanel = useMemo(() => (
@@ -369,6 +265,15 @@ function App() {
     />
   ), [date, getPlannerBlocks, addPlannerBlock, updatePlannerBlock, removePlannerBlock, stopWork, setStopWork]);
 
+  const aureonPanel = useMemo(() => (
+    <AureonTodayPanel
+      isConnected={aureonConnected}
+      pipelineEntries={pipelineEntries}
+      stats={aureonStats}
+      primaryAction={aureonPrimaryAction}
+    />
+  ), [aureonConnected, pipelineEntries, aureonPrimaryAction, aureonStats]);
+
   const taskPanel = useMemo(() => (
     <TaskEnginePanel
       date={date}
@@ -381,18 +286,14 @@ function App() {
       removeTask={removeTask}
       updateProject={updateProject}
       getProject={getProject}
+      addLogEntry={addLogEntry}
     />
-  ), [addTask, date, focusProject, focusTasks, getProject, removeTask, setTaskStatus, todayTasks, updateProject, updateTask]);
+  ), [addLogEntry, addTask, date, focusProject, focusTasks, getProject, removeTask, setTaskStatus, todayTasks, updateProject, updateTask]);
 
   const dashLogPanel = useMemo(() => (
-    <QuickLogInput
-      focusProject={focusProject}
-      addEntry={addLogEntry}
-      recentEntries={recentLog}
-    />
+    <QuickLogInput focusProject={focusProject} addEntry={addLogEntry} recentEntries={recentLog} />
   ), [addLogEntry, focusProject, recentLog]);
 
-  // ── Route ─────────────────────────────────────────────────────────────────
   const pageContent = useMemo(() => {
     switch (activePage) {
       case 'today':
@@ -407,7 +308,6 @@ function App() {
             activeBlock={timelineState.currentBlock || (activeBlockId ? todayScheduleBlocks.find((b) => b.id === activeBlockId) || null : null)}
             timerDisplay={timerState.display}
             timerProgress={timerState.progress}
-            recommendations={recommendationCatalog}
             onStartBlock={handleStartBlock}
             onExitFocus={handleExitFocus}
             onAddBlock={addPlannerBlock}
@@ -421,14 +321,28 @@ function App() {
             taskEnginePanel={taskPanel}
             dayConstraintsPanel={plannerPanel}
             quickLogPanel={quickLogPanel}
+            aureonPanel={aureonPanel}
             focusProjectId={focusProjectId}
             focusProject={focusProject}
             sessionBudgetText={sessionBudgetText}
             projectContextPreview={truncateText(focusProject?.nextAction || '', 96)}
+            enginePrimaryAction={enginePrimaryAction}
+            recommendedBlocks={recommendedBlocks}
+            dismissDept={dismissDept}
+            engineReasoning={engineReasoning}
           />
         );
       case 'weekly':
-        return <WeeklyPage date={date} projects={projects} focusProjectId={focusProjectId} />;
+        return (
+          <WeeklyPage
+            date={date}
+            projects={projects}
+            focusProjectId={focusProjectId}
+            departmentQueue={departmentQueue}
+            engineReasoning={engineReasoning}
+            addPlannerBlock={addPlannerBlock}
+          />
+        );
       case 'history':
         return <HistoryPage date={date} activityLog={activityLog} tasks={tasks} />;
       case 'nexus-department':
@@ -473,6 +387,20 @@ function App() {
             fallbackPage={nexusData.pages.departments.xenon}
           />
         );
+      case 'aureon':
+        return (
+          <DepartmentPage
+            departmentId="aureon"
+            departments={departments}
+            projects={projects}
+            getDepartment={getDepartment}
+            updateProject={updateProject}
+            focusProjectId={focusProjectId}
+            setFocusProject={setFocusProject}
+            date={date}
+            fallbackPage={nexusData.pages.departments.aureon}
+          />
+        );
       case 'dashboard':
       default:
         return (
@@ -486,32 +414,94 @@ function App() {
             doneTodayCount={doneTodayCount}
             onNavigate={setActivePage}
             logPanel={dashLogPanel}
+            departmentQueue={departmentQueue}
+            engineReasoning={engineReasoning}
+            enginePrimaryAction={enginePrimaryAction}
           />
         );
     }
   }, [
-    activePage, activityLog, activeBlockId, addPlannerBlock, canPlaceDurationAtMinutes,
-    currentTime, date, departments, doneTodayCount, draggedBlockId, dragOverMinutes,
-    focusMode, focusProject, focusProjectId, getDepartment, handleExitFocus, handleStartBlock,
-    handleTimelineDragLeave, handleTimelineDragOver, handleTimelineDrop,
-    openTodayCount, plannerPanel, projects, quickLogPanel, recommendationCatalog,
-    removePlannerBlock, sessionBudgetText, setFocusProject, dashLogPanel, taskPanel, tasks,
-    timerState.display, timerState.progress, timelineState.currentBlock,
-    timelineState.nextBlock, timelineState.normalizedBlocks, todayScheduleBlocks,
+    activePage,
+    activityLog,
+    activeBlockId,
+    addPlannerBlock,
+    aureonPanel,
+    canPlaceDurationAtMinutes,
+    currentTime,
+    date,
+    departments,
+    departmentQueue,
+    dismissDept,
+    doneTodayCount,
+    draggedBlockId,
+    dragOverMinutes,
+    enginePrimaryAction,
+    engineReasoning,
+    focusMode,
+    focusProject,
+    focusProjectId,
+    getDepartment,
+    handleExitFocus,
+    handleStartBlock,
+    handleTimelineDragLeave,
+    handleTimelineDragOver,
+    handleTimelineDrop,
+    openTodayCount,
+    plannerPanel,
+    projects,
+    quickLogPanel,
+    recommendedBlocks,
+    removePlannerBlock,
+    sessionBudgetText,
+    setFocusProject,
+    dashLogPanel,
+    taskPanel,
+    tasks,
+    timerState.display,
+    timerState.progress,
+    timelineState.currentBlock,
+    timelineState.nextBlock,
+    timelineState.normalizedBlocks,
+    todayScheduleBlocks,
     updateProject,
   ]);
 
-  // ── Context values ─────────────────────────────────────────────────────────
   const projectsContextValue = useMemo(() => ({
-    projects, departments, updateProject, getProject, getDepartment,
-    focusProjectId, setFocusProject, clearFocusProject,
-    tasks, addTask, updateTask, setTaskStatus, removeTask, getTasksForProject,
-    activityLog, addLogEntry, getProjectLog,
+    projects,
+    departments,
+    updateProject,
+    getProject,
+    getDepartment,
+    focusProjectId,
+    setFocusProject,
+    clearFocusProject,
+    tasks,
+    addTask,
+    updateTask,
+    setTaskStatus,
+    removeTask,
+    getTasksForProject,
+    activityLog,
+    addLogEntry,
+    getProjectLog,
   }), [
-    projects, departments, updateProject, getProject, getDepartment,
-    focusProjectId, setFocusProject, clearFocusProject,
-    tasks, addTask, updateTask, setTaskStatus, removeTask, getTasksForProject,
-    activityLog, addLogEntry, getProjectLog,
+    projects,
+    departments,
+    updateProject,
+    getProject,
+    getDepartment,
+    focusProjectId,
+    setFocusProject,
+    clearFocusProject,
+    tasks,
+    addTask,
+    updateTask,
+    setTaskStatus,
+    removeTask,
+    getTasksForProject,
+    activityLog,
+    addLogEntry,
+    getProjectLog,
   ]);
 
   const dragDropValue = useMemo(() => ({
@@ -534,9 +524,7 @@ function App() {
           <Sidebar
             navigation={nexusData.navigation}
             activePage={activePage}
-            viewMode="overview"
             onNavigate={setActivePage}
-            onViewChange={() => {}}
           />
           <main className="main-shell">
             <div className="app-theme-toggle-wrapper">
