@@ -1,6 +1,7 @@
 const nexusData = {
   navigation: {
     main: [
+      { id: 'overview', label: 'Overview', icon: '◈' },
       { id: 'today', label: 'Today', icon: '●' },
       { id: 'week', label: 'Week', icon: '◷' },
       { id: 'company', label: 'Company', icon: '◫' },

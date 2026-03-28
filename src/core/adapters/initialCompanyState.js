@@ -1,4 +1,12 @@
-export const INITIAL_COMPANY_STATE = {
+// Try to load generated company data (from scripts/generateCompanyData.js)
+let generatedData = null;
+try {
+  generatedData = require('../../data/companyData.generated.json');
+} catch {
+  // Generated data not available — use hardcoded defaults
+}
+
+const HARDCODED_STATE = {
   departments: [
     {
       id: 'nexus',
@@ -50,3 +58,50 @@ export const INITIAL_COMPANY_STATE = {
     },
   ],
 };
+
+// Merge generated data into hardcoded state
+function mergeGeneratedData(base, generated) {
+  if (!generated) return base;
+
+  const merged = { ...base };
+
+  // Enrich departments with generated data
+  if (generated.departments?.length > 0) {
+    merged.departments = base.departments.map((dept) => {
+      const genDept = generated.departments.find(
+        (g) => g.name.toLowerCase() === dept.name.toLowerCase()
+      );
+      if (genDept) {
+        return {
+          ...dept,
+          phase: cleanMarkdown(genDept.phase) || dept.phase,
+          blockers: genDept.blockers && genDept.blockers !== 'None'
+            ? [cleanMarkdown(genDept.blockers)]
+            : dept.blockers,
+        };
+      }
+      return dept;
+    });
+  }
+
+  // Attach extra data
+  merged._generated = {
+    pipeline: generated.pipeline || [],
+    backlog: generated.backlog || {},
+    tasks: generated.tasks || {},
+    nextActions: generated.nextActions || [],
+    phaseTracker: generated.phaseTracker || [],
+    blockers: generated.blockers || [],
+    currentFocus: generated.currentFocus || {},
+    lastGenerated: generated.lastGenerated,
+  };
+
+  return merged;
+}
+
+function cleanMarkdown(str) {
+  if (!str) return '';
+  return str.replace(/^\*{1,2}\s*/, '').replace(/\s*\*{1,2}$/, '').trim();
+}
+
+export const INITIAL_COMPANY_STATE = mergeGeneratedData(HARDCODED_STATE, generatedData);

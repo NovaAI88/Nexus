@@ -1,0 +1,537 @@
+{
+  "departments": [
+    {
+      "name": "NEXUS",
+      "phase": "** Phase 8.75 — Foundation Cleanup Complete ✅",
+      "status": "active",
+      "blockers": "** None",
+      "source": "current_state"
+    },
+    {
+      "name": "AUREON",
+      "phase": "** Phase 1 — Initialized ✅",
+      "status": "** System built and operational. Execution begins now.",
+      "blockers": "** None — execution-ready",
+      "source": "current_state"
+    }
+  ],
+  "backlog": {
+    "hephaestus": [
+      {
+        "done": false,
+        "text": "Any AETHER legacy code migration — evaluate after audit, not before"
+      },
+      {
+        "done": false,
+        "text": "Any external-facing products not yet defined"
+      }
+    ]
+  },
+  "pipeline": [
+    {
+      "_": "---",
+      "company": "---",
+      "founder": "---",
+      "score": "---:",
+      "channel": "---",
+      "dm_sent": "---",
+      "fu1_due": "---",
+      "fu2_due": "---",
+      "response": "---",
+      "status": "---",
+      "notes": "---"
+    },
+    {
+      "_": "1",
+      "company": "Sternglas",
+      "founder": "Dustin Fontaine",
+      "score": "18",
+      "channel": "LinkedIn",
+      "dm_sent": "2026-03-27",
+      "fu1_due": "2026-03-29",
+      "fu2_due": "2026-03-31",
+      "response": "None",
+      "status": "📤 DM sent",
+      "notes": "Germany lead"
+    },
+    {
+      "_": "2",
+      "company": "3Bears",
+      "founder": "Caroline Nichols",
+      "score": "17",
+      "channel": "LinkedIn",
+      "dm_sent": "2026-03-27",
+      "fu1_due": "2026-03-29",
+      "fu2_due": "2026-03-31",
+      "response": "None",
+      "status": "📤 DM sent",
+      "notes": "Germany lead"
+    },
+    {
+      "_": "3",
+      "company": "gitti",
+      "founder": "Jennifer Baum-Minkus",
+      "score": "16",
+      "channel": "LinkedIn",
+      "dm_sent": "2026-03-27",
+      "fu1_due": "2026-03-29",
+      "fu2_due": "2026-03-31",
+      "response": "None",
+      "status": "📤 DM sent",
+      "notes": "Germany lead"
+    },
+    {
+      "_": "4",
+      "company": "OH APRIL",
+      "founder": "Carmen Kroll",
+      "score": "16",
+      "channel": "LinkedIn/IG",
+      "dm_sent": "2026-03-27",
+      "fu1_due": "2026-03-29",
+      "fu2_due": "2026-03-31",
+      "response": "None",
+      "status": "📤 DM sent",
+      "notes": "Germany lead"
+    },
+    {
+      "_": "5",
+      "company": "Kloster Kitchen",
+      "founder": "Mario Fürst",
+      "score": "14",
+      "channel": "LinkedIn",
+      "dm_sent": "2026-03-27",
+      "fu1_due": "2026-03-29",
+      "fu2_due": "2026-03-31",
+      "response": "None",
+      "status": "📤 DM sent",
+      "notes": "Germany lead"
+    },
+    {
+      "_": "6",
+      "company": "ahead Nutrition",
+      "founder": "Johannes Sorensen",
+      "score": "14",
+      "channel": "LinkedIn",
+      "dm_sent": "2026-03-27",
+      "fu1_due": "2026-03-29",
+      "fu2_due": "2026-03-31",
+      "response": "None",
+      "status": "📤 DM sent",
+      "notes": "Germany lead"
+    },
+    {
+      "_": "7",
+      "company": "XbyX",
+      "founder": "Peggy Reichelt",
+      "score": "13",
+      "channel": "LinkedIn",
+      "dm_sent": "2026-03-27",
+      "fu1_due": "2026-03-29",
+      "fu2_due": "2026-03-31",
+      "response": "None",
+      "status": "📤 DM sent",
+      "notes": "Germany lead"
+    },
+    {
+      "_": "8",
+      "company": "Hey Marly",
+      "founder": "TBD",
+      "score": "12",
+      "channel": "LinkedIn",
+      "dm_sent": "2026-03-27",
+      "fu1_due": "2026-03-29",
+      "fu2_due": "2026-03-31",
+      "response": "None",
+      "status": "📤 DM sent",
+      "notes": "Verify founder"
+    },
+    {
+      "_": "9",
+      "company": "DR. VIVIEN KARL",
+      "founder": "TBD",
+      "score": "11",
+      "channel": "LinkedIn",
+      "dm_sent": "2026-03-27",
+      "fu1_due": "2026-03-29",
+      "fu2_due": "2026-03-31",
+      "response": "None",
+      "status": "📤 DM sent",
+      "notes": "Verify founder"
+    },
+    {
+      "_": "10",
+      "company": "PURELEI",
+      "founder": "Alisa Jahnke (co-founder)",
+      "score": "12",
+      "channel": "LinkedIn/Email",
+      "dm_sent": "—",
+      "fu1_due": "—",
+      "fu2_due": "—",
+      "response": "None",
+      "status": "🔵 Not contacted",
+      "notes": "DE-only expansion"
+    },
+    {
+      "_": "11",
+      "company": "SNOCKS",
+      "founder": "Johannes Kliesch (co-founder)",
+      "score": "12",
+      "channel": "LinkedIn/Email",
+      "dm_sent": "—",
+      "fu1_due": "—",
+      "fu2_due": "—",
+      "response": "None",
+      "status": "🔵 Not contacted",
+      "notes": "Use benchmark angle"
+    },
+    {
+      "_": "12",
+      "company": "Rosental Organics",
+      "founder": "Public founder contact",
+      "score": "11",
+      "channel": "Instagram/Email",
+      "dm_sent": "—",
+      "fu1_due": "—",
+      "fu2_due": "—",
+      "response": "None",
+      "status": "🔵 Not contacted",
+      "notes": "Tone-sensitive brand"
+    },
+    {
+      "_": "13",
+      "company": "bears with benefits",
+      "founder": "TBD",
+      "score": "11",
+      "channel": "Email",
+      "dm_sent": "—",
+      "fu1_due": "—",
+      "fu2_due": "—",
+      "response": "None",
+      "status": "🔵 Not contacted",
+      "notes": "Supplement DTC"
+    },
+    {
+      "_": "14",
+      "company": "everdrop",
+      "founder": "David Löwe (co-founder)",
+      "score": "10",
+      "channel": "LinkedIn/Email",
+      "dm_sent": "—",
+      "fu1_due": "—",
+      "fu2_due": "—",
+      "response": "None",
+      "status": "🔵 Not contacted",
+      "notes": "Mature stack likely"
+    },
+    {
+      "_": "15",
+      "company": "Kapten & Son",
+      "founder": "TBD",
+      "score": "10",
+      "channel": "LinkedIn",
+      "dm_sent": "—",
+      "fu1_due": "—",
+      "fu2_due": "—",
+      "response": "None",
+      "status": "🔵 Needs research",
+      "notes": "Verify contact owner"
+    },
+    {
+      "_": "16",
+      "company": "Oceansapart",
+      "founder": "TBD",
+      "score": "9",
+      "channel": "LinkedIn/Email",
+      "dm_sent": "—",
+      "fu1_due": "—",
+      "fu2_due": "—",
+      "response": "None",
+      "status": "🔵 Needs research",
+      "notes": "Verify owner route"
+    },
+    {
+      "_": "17",
+      "company": "Erlich Textil",
+      "founder": "TBD",
+      "score": "10",
+      "channel": "Email",
+      "dm_sent": "—",
+      "fu1_due": "—",
+      "fu2_due": "—",
+      "response": "None",
+      "status": "🔵 Not contacted",
+      "notes": "Repeat-cycle angle"
+    },
+    {
+      "_": "18",
+      "company": "HORST Lifestyle",
+      "founder": "TBD",
+      "score": "9",
+      "channel": "Contact form",
+      "dm_sent": "—",
+      "fu1_due": "—",
+      "fu2_due": "—",
+      "response": "None",
+      "status": "🔵 Needs research",
+      "notes": "Founder + email needed"
+    },
+    {
+      "_": "19",
+      "company": "Greenforce",
+      "founder": "TBD",
+      "score": "10",
+      "channel": "LinkedIn/Email",
+      "dm_sent": "—",
+      "fu1_due": "—",
+      "fu2_due": "—",
+      "response": "None",
+      "status": "🔵 Not contacted",
+      "notes": "Food DTC repeat angle"
+    },
+    {
+      "_": "20",
+      "company": "KoRo",
+      "founder": "Piran Asci (co-founder)",
+      "score": "10",
+      "channel": "LinkedIn/Email",
+      "dm_sent": "—",
+      "fu1_due": "—",
+      "fu2_due": "—",
+      "response": "None",
+      "status": "🔵 Not contacted",
+      "notes": "Audit-first approach"
+    },
+    {
+      "_": "Icon",
+      "company": "Meaning",
+      "founder": "",
+      "score": "",
+      "channel": "",
+      "dm_sent": "",
+      "fu1_due": "",
+      "fu2_due": "",
+      "response": "",
+      "status": "",
+      "notes": ""
+    },
+    {
+      "_": "🔵",
+      "company": "Not contacted",
+      "founder": "",
+      "score": "",
+      "channel": "",
+      "dm_sent": "",
+      "fu1_due": "",
+      "fu2_due": "",
+      "response": "",
+      "status": "",
+      "notes": ""
+    },
+    {
+      "_": "📤",
+      "company": "DM sent",
+      "founder": "",
+      "score": "",
+      "channel": "",
+      "dm_sent": "",
+      "fu1_due": "",
+      "fu2_due": "",
+      "response": "",
+      "status": "",
+      "notes": ""
+    },
+    {
+      "_": "📩",
+      "company": "Responded",
+      "founder": "",
+      "score": "",
+      "channel": "",
+      "dm_sent": "",
+      "fu1_due": "",
+      "fu2_due": "",
+      "response": "",
+      "status": "",
+      "notes": ""
+    },
+    {
+      "_": "📅",
+      "company": "Call booked",
+      "founder": "",
+      "score": "",
+      "channel": "",
+      "dm_sent": "",
+      "fu1_due": "",
+      "fu2_due": "",
+      "response": "",
+      "status": "",
+      "notes": ""
+    },
+    {
+      "_": "✅",
+      "company": "Deal closed",
+      "founder": "",
+      "score": "",
+      "channel": "",
+      "dm_sent": "",
+      "fu1_due": "",
+      "fu2_due": "",
+      "response": "",
+      "status": "",
+      "notes": ""
+    },
+    {
+      "_": "❌",
+      "company": "Dead",
+      "founder": "",
+      "score": "",
+      "channel": "",
+      "dm_sent": "",
+      "fu1_due": "",
+      "fu2_due": "",
+      "response": "",
+      "status": "",
+      "notes": ""
+    },
+    {
+      "_": "⏸️",
+      "company": "On hold",
+      "founder": "",
+      "score": "",
+      "channel": "",
+      "dm_sent": "",
+      "fu1_due": "",
+      "fu2_due": "",
+      "response": "",
+      "status": "",
+      "notes": ""
+    }
+  ],
+  "tasks": {
+    "nexus": []
+  },
+  "blockers": [],
+  "nextActions": [
+    {
+      "priority": 1,
+      "title": "1. VORTEX — Resume from Phase 2 Complete (FIRST)",
+      "details": "**Owner:** Nova (Hephaestus mode)\n\n**Strict startup sequence (mandatory):**\n- [ ] Confirm exact repo path first:\n  - `cd /Users/nicholasgeorge/workspace/company/03_HEPHAESTUS/03_PROJECTS/VORTEX/code/b"
+    },
+    {
+      "priority": 2,
+      "title": "2. VORTEX — Define Phase 3 RANGE Plan (after verification only)",
+      "details": "**Owner:** Nova\n\n**Actions:**\n- [ ] Propose Phase 3 using evidence from current Phase 2 behavior\n- [ ] Keep scope within RANGE strategy/router unless evidence requires expansion\n- [ ] Preserve staged "
+    },
+    {
+      "priority": 3,
+      "title": "3. NEXUS / XENON (deferred while VORTEX handoff is active)",
+      "details": "**Status:** Deferred to maintain clean continuation context and avoid cross-stream drift."
+    }
+  ],
+  "phaseTracker": [
+    {
+      "field": "**Phase**",
+      "status": "Phase 2 — Complete ✅"
+    },
+    {
+      "field": "**Last Completed**",
+      "status": "nexus-ui build verified, SYSTEM files populated"
+    },
+    {
+      "field": "**Next Step**",
+      "status": "NEXUS Product Phase 2 (backend) — after Phase 5 begins"
+    },
+    {
+      "field": "**Blockers**",
+      "status": "None"
+    },
+    {
+      "field": "Field",
+      "status": "Status"
+    },
+    {
+      "field": "**Phase**",
+      "status": "Phase 3 — Complete ✅"
+    },
+    {
+      "field": "**Last Completed**",
+      "status": "All department files populated, VORTEX canonical location, tech decisions log"
+    },
+    {
+      "field": "**Next Step**",
+      "status": "VORTEX architecture phase (Phase 5)"
+    },
+    {
+      "field": "**Blockers**",
+      "status": "None"
+    },
+    {
+      "field": "Field",
+      "status": "Status"
+    },
+    {
+      "field": "**Phase**",
+      "status": "Phase 0 — Pre-rebuild ✅"
+    },
+    {
+      "field": "**Current Location**",
+      "status": "`03_HEPHAESTUS/03_PROJECTS/VORTEX/` (canonical)"
+    },
+    {
+      "field": "**Last Completed**",
+      "status": "Moved to canonical location, product overview written"
+    },
+    {
+      "field": "**Next Step**",
+      "status": "Phase 5 — AETHER audit → architecture → rebuild"
+    },
+    {
+      "field": "**Blockers**",
+      "status": "Intentional — Phase 5 starts now"
+    },
+    {
+      "field": "Field",
+      "status": "Status"
+    },
+    {
+      "field": "**Phase**",
+      "status": "Phase 4 — Complete ✅"
+    },
+    {
+      "field": "**Last Completed**",
+      "status": "All 6 department files populated, campaign template, channel tracker"
+    },
+    {
+      "field": "**Next Step**",
+      "status": "Nicholas decides: channel + format → first campaign"
+    },
+    {
+      "field": "**Blockers**",
+      "status": "Awaiting direction (channel/format decision)"
+    },
+    {
+      "field": "Project",
+      "status": "Phase"
+    },
+    {
+      "field": "NEXUS",
+      "status": "Phase 2"
+    },
+    {
+      "field": "HEPHAESTUS",
+      "status": "Phase 3"
+    },
+    {
+      "field": "VORTEX",
+      "status": "Phase 0"
+    },
+    {
+      "field": "XENON",
+      "status": "Phase 4"
+    }
+  ],
+  "lastGenerated": "2026-03-28T22:48:54.608Z",
+  "currentFocus": {
+    "hephaestus": "# HEPHAESTUS — Current Focus\n\n**Last updated:** 2026-03-22\n\n---\n\n## Active Focus\n\n**Phase 3 — Department structure and engineering visibility**\n\nHEPHAESTUS is being established as a functional department. The immediate work is structural — getting visibility in place before any product implementation begins.\n\n---\n\n## Current State\n\n| Area | Status | Notes |\n|------|--------|-------|\n| Department files | ✅ Populated | This session |\n| VORTEX canonical location | ✅ Established | `03_PROJECTS/VORTE",
+    "xenon": "# XENON — Current Focus\n\n**Last updated:** 2026-03-22\n\n---\n\n## Active Focus\n\n**Phase 4 — Department structure established**\n\nXENON is structurally in place. No campaigns are running yet. First campaign definition is the immediate next step once Nicholas decides on channel and format.\n\n---\n\n## Current State\n\n| Area | Status | Notes |\n|------|--------|-------|\n| Department structure | ✅ Complete | This session |\n| First campaign defined | 🔴 Not started | Awaiting direction |\n| Channel accounts | "
+  }
+}

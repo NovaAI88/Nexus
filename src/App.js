@@ -9,6 +9,7 @@ import TodayPage from './pages/TodayPage';
 import WeeklyPage from './pages/WeeklyPage';
 import HistoryPage from './pages/HistoryPage';
 import CompanyPage from './pages/CompanyPage';
+import OverviewPage from './pages/OverviewPage';
 
 import PlannerBlocksPanel from './components/PlannerBlocksPanel';
 import TaskEnginePanel from './components/TaskEnginePanel';
@@ -27,9 +28,11 @@ import { useAureon } from './core/aureon/useAureon';
 import { useCompanyState } from './core/adapters/useCompanyState';
 import { useExecutionEngine } from './core/engine/useExecutionEngine';
 import { useEnergyProfile } from './core/energy/useEnergyProfile';
+import { useHealthData } from './core/health/useHealthData';
 
 import EnergyBar from './components/EnergyBar';
 import LifeBlockPicker from './components/LifeBlockPicker';
+import ChatPlannerInput from './components/ChatPlannerInput';
 
 function toMinutes(value) {
   const [hours, minutes] = value.split(':').map(Number);
@@ -117,9 +120,11 @@ function App() {
   const [dragOverMinutes, setDragOverMinutes] = useState(null);
 
   useEffect(() => {
-    const id = window.setInterval(() => setNow(new Date()), 60000);
+    // Tick every 1s when active block exists, 60s otherwise
+    const interval = activeBlockId ? 1000 : 60000;
+    const id = window.setInterval(() => setNow(new Date()), interval);
     return () => window.clearInterval(id);
-  }, []);
+  }, [activeBlockId]);
   useEffect(() => { setTimerNow(now); }, [now]);
 
   // Global keyboard shortcuts
@@ -153,6 +158,7 @@ function App() {
   const currentMinutes = useMemo(() => now.getHours() * 60 + now.getMinutes(), [now]);
 
   const { effectiveZoneMap, currentZone } = useEnergyProfile(currentMinutes);
+  const healthData = useHealthData(currentMinutes);
 
   const todayScheduleBlocks = useMemo(() => {
     const plannerBlocks = getPlannerBlocks(date).map((b) => ({
@@ -399,12 +405,56 @@ function App() {
     <EnergyBar zoneMap={effectiveZoneMap} currentMinutes={currentMinutes} />
   ), [effectiveZoneMap, currentMinutes]);
 
+  const chatPlannerPanel = useMemo(() => (
+    <ChatPlannerInput
+      date={date}
+      currentMinutes={currentMinutes}
+      freeGaps={freeGaps}
+      onAddBlock={addPlannerBlock}
+    />
+  ), [date, currentMinutes, freeGaps, addPlannerBlock]);
+
   const lifeBlockPickerPanel = useMemo(() => (
     <LifeBlockPicker
       currentZone={currentZone}
       onSelectActivity={handleSelectLifeActivity}
     />
   ), [currentZone, handleSelectLifeActivity]);
+
+  // Overview data
+  const weekHoursData = useMemo(() => {
+    const today = new Date(date + 'T12:00:00');
+    const dow = today.getDay();
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - ((dow + 6) % 7));
+    let totalMin = 0;
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      const ds = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const blocks = getPlannerBlocks ? getPlannerBlocks(ds) : [];
+      for (const b of blocks) {
+        const [sh, sm] = b.start.split(':').map(Number);
+        const [eh, em] = b.end.split(':').map(Number);
+        totalMin += (eh * 60 + em) - (sh * 60 + sm);
+      }
+    }
+    return { worked: totalMin / 60, target: 40 };
+  }, [date, getPlannerBlocks]);
+
+  const pipelineStats = useMemo(() => {
+    try {
+      const gen = require('./data/companyData.generated.json');
+      if (!gen?.pipeline?.length) return null;
+      const today = date;
+      return {
+        total: gen.pipeline.length,
+        contacted: gen.pipeline.filter((l) => l.status?.includes('DM sent') || l.status?.includes('replied')).length,
+        responses: gen.pipeline.filter((l) => l.response && l.response !== 'None' && l.response !== '—').length,
+        followUpsDue: gen.pipeline.filter((l) => l.fu1_due <= today || l.fu2_due <= today).length,
+      };
+    } catch { return null; }
+  }, [date]);
 
   const pageContent = useMemo(() => {
     switch (activePage) {
@@ -425,6 +475,7 @@ function App() {
             onAddBlock={addPlannerBlock}
             onRemoveBlock={(blockId) => removePlannerBlock(date, blockId)}
             onUpdateBlock={(blockId, patch) => updatePlannerBlock(date, blockId, patch)}
+            chatPanel={chatPlannerPanel}
             taskEnginePanel={taskPanel}
             dayConstraintsPanel={plannerPanel}
             quickLogPanel={quickLogPanel}
@@ -453,6 +504,7 @@ function App() {
             removePlannerBlock={removePlannerBlock}
             getPlannerBlocks={getPlannerBlocks}
             getTasksForDate={getTasksForDate}
+            setTaskStatus={setTaskStatus}
             onNavigate={setActivePage}
           />
         );
@@ -473,6 +525,26 @@ function App() {
             date={date}
           />
         );
+      case 'overview':
+        return (
+          <OverviewPage
+            date={date}
+            currentTime={currentTime}
+            currentZone={currentZone}
+            scheduleBlocks={timelineState.normalizedBlocks}
+            todayTasks={todayTasks}
+            doneTodayCount={doneTodayCount}
+            openTodayCount={openTodayCount}
+            sessionBudgetText={sessionBudgetText}
+            departmentQueue={departmentQueue}
+            engineReasoning={engineReasoning}
+            weekHoursWorked={weekHoursData.worked}
+            weekHoursTarget={weekHoursData.target}
+            pipelineStats={pipelineStats}
+            healthData={healthData}
+            onNavigate={setActivePage}
+          />
+        );
       default:
         return null;
     }
@@ -482,6 +554,7 @@ function App() {
     activeBlockId,
     addPlannerBlock,
     aureonPanel,
+    chatPlannerPanel,
     currentTime,
     currentZone,
     date,
@@ -491,6 +564,12 @@ function App() {
     energyBarPanel,
     enginePrimaryAction,
     engineReasoning,
+    openTodayCount,
+    weekHoursData,
+    pipelineStats,
+    todayTasks,
+    doneTodayCount,
+    healthData,
     focusMode,
     focusProject,
     focusProjectId,
@@ -508,6 +587,7 @@ function App() {
     removePlannerBlock,
     sessionBudgetText,
     setFocusProject,
+    setTaskStatus,
     taskPanel,
     tasks,
     timerState.display,

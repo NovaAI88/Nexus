@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import TypewriterText from '../components/TypewriterText';
 
 const DEPT_COLORS = {
   nexus: '#7b8cff',
@@ -25,13 +26,13 @@ function toMinutes(t) {
   return h * 60 + m;
 }
 
-function getWeekDates(todayStr) {
+function getTwoWeekDates(todayStr) {
   const today = new Date(todayStr + 'T12:00:00');
   const dow = today.getDay();
   const monday = new Date(today);
   monday.setDate(today.getDate() - ((dow + 6) % 7));
   const days = [];
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < 14; i++) {
     const d = new Date(monday);
     d.setDate(monday.getDate() + i);
     const y = d.getFullYear();
@@ -43,6 +44,7 @@ function getWeekDates(todayStr) {
       dayNum: d.getDate(),
       isToday: `${y}-${m}-${day}` === todayStr,
       isWeekend: d.getDay() === 0 || d.getDay() === 6,
+      week: i < 7 ? 0 : 1,
     });
   }
   return days;
@@ -57,10 +59,14 @@ function WeeklyPage({
   removePlannerBlock,
   getPlannerBlocks,
   getTasksForDate,
+  setTaskStatus,
   onNavigate,
 }) {
   const [weeklyIntent, setWeeklyIntent] = useState('');
   const [dragOverDay, setDragOverDay] = useState(null);
+  const [viewMode, setViewMode] = useState(() =>
+    localStorage.getItem('nexus:week-view-mode') || 'both'
+  );
 
   useEffect(() => {
     setWeeklyIntent(window.localStorage.getItem('nexus:weekly-intent') || '');
@@ -70,10 +76,20 @@ function WeeklyPage({
     window.localStorage.setItem('nexus:weekly-intent', weeklyIntent);
   }, [weeklyIntent]);
 
-  const weekDays = useMemo(() => getWeekDates(date), [date]);
+  useEffect(() => {
+    localStorage.setItem('nexus:week-view-mode', viewMode);
+  }, [viewMode]);
+
+  const allDays = useMemo(() => getTwoWeekDates(date), [date]);
+
+  const visibleDays = useMemo(() => {
+    if (viewMode === 'this') return allDays.filter((d) => d.week === 0);
+    if (viewMode === 'next') return allDays.filter((d) => d.week === 1);
+    return allDays; // 'both'
+  }, [allDays, viewMode]);
 
   const weekData = useMemo(() => {
-    return weekDays.map((day) => {
+    return visibleDays.map((day) => {
       const blocks = getPlannerBlocks ? getPlannerBlocks(day.date) : [];
       const tasks = getTasksForDate ? getTasksForDate(day.date) : [];
       const totalMinutes = blocks.reduce((sum, b) => {
@@ -81,7 +97,7 @@ function WeeklyPage({
       }, 0);
       return { ...day, blocks, tasks, totalMinutes };
     });
-  }, [weekDays, getPlannerBlocks, getTasksForDate]);
+  }, [visibleDays, getPlannerBlocks, getTasksForDate]);
 
   const completedProjects = projects.filter((p) => p.status === 'completed').length;
   const progressPct = projects.length ? Math.round((completedProjects / projects.length) * 100) : 0;
@@ -127,8 +143,7 @@ function WeeklyPage({
     try {
       const data = JSON.parse(e.dataTransfer.getData('application/json'));
       if (!data.blockId || !data.sourceDate) return;
-      if (data.sourceDate === targetDate) return; // same day, no-op
-      // Remove from source day, add to target day
+      if (data.sourceDate === targetDate) return;
       removePlannerBlock(data.sourceDate, data.blockId);
       addPlannerBlock(targetDate, {
         type: data.type,
@@ -136,22 +151,44 @@ function WeeklyPage({
         start: data.start,
         end: data.end,
       });
-    } catch {
-      // ignore invalid drag data
-    }
+    } catch { /* ignore */ }
   }, [addPlannerBlock, removePlannerBlock]);
+
+  const handleTaskToggle = useCallback((taskId, currentStatus) => {
+    if (!setTaskStatus) return;
+    setTaskStatus(taskId, currentStatus === 'done' ? 'open' : 'done');
+  }, [setTaskStatus]);
+
+  // Week labels
+  const week1Label = allDays[0] ? `${allDays[0].dayName} ${allDays[0].dayNum}` : '';
+  const week1End = allDays[6] ? `${allDays[6].dayName} ${allDays[6].dayNum}` : '';
+  const week2Label = allDays[7] ? `${allDays[7].dayName} ${allDays[7].dayNum}` : '';
+  const week2End = allDays[13] ? `${allDays[13].dayName} ${allDays[13].dayNum}` : '';
 
   return (
     <div className="week-page">
       {/* Header */}
       <header className="week-header">
         <div>
-          <h1 className="week-title">Week</h1>
+          <h1 className="week-title">Planner</h1>
           <p className="week-subtitle">
-            {weekDays[0]?.dayName} {weekDays[0]?.dayNum} — {weekDays[6]?.dayName} {weekDays[6]?.dayNum}
+            {viewMode === 'next' ? `${week2Label} — ${week2End}` :
+             viewMode === 'this' ? `${week1Label} — ${week1End}` :
+             `${week1Label} — ${week2End}`}
           </p>
         </div>
         <div className="week-header-right">
+          <div className="week-view-toggle">
+            {['this', 'both', 'next'].map((mode) => (
+              <button
+                key={mode}
+                className={`week-view-btn${viewMode === mode ? ' is-active' : ''}`}
+                onClick={() => setViewMode(mode)}
+              >
+                {mode === 'this' ? 'This Week' : mode === 'next' ? 'Next Week' : '2 Weeks'}
+              </button>
+            ))}
+          </div>
           <div className="week-progress-mini">
             <span className="week-progress-label">{completedProjects}/{projects.length} projects</span>
             <div className="week-progress-track">
@@ -176,90 +213,56 @@ function WeeklyPage({
       {engineReasoning && (
         <div className="week-reasoning">
           <span className="week-reasoning-dot" />
-          <span>{engineReasoning}</span>
+          <TypewriterText text={engineReasoning} speed={25} />
         </div>
       )}
 
-      {/* 7-day grid */}
+      {/* Day grid */}
+      {viewMode === 'both' && (
+        <div className="week-row-label">This Week</div>
+      )}
       <div className="week-grid">
-        {weekData.map((day) => (
-          <div
+        {weekData.slice(0, viewMode === 'both' ? 7 : weekData.length).map((day) => (
+          <WeekDayColumn
             key={day.date}
-            className={[
-              'week-day',
-              day.isToday && 'is-today',
-              day.isWeekend && 'is-weekend',
-              dragOverDay === day.date && 'is-drag-over',
-            ].filter(Boolean).join(' ')}
-            onDragOver={(e) => handleDayDragOver(e, day.date)}
+            day={day}
+            dragOverDay={dragOverDay}
+            onDragOver={handleDayDragOver}
             onDragLeave={handleDayDragLeave}
-            onDrop={(e) => handleDayDrop(e, day.date)}
-          >
-            <div className="week-day-header">
-              <span className="week-day-name">{day.dayName}</span>
-              <span className={`week-day-num${day.isToday ? ' is-today' : ''}`}>{day.dayNum}</span>
-            </div>
-
-            {/* Hours summary */}
-            <div className="week-day-summary">
-              <span className="week-day-hours">
-                {day.totalMinutes > 0 ? `${(day.totalMinutes / 60).toFixed(1)}h` : '—'}
-              </span>
-              <span className="week-day-task-count">
-                {day.tasks.length > 0 && `${day.tasks.filter((t) => t.status === 'done').length}/${day.tasks.length}`}
-              </span>
-            </div>
-
-            {/* Blocks */}
-            <div className="week-day-blocks">
-              {day.blocks
-                .slice()
-                .sort((a, b) => toMinutes(a.start) - toMinutes(b.start))
-                .map((block) => {
-                  const duration = toMinutes(block.end) - toMinutes(block.start);
-                  const bg = BLOCK_COLORS[block.type] || BLOCK_COLORS.work;
-                  return (
-                    <div
-                      key={block.id}
-                      className="week-block"
-                      style={{ '--block-bg': bg }}
-                      title={`${block.start}–${block.end} ${block.label}`}
-                      draggable
-                      onDragStart={(e) => handleBlockDragStart(e, block, day.date)}
-                    >
-                      <span className="week-block-drag">⠿</span>
-                      <span className="week-block-time">{block.start}</span>
-                      <span className="week-block-label">{block.label}</span>
-                      <span className="week-block-duration">{duration}m</span>
-                    </div>
-                  );
-                })}
-
-              {/* Tasks without blocks */}
-              {day.tasks
-                .filter((t) => !t.blockId && t.status !== 'done')
-                .map((task) => (
-                  <div key={task.id} className="week-task-chip">
-                    <span className="week-task-dot" />
-                    <span className="week-task-title">{task.title}</span>
-                  </div>
-                ))}
-            </div>
-
-            {/* Quick-add for today */}
-            {day.isToday && day.blocks.length === 0 && (
-              <button
-                className="week-day-add-btn"
-                onClick={() => onNavigate && onNavigate('today')}
-              >
-                Plan today
-              </button>
-            )}
-          </div>
+            onDrop={handleDayDrop}
+            onBlockDragStart={handleBlockDragStart}
+            onRemoveBlock={removePlannerBlock}
+            onTaskToggle={handleTaskToggle}
+            onNavigate={onNavigate}
+            departmentQueue={departmentQueue}
+          />
         ))}
       </div>
 
-      {/* Department queue below the grid */}
+      {viewMode === 'both' && weekData.length > 7 && (
+        <>
+          <div className="week-row-label">Next Week</div>
+          <div className="week-grid">
+            {weekData.slice(7).map((day) => (
+              <WeekDayColumn
+                key={day.date}
+                day={day}
+                dragOverDay={dragOverDay}
+                onDragOver={handleDayDragOver}
+                onDragLeave={handleDayDragLeave}
+                onDrop={handleDayDrop}
+                onBlockDragStart={handleBlockDragStart}
+                onRemoveBlock={removePlannerBlock}
+                onTaskToggle={handleTaskToggle}
+                onNavigate={onNavigate}
+                departmentQueue={departmentQueue}
+              />
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* Department queue */}
       {departmentQueue.length > 0 && (
         <div className="week-depts">
           <h3 className="week-depts-title">Department Queue</h3>
@@ -277,12 +280,12 @@ function WeeklyPage({
                   </div>
                   <p className="week-dept-action">{dept.nextAction}</p>
                   <div className="week-dept-days">
-                    {weekDays.filter((d) => !d.isWeekend).map((day) => (
+                    {allDays.filter((d) => !d.isWeekend).slice(0, 10).map((day) => (
                       <button
                         key={day.date}
                         className="week-dept-day-btn"
                         onClick={() => handleQuickAdd(day.date, dept)}
-                        title={`Add to ${day.dayName}`}
+                        title={`Add to ${day.dayName} ${day.dayNum}`}
                       >
                         {day.dayName.charAt(0)}
                       </button>
@@ -293,6 +296,113 @@ function WeeklyPage({
             })}
           </div>
         </div>
+      )}
+    </div>
+  );
+}
+
+function WeekDayColumn({
+  day,
+  dragOverDay,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+  onBlockDragStart,
+  onRemoveBlock,
+  onTaskToggle,
+  onNavigate,
+  departmentQueue,
+}) {
+  return (
+    <div
+      className={[
+        'week-day',
+        day.isToday && 'is-today',
+        day.isWeekend && 'is-weekend',
+        dragOverDay === day.date && 'is-drag-over',
+      ].filter(Boolean).join(' ')}
+      onDragOver={(e) => onDragOver(e, day.date)}
+      onDragLeave={onDragLeave}
+      onDrop={(e) => onDrop(e, day.date)}
+    >
+      <div className="week-day-header">
+        <span className="week-day-name">{day.dayName}</span>
+        <span className={`week-day-num${day.isToday ? ' is-today' : ''}`}>{day.dayNum}</span>
+      </div>
+
+      <div className="week-day-summary">
+        <span className="week-day-hours">
+          {day.totalMinutes > 0 ? `${(day.totalMinutes / 60).toFixed(1)}h` : '—'}
+        </span>
+        <span className="week-day-task-count">
+          {day.tasks.length > 0 && `${day.tasks.filter((t) => t.status === 'done').length}/${day.tasks.length}`}
+        </span>
+      </div>
+
+      <div className="week-day-blocks">
+        {day.blocks
+          .slice()
+          .sort((a, b) => toMinutes(a.start) - toMinutes(b.start))
+          .map((block) => {
+            const duration = toMinutes(block.end) - toMinutes(block.start);
+            const bg = BLOCK_COLORS[block.type] || BLOCK_COLORS.work;
+            return (
+              <div
+                key={block.id}
+                className="week-block"
+                style={{ '--block-bg': bg }}
+                title={`${block.start}–${block.end} ${block.label}`}
+                draggable
+                onDragStart={(e) => onBlockDragStart(e, block, day.date)}
+              >
+                <span className="week-block-drag">⠿</span>
+                <span className="week-block-time">{block.start}</span>
+                <span className="week-block-label">{block.label}</span>
+                <span className="week-block-duration">{duration}m</span>
+                <button
+                  className="week-block-delete"
+                  onClick={(e) => { e.stopPropagation(); onRemoveBlock(day.date, block.id); }}
+                  title="Remove block"
+                >
+                  ×
+                </button>
+              </div>
+            );
+          })}
+
+        {/* Tasks with checkboxes */}
+        {day.tasks
+          .filter((t) => t.status !== 'cancelled')
+          .map((task) => (
+            <div key={task.id} className={`week-task-chip${task.status === 'done' ? ' is-done' : ''}`}>
+              <button
+                className="week-task-checkbox"
+                onClick={() => onTaskToggle(task.id, task.status)}
+                title={task.status === 'done' ? 'Mark open' : 'Mark done'}
+              >
+                {task.status === 'done' ? '✓' : '○'}
+              </button>
+              <span className="week-task-title">{task.title}</span>
+            </div>
+          ))}
+      </div>
+
+      {/* Recommendation hint for empty days */}
+      {day.blocks.length === 0 && day.tasks.length === 0 && departmentQueue?.length > 0 && !day.isWeekend && (
+        <div className="week-day-rec">
+          <span className="week-day-rec-dot" />
+          <span className="week-day-rec-text">{departmentQueue[0]?.name}</span>
+        </div>
+      )}
+
+      {/* Plan today button */}
+      {day.isToday && day.blocks.length === 0 && (
+        <button
+          className="week-day-add-btn"
+          onClick={() => onNavigate && onNavigate('today')}
+        >
+          Plan today
+        </button>
       )}
     </div>
   );

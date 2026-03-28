@@ -3,6 +3,7 @@ import TimelinePanel from '../components/TimelinePanel';
 import BlockSummaryPanel from '../components/BlockSummaryPanel';
 import PrimaryActionBanner from '../components/PrimaryActionBanner';
 import SuggestedTimelineBlock from '../components/SuggestedTimelineBlock';
+import CollapsibleSection from '../components/CollapsibleSection';
 
 function TodayPage({
   date,
@@ -23,6 +24,7 @@ function TodayPage({
   dayConstraintsPanel,
   quickLogPanel,
   aureonPanel,
+  chatPanel,
   focusProject,
   sessionBudgetText,
   projectContextPreview,
@@ -70,12 +72,15 @@ function TodayPage({
     return aMin - bMin;
   });
 
+  const greeting = getGreeting(hours);
+
   return (
     <div className="today-shell">
-      {/* ── Top bar: date + session budget ── */}
+      {/* ── Top bar: greeting + session budget ── */}
       <header className="today-topbar">
         <div className="today-topbar-left">
-          <h1 className="today-date-title">{formatDisplayDate(date)}</h1>
+          <h1 className="today-date-title">{greeting}</h1>
+          <span className="today-date-sub">{formatDisplayDate(date)}</span>
           <span className="today-budget-pill">{sessionBudgetText}</span>
         </div>
         <div className="today-topbar-right">
@@ -132,7 +137,7 @@ function TodayPage({
           )}
 
           {/* Active block status */}
-          <div className="today-active-block">
+          <div className={`today-active-block${activeBlock ? ' has-active' : ''}`}>
             <div className="today-active-header">
               <div>
                 <span className="today-active-label">Active Now</span>
@@ -175,13 +180,16 @@ function TodayPage({
           {/* Empty state when no blocks and no suggestions */}
           {!activeBlock && allSuggestions.length === 0 && scheduleBlocks.length === 0 && (
             <div className="today-empty-hint">
-              <p>No blocks scheduled yet. Add tasks above and drag them to the timeline, or let the engine suggest your next move.</p>
+              <p>No blocks scheduled yet. Use the chat planner or let the engine suggest your next move.</p>
             </div>
           )}
         </div>
 
         {/* ──── RIGHT: Timeline & Scheduling ──── */}
         <div className="today-panel today-panel-timeline">
+          {/* Chat planner at the top */}
+          {chatPanel}
+
           {energyBar}
 
           <TimelinePanel
@@ -195,8 +203,7 @@ function TodayPage({
           />
 
           {allSuggestions.length > 0 && (
-            <div className="today-suggestions">
-              <h3 className="today-suggestions-title">Suggested</h3>
+            <CollapsibleSection title="Suggested" defaultOpen badge={`${allSuggestions.length}`}>
               <div className="today-suggestions-list">
                 {allSuggestions.map((block) => (
                   <SuggestedTimelineBlock
@@ -210,20 +217,34 @@ function TodayPage({
                   />
                 ))}
               </div>
-            </div>
+            </CollapsibleSection>
           )}
 
-          {lifeBlockPicker}
+          <CollapsibleSection title="Life Blocks" defaultOpen={false}>
+            {lifeBlockPicker}
+          </CollapsibleSection>
 
-          <BlockSummaryPanel currentBlock={currentBlock} nextBlock={nextBlock} />
+          <CollapsibleSection title="Current / Next Block" defaultOpen={false}>
+            <BlockSummaryPanel currentBlock={currentBlock} nextBlock={nextBlock} />
+          </CollapsibleSection>
 
-          {dayConstraintsPanel}
+          <CollapsibleSection title="Day Constraints" defaultOpen={false}>
+            {dayConstraintsPanel}
+          </CollapsibleSection>
 
-          {aureonPanel}
+          <CollapsibleSection title="Aureon" defaultOpen={false}>
+            {aureonPanel}
+          </CollapsibleSection>
         </div>
       </div>
     </div>
   );
+}
+
+function getGreeting(hour) {
+  if (hour < 12) return 'Good morning, Nicholas';
+  if (hour < 17) return 'Good afternoon, Nicholas';
+  return 'Good evening, Nicholas';
 }
 
 function formatDisplayDate(dateStr) {
