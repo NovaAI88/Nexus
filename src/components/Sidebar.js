@@ -10,19 +10,11 @@ function Sidebar({ navigation, activePage, onNavigate }) {
             <span className="sidebar-brand-dot" />
             <strong>NEXUS</strong>
           </div>
-          <span className="sidebar-brand-subtitle">Execution OS</span>
+          <span className="sidebar-brand-subtitle">Life & Work OS</span>
         </div>
 
         <NavSection
-          title="Main"
           items={navigation.main}
-          activePage={activePage}
-          onNavigate={onNavigate}
-        />
-
-        <NavSection
-          title="Departments"
-          items={navigation.departments}
           activePage={activePage}
           onNavigate={onNavigate}
         />

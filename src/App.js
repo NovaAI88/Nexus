@@ -5,11 +5,10 @@ import nexusData from './data/nexusData';
 import Sidebar from './components/Sidebar';
 import ThemeToggle from './components/ThemeToggle';
 
-import DashboardPage from './pages/DashboardPage';
 import TodayPage from './pages/TodayPage';
 import WeeklyPage from './pages/WeeklyPage';
 import HistoryPage from './pages/HistoryPage';
-import DepartmentPage from './pages/DepartmentPage';
+import CompanyPage from './pages/CompanyPage';
 
 import PlannerBlocksPanel from './components/PlannerBlocksPanel';
 import TaskEnginePanel from './components/TaskEnginePanel';
@@ -27,6 +26,10 @@ import { useActivityLog } from './core/log/useActivityLog';
 import { useAureon } from './core/aureon/useAureon';
 import { useCompanyState } from './core/adapters/useCompanyState';
 import { useExecutionEngine } from './core/engine/useExecutionEngine';
+import { useEnergyProfile } from './core/energy/useEnergyProfile';
+
+import EnergyBar from './components/EnergyBar';
+import LifeBlockPicker from './components/LifeBlockPicker';
 
 function toMinutes(value) {
   const [hours, minutes] = value.split(':').map(Number);
@@ -104,7 +107,7 @@ function App() {
 
   const { departments: companyDepts } = useCompanyState();
 
-  const [activePage, setActivePage] = useState('dashboard');
+  const [activePage, setActivePage] = useState('today');
   const [now, setNow] = useState(new Date());
   const [timerNow, setTimerNow] = useState(new Date());
   const [focusMode, setFocusMode] = useState(false);
@@ -121,6 +124,8 @@ function App() {
   const date = useMemo(() => formatDate(now), [now]);
   const currentTime = useMemo(() => formatTime(now), [now]);
   const currentMinutes = useMemo(() => now.getHours() * 60 + now.getMinutes(), [now]);
+
+  const { effectiveZoneMap, currentZone } = useEnergyProfile(currentMinutes);
 
   const todayScheduleBlocks = useMemo(() => {
     const plannerBlocks = getPlannerBlocks(date).map((b) => ({
@@ -201,14 +206,21 @@ function App() {
 
   const companyStateForEngine = useMemo(() => ({ departments: companyDepts }), [companyDepts]);
   const timeContextForEngine = useMemo(() => ({ currentMinutes, freeGaps, stopWork }), [currentMinutes, freeGaps, stopWork]);
+  const energyContextForEngine = useMemo(() => ({
+    currentZone,
+    zoneMap: effectiveZoneMap,
+    plannerBlocks: getPlannerBlocks(date),
+    dayEnd: stopWork.enabled ? toMinutes(stopWork.time) : 22 * 60,
+  }), [currentZone, effectiveZoneMap, date, getPlannerBlocks, stopWork]);
 
   const {
     primaryAction: enginePrimaryAction,
     recommendedBlocks,
+    lifeBlockSuggestions,
     departmentQueue,
     reasoning: engineReasoning,
     dismissDept,
-  } = useExecutionEngine(companyStateForEngine, timeContextForEngine);
+  } = useExecutionEngine(companyStateForEngine, timeContextForEngine, energyContextForEngine);
 
   const canPlaceDurationAtMinutes = useCallback((startMinutes, duration) => {
     const dayEnd = stopWork.enabled ? toMinutes(stopWork.time) : 22 * 60;
@@ -290,6 +302,34 @@ function App() {
     />
   ), [addLogEntry, addTask, date, focusProject, focusTasks, getProject, removeTask, setTaskStatus, todayTasks, updateProject, updateTask]);
 
+  const handleSelectLifeActivity = useCallback((activity) => {
+    const duration = activity.defaultDuration;
+    // Find next free slot from current time
+    for (const gap of freeGaps) {
+      const effectiveStart = Math.max(gap.start, currentMinutes);
+      const snapStart = Math.ceil(effectiveStart / 15) * 15;
+      if (snapStart + duration <= gap.end) {
+        const startHH = `${String(Math.floor(snapStart / 60)).padStart(2, '0')}:${String(snapStart % 60).padStart(2, '0')}`;
+        const endMin = snapStart + duration;
+        const endHH = `${String(Math.floor(endMin / 60)).padStart(2, '0')}:${String(endMin % 60).padStart(2, '0')}`;
+        const blockType = activity.category === 'fitness' ? 'fitness' : 'life';
+        addPlannerBlock(date, { type: blockType, label: `${activity.icon} ${activity.label}`, start: startHH, end: endHH });
+        return;
+      }
+    }
+  }, [addPlannerBlock, currentMinutes, date, freeGaps]);
+
+  const energyBarPanel = useMemo(() => (
+    <EnergyBar zoneMap={effectiveZoneMap} currentMinutes={currentMinutes} />
+  ), [effectiveZoneMap, currentMinutes]);
+
+  const lifeBlockPickerPanel = useMemo(() => (
+    <LifeBlockPicker
+      currentZone={currentZone}
+      onSelectActivity={handleSelectLifeActivity}
+    />
+  ), [currentZone, handleSelectLifeActivity]);
+
   const dashLogPanel = useMemo(() => (
     <QuickLogInput focusProject={focusProject} addEntry={addLogEntry} recentEntries={recentLog} />
   ), [addLogEntry, focusProject, recentLog]);
@@ -328,11 +368,15 @@ function App() {
             projectContextPreview={truncateText(focusProject?.nextAction || '', 96)}
             enginePrimaryAction={enginePrimaryAction}
             recommendedBlocks={recommendedBlocks}
+            lifeBlockSuggestions={lifeBlockSuggestions}
             dismissDept={dismissDept}
             engineReasoning={engineReasoning}
+            energyBar={energyBarPanel}
+            lifeBlockPicker={lifeBlockPickerPanel}
+            currentZone={currentZone}
           />
         );
-      case 'weekly':
+      case 'week':
         return (
           <WeeklyPage
             date={date}
@@ -343,80 +387,61 @@ function App() {
             addPlannerBlock={addPlannerBlock}
           />
         );
-      case 'history':
+      case 'log':
         return <HistoryPage date={date} activityLog={activityLog} tasks={tasks} />;
-      case 'nexus-department':
+      case 'company':
         return (
-          <DepartmentPage
-            departmentId="nexus"
-            departments={departments}
+          <CompanyPage
             projects={projects}
+            departments={departments}
             getDepartment={getDepartment}
             updateProject={updateProject}
             focusProjectId={focusProjectId}
             setFocusProject={setFocusProject}
-            date={date}
-            fallbackPage={nexusData.pages.departments.nexus}
-          />
-        );
-      case 'hephaestus':
-        return (
-          <DepartmentPage
-            departmentId="hephaestus"
-            departments={departments}
-            projects={projects}
-            getDepartment={getDepartment}
-            updateProject={updateProject}
-            focusProjectId={focusProjectId}
-            setFocusProject={setFocusProject}
-            date={date}
-            fallbackPage={nexusData.pages.departments.hephaestus}
-          />
-        );
-      case 'xenon':
-        return (
-          <DepartmentPage
-            departmentId="xenon"
-            departments={departments}
-            projects={projects}
-            getDepartment={getDepartment}
-            updateProject={updateProject}
-            focusProjectId={focusProjectId}
-            setFocusProject={setFocusProject}
-            date={date}
-            fallbackPage={nexusData.pages.departments.xenon}
-          />
-        );
-      case 'aureon':
-        return (
-          <DepartmentPage
-            departmentId="aureon"
-            departments={departments}
-            projects={projects}
-            getDepartment={getDepartment}
-            updateProject={updateProject}
-            focusProjectId={focusProjectId}
-            setFocusProject={setFocusProject}
-            date={date}
-            fallbackPage={nexusData.pages.departments.aureon}
-          />
-        );
-      case 'dashboard':
-      default:
-        return (
-          <DashboardPage
-            date={date}
-            projects={projects}
-            departments={departments}
-            focusProjectId={focusProjectId}
-            getDepartment={getDepartment}
-            todayTaskCount={openTodayCount}
-            doneTodayCount={doneTodayCount}
-            onNavigate={setActivePage}
-            logPanel={dashLogPanel}
             departmentQueue={departmentQueue}
             engineReasoning={engineReasoning}
+            onNavigate={setActivePage}
+            date={date}
+          />
+        );
+      default:
+        return (
+          <TodayPage
+            date={date}
+            currentTime={currentTime}
+            currentBlock={timelineState.currentBlock}
+            nextBlock={timelineState.nextBlock}
+            scheduleBlocks={timelineState.normalizedBlocks}
+            focusMode={focusMode}
+            activeBlock={timelineState.currentBlock || (activeBlockId ? todayScheduleBlocks.find((b) => b.id === activeBlockId) || null : null)}
+            timerDisplay={timerState.display}
+            timerProgress={timerState.progress}
+            onStartBlock={handleStartBlock}
+            onExitFocus={handleExitFocus}
+            onAddBlock={addPlannerBlock}
+            onRemoveBlock={(blockId) => removePlannerBlock(date, blockId)}
+            draggedBlockId={draggedBlockId}
+            dragOverMinutes={dragOverMinutes}
+            canDropTaskAtMinutes={canPlaceDurationAtMinutes}
+            onTimelineDragOver={handleTimelineDragOver}
+            onTimelineDragLeave={handleTimelineDragLeave}
+            onTimelineDrop={handleTimelineDrop}
+            taskEnginePanel={taskPanel}
+            dayConstraintsPanel={plannerPanel}
+            quickLogPanel={quickLogPanel}
+            aureonPanel={aureonPanel}
+            focusProjectId={focusProjectId}
+            focusProject={focusProject}
+            sessionBudgetText={sessionBudgetText}
+            projectContextPreview={truncateText(focusProject?.nextAction || '', 96)}
             enginePrimaryAction={enginePrimaryAction}
+            recommendedBlocks={recommendedBlocks}
+            lifeBlockSuggestions={lifeBlockSuggestions}
+            dismissDept={dismissDept}
+            engineReasoning={engineReasoning}
+            energyBar={energyBarPanel}
+            lifeBlockPicker={lifeBlockPickerPanel}
+            currentZone={currentZone}
           />
         );
     }
@@ -428,13 +453,14 @@ function App() {
     aureonPanel,
     canPlaceDurationAtMinutes,
     currentTime,
+    currentZone,
     date,
     departments,
     departmentQueue,
     dismissDept,
-    doneTodayCount,
     draggedBlockId,
     dragOverMinutes,
+    energyBarPanel,
     enginePrimaryAction,
     engineReasoning,
     focusMode,
@@ -446,7 +472,8 @@ function App() {
     handleTimelineDragLeave,
     handleTimelineDragOver,
     handleTimelineDrop,
-    openTodayCount,
+    lifeBlockPickerPanel,
+    lifeBlockSuggestions,
     plannerPanel,
     projects,
     quickLogPanel,
@@ -454,7 +481,6 @@ function App() {
     removePlannerBlock,
     sessionBudgetText,
     setFocusProject,
-    dashLogPanel,
     taskPanel,
     tasks,
     timerState.display,

@@ -3,7 +3,6 @@ import TimelinePanel from '../components/TimelinePanel';
 import BlockSummaryPanel from '../components/BlockSummaryPanel';
 import PrimaryActionBanner from '../components/PrimaryActionBanner';
 import SuggestedTimelineBlock from '../components/SuggestedTimelineBlock';
-import SectionCard from '../components/SectionCard';
 
 function TodayPage({
   date,
@@ -28,12 +27,16 @@ function TodayPage({
   projectContextPreview,
   enginePrimaryAction,
   recommendedBlocks = [],
+  lifeBlockSuggestions = [],
   dismissDept,
   engineReasoning,
+  energyBar,
+  lifeBlockPicker,
+  currentZone,
 }) {
-  const [contextExpanded, setContextExpanded] = useState(true);
+  const [contextExpanded, setContextExpanded] = useState(false);
   const activeNowTitle = activeBlock?.label || 'No active block';
-  const activeNowMeta = activeBlock ? `${activeBlock.start}–${activeBlock.end}` : 'No block running';
+  const activeNowMeta = activeBlock ? `${activeBlock.start}–${activeBlock.end}` : 'Start a block to begin';
 
   const [hours = 0, minutes = 0] = String(currentTime).split(':').map(Number);
   const dayStartMinutes = 7 * 60;
@@ -44,8 +47,9 @@ function TodayPage({
   const dayProgress = Math.round((dayElapsed / dayDuration) * 100);
 
   const onConfirmSuggestion = (block) => {
+    const blockType = block.source === 'life-engine' ? (block.type || 'life') : 'work';
     onAddBlock(block.date ?? date, {
-      type: 'work',
+      type: blockType,
       label: block.label,
       start: block.start,
       end: block.end,
@@ -53,64 +57,66 @@ function TodayPage({
   };
 
   const onDismissSuggestion = (block) => {
-    dismissDept(block.departmentId);
+    if (block.departmentId) dismissDept(block.departmentId);
   };
 
+  const allSuggestions = [
+    ...recommendedBlocks.map((b) => ({ ...b, source: b.source || 'engine' })),
+    ...lifeBlockSuggestions.map((b) => ({ ...b, source: 'life-engine' })),
+  ].sort((a, b) => {
+    const aMin = a.start.split(':').reduce((h, m) => Number(h) * 60 + Number(m));
+    const bMin = b.start.split(':').reduce((h, m) => Number(h) * 60 + Number(m));
+    return aMin - bMin;
+  });
+
   return (
-    <div className="today-workspace-shell">
-      {focusProject && (
-        <section className="project-context-strip">
-          <div className="project-context-main">
-            <span className="label">Focus Project</span>
-            <div className="project-context-row">
-              <strong>{focusProject.name}</strong>
-              <span className={`project-context-status project-context-status-${focusProject.status}`}>{focusProject.status}</span>
-            </div>
-            <p className="project-context-next">{projectContextPreview || 'No next action set.'}</p>
-          </div>
-          <button className="secondary-button" onClick={() => setContextExpanded((v) => !v)}>
-            {contextExpanded ? 'Hide context' : 'Expand context'}
-          </button>
-          {contextExpanded && (
-            <div className="project-context-expanded">
-              <p><span className="label">Current State</span>{focusProject.currentState}</p>
-              <p><span className="label">Next Action</span>{focusProject.nextAction}</p>
-            </div>
+    <div className="today-shell">
+      {/* ── Top bar: date + session budget ── */}
+      <header className="today-topbar">
+        <div className="today-topbar-left">
+          <h1 className="today-date-title">{formatDisplayDate(date)}</h1>
+          <span className="today-budget-pill">{sessionBudgetText}</span>
+        </div>
+        <div className="today-topbar-right">
+          {currentZone && (
+            <span className="today-zone-pill" style={{ '--zone-color': currentZone.color }}>
+              <span className="today-zone-dot" />
+              {currentZone.label}
+            </span>
           )}
-        </section>
+          <span className="today-time">{currentTime}</span>
+        </div>
+      </header>
+
+      {/* ── Day progress ── */}
+      <div className="today-day-progress">
+        <div className="today-day-progress-fill" style={{ width: `${dayProgress}%` }} />
+      </div>
+
+      {/* ── Focus project strip (collapsed by default) ── */}
+      {focusProject && (
+        <button
+          className={`today-project-strip${contextExpanded ? ' is-expanded' : ''}`}
+          onClick={() => setContextExpanded((v) => !v)}
+        >
+          <span className="today-project-dot" />
+          <span className="today-project-name">{focusProject.name}</span>
+          <span className={`today-project-status today-project-status-${focusProject.status}`}>
+            {focusProject.status}
+          </span>
+          {contextExpanded && (
+            <span className="today-project-detail">{projectContextPreview}</span>
+          )}
+        </button>
       )}
 
-      <div className={`today-three-zone-layout upgraded${focusMode ? ' is-focus-mode' : ''}`}>
-        <aside className="today-zone timeline-zone">
-          <div className="today-column-scroll timeline-column-scroll">
-            <TimelinePanel
-              blocks={scheduleBlocks}
-              currentTime={currentTime}
-              currentBlockId={currentBlock?.id}
-              nextBlockId={nextBlock?.id}
-              onAddBlock={onAddBlock}
-              onRemoveBlock={onRemoveBlock}
-            />
+      {/* ── Two-panel layout ── */}
+      <div className={`today-two-panel${focusMode ? ' is-focus' : ''}`}>
 
-            {scheduleBlocks.length === 0 && recommendedBlocks.length > 0 && (
-              <SectionCard title="Suggested Timeline" variant="primary">
-                <div className="timeline-list">
-                  {recommendedBlocks.map((block) => (
-                    <SuggestedTimelineBlock
-                      key={block.id}
-                      block={block}
-                      onConfirm={() => onConfirmSuggestion(block)}
-                      onDismiss={() => onDismissSuggestion(block)}
-                    />
-                  ))}
-                </div>
-              </SectionCard>
-            )}
-          </div>
-        </aside>
-
-        <section className="today-zone execution-zone">
-          {!focusMode && (
+        {/* ──── LEFT: Tasks & Execution ──── */}
+        <div className="today-panel today-panel-tasks">
+          {/* Primary action from engine */}
+          {!focusMode && enginePrimaryAction && (
             <PrimaryActionBanner
               action={enginePrimaryAction}
               reasoning={engineReasoning}
@@ -124,51 +130,100 @@ function TodayPage({
             />
           )}
 
-          <section className="active-now-panel">
-            <div className="active-now-header">
-              <span className="label">Active Now</span>
-              <div className="active-now-meta">
-                <span>{activeNowMeta}</span>
-                <strong className="active-now-time">{activeBlock ? timerDisplay : '--:--'}</strong>
+          {/* Active block status */}
+          <div className="today-active-block">
+            <div className="today-active-header">
+              <div>
+                <span className="today-active-label">Active Now</span>
+                <h2 className="today-active-title">{activeNowTitle}</h2>
+                <span className="today-active-meta">{activeNowMeta}</span>
+              </div>
+              <div className="today-active-timer">
+                <span className="today-active-timer-display">
+                  {activeBlock ? timerDisplay : '--:--'}
+                </span>
               </div>
             </div>
-            <h1 className="active-now-title">{activeNowTitle}</h1>
-            <p className="active-now-budget">{sessionBudgetText}</p>
-            <div className="focus-progress-bar compact">
-              <div className="focus-progress-fill" style={{ width: `${activeBlock ? timerProgress : 0}%` }} />
+            <div className="today-active-progress">
+              <div
+                className="today-active-progress-fill"
+                style={{ width: `${activeBlock ? timerProgress : 0}%` }}
+              />
             </div>
-            <div className="day-progress-row">
-              <span className="label">Day Progress</span>
-              <span className="day-progress-value">{dayProgress}%</span>
-            </div>
-            <div className="day-progress-bar" aria-label="Day progress">
-              <div className="day-progress-fill" style={{ width: `${dayProgress}%` }} />
-            </div>
-            <div className="active-now-controls">
+            <div className="today-active-controls">
               {focusMode ? (
-                <button className="secondary-button" onClick={onExitFocus}>Exit Focus</button>
+                <button className="today-btn today-btn-secondary" onClick={onExitFocus}>
+                  Exit Focus
+                </button>
               ) : (
-                <button className="primary-action-button" onClick={onStartBlock}>Start Block</button>
+                <button className="today-btn today-btn-primary" onClick={onStartBlock}>
+                  Start Block
+                </button>
               )}
             </div>
-          </section>
-
-          <div className="today-column-scroll center-column-scroll">
-            {taskEnginePanel || null}
           </div>
-        </section>
 
-        <aside className="today-zone intelligence-zone secondary-zone">
-          <div className="today-column-scroll right-column-scroll">
-            {quickLogPanel || null}
-            <BlockSummaryPanel currentBlock={currentBlock} nextBlock={nextBlock} />
-            {aureonPanel || null}
-            {dayConstraintsPanel || null}
+          {/* Task list */}
+          <div className="today-tasks-scroll">
+            {taskEnginePanel}
           </div>
-        </aside>
+
+          {/* Quick log */}
+          {quickLogPanel}
+        </div>
+
+        {/* ──── RIGHT: Timeline & Scheduling ──── */}
+        <div className="today-panel today-panel-timeline">
+          {energyBar}
+
+          <TimelinePanel
+            blocks={scheduleBlocks}
+            currentTime={currentTime}
+            currentBlockId={currentBlock?.id}
+            nextBlockId={nextBlock?.id}
+            onAddBlock={onAddBlock}
+            onRemoveBlock={onRemoveBlock}
+          />
+
+          {allSuggestions.length > 0 && (
+            <div className="today-suggestions">
+              <h3 className="today-suggestions-title">Suggested</h3>
+              <div className="today-suggestions-list">
+                {allSuggestions.map((block) => (
+                  <SuggestedTimelineBlock
+                    key={block.id}
+                    block={{
+                      ...block,
+                      departmentId: block.departmentId || block.category || 'life',
+                    }}
+                    onConfirm={() => onConfirmSuggestion(block)}
+                    onDismiss={() => onDismissSuggestion(block)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {lifeBlockPicker}
+
+          <BlockSummaryPanel currentBlock={currentBlock} nextBlock={nextBlock} />
+
+          {dayConstraintsPanel}
+
+          {aureonPanel}
+        </div>
       </div>
     </div>
   );
+}
+
+function formatDisplayDate(dateStr) {
+  try {
+    const d = new Date(dateStr + 'T12:00:00');
+    return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  } catch {
+    return dateStr;
+  }
 }
 
 export default TodayPage;

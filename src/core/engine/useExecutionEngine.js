@@ -3,7 +3,7 @@ import { computeExecutionOutput } from './executionEngine';
 
 const COOLDOWN_MS = 60 * 60 * 1000;
 
-export function useExecutionEngine(companyState, timeContext) {
+export function useExecutionEngine(companyState, timeContext, energyContext = null) {
   const [dismissed, setDismissed] = useState(() => new Map());
 
   useEffect(() => {
@@ -35,8 +35,8 @@ export function useExecutionEngine(companyState, timeContext) {
   const dismissedSet = useMemo(() => new Set(dismissed.keys()), [dismissed]);
 
   const output = useMemo(
-    () => computeExecutionOutput(companyState, timeContext, dismissedSet),
-    [companyState, timeContext, dismissedSet]
+    () => computeExecutionOutput(companyState, timeContext, dismissedSet, energyContext),
+    [companyState, timeContext, dismissedSet, energyContext]
   );
 
   return {

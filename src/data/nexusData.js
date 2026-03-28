@@ -1,22 +1,13 @@
 const nexusData = {
   navigation: {
     main: [
-      { id: 'dashboard', label: 'Dashboard', icon: '◫' },
       { id: 'today', label: 'Today', icon: '●' },
-      { id: 'weekly', label: 'Weekly', icon: '◷' },
-      { id: 'history', label: 'History', icon: '◌' },
-      { id: 'system', label: 'System', icon: '⚙' }
+      { id: 'week', label: 'Week', icon: '◷' },
+      { id: 'company', label: 'Company', icon: '◫' },
+      { id: 'log', label: 'Log', icon: '◌' },
     ],
-    departments: [
-      { id: 'nexus-department', label: 'Nexus', icon: '⌘' },
-      { id: 'hephaestus', label: 'Hephaestus', icon: '▣' },
-      { id: 'xenon', label: 'Xenon', icon: '◇' },
-      { id: 'aureon', label: 'AUREON', icon: '◈', page: 'aureon' }
-    ],
-    viewModes: [
-      { id: 'focus', label: 'Focus Mode', icon: '◉' },
-      { id: 'overview', label: 'Full Overview', icon: '☰' }
-    ]
+    departments: [],
+    viewModes: [],
   },
   inputs: {
     wakeTime: '07:30',

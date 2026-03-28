@@ -3,12 +3,14 @@
  * Same inputs → same outputs. No React, no hooks, no side effects.
  */
 
+import { energyScoreModifier, generateLifeSuggestions } from '../energy/energyModel';
+
 function hoursStale(isoDate) {
   if (!isoDate) return 0;
   return Math.max(0, (Date.now() - new Date(isoDate).getTime()) / (1000 * 60 * 60));
 }
 
-function priorityScore(dept, dismissedDepts) {
+function priorityScore(dept, dismissedDepts, currentZone) {
   if (dismissedDepts && dismissedDepts.has(dept.id)) return 99999;
 
   let score = 0;
@@ -19,6 +21,11 @@ function priorityScore(dept, dismissedDepts) {
   score -= Math.min(hoursStale(dept.lastUpdated), 200);
   if (dept.status === 'active') score -= 100;
   if (dept.urgency === 'high') score -= 200;
+
+  // Energy-aware: boost deep-work depts during peak, light depts during low
+  if (currentZone) {
+    score += energyScoreModifier(dept.id, currentZone);
+  }
 
   return score;
 }
@@ -127,21 +134,25 @@ function generateReasoning(topDept) {
   return `${topDept.name} is the current priority — ${topDept.nextAction || 'continue active phase'}.`;
 }
 
-export function computeExecutionOutput(companyState, timeContext, dismissedDepts = new Set()) {
+export function computeExecutionOutput(companyState, timeContext, dismissedDepts = new Set(), energyContext = null) {
   const { departments = [] } = companyState ?? {};
   const { currentMinutes = 0, freeGaps = [] } = timeContext ?? {};
+
+  const currentZone = energyContext?.currentZone ?? null;
 
   if (departments.length === 0) {
     return {
       primaryAction: null,
       recommendedBlocks: [],
+      lifeBlockSuggestions: [],
       departmentQueue: [],
       reasoning: 'No department data available.',
+      currentZone,
     };
   }
 
   const departmentQueue = [...departments].sort(
-    (a, b) => priorityScore(a, dismissedDepts) - priorityScore(b, dismissedDepts)
+    (a, b) => priorityScore(a, dismissedDepts, currentZone) - priorityScore(b, dismissedDepts, currentZone)
   );
 
   const topDept = departmentQueue[0] ?? null;
@@ -162,12 +173,24 @@ export function computeExecutionOutput(companyState, timeContext, dismissedDepts
     currentMinutes
   );
 
+  // Generate life block suggestions if energy context is available
+  const lifeBlockSuggestions = energyContext
+    ? generateLifeSuggestions(
+        energyContext.plannerBlocks ?? [],
+        energyContext.zoneMap ?? [],
+        currentMinutes,
+        energyContext.dayEnd ?? 22 * 60
+      )
+    : [];
+
   const reasoning = generateReasoning(topDept, departments);
 
   return {
     primaryAction,
     recommendedBlocks,
+    lifeBlockSuggestions,
     departmentQueue,
     reasoning,
+    currentZone,
   };
 }
