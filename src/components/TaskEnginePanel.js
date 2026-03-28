@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
+import { DragDropContext } from '../App';
 import { TASK_STATUS, TASK_PRIORITY } from '../core/tasks/useTaskEngine';
 
 const PRIORITY_LABELS = { high: '↑ High', normal: '— Normal', low: '↓ Low' };
@@ -222,6 +223,8 @@ function TaskEnginePanel({
 function TaskRow({ task, setTaskStatus, updateTask, removeTask, onTaskDone, addLogEntry, dimmed = false }) {
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(task.title);
+  const [isDragging, setIsDragging] = useState(false);
+  const { onTaskDragStart, onTaskDragEnd } = useContext(DragDropContext);
 
   const saveEdit = () => {
     const t = editTitle.trim();
@@ -242,10 +245,32 @@ function TaskRow({ task, setTaskStatus, updateTask, removeTask, onTaskDone, addL
     onTaskDone?.(task);
   };
 
+  const handleDragStart = (e) => {
+    setIsDragging(true);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', task.id);
+    onTaskDragStart(task.id, {
+      type: 'task',
+      taskId: task.id,
+      title: task.title,
+      duration: task.durationMinutes || 30,
+    });
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+    onTaskDragEnd();
+  };
+
   const priorityClass = `task-priority-dot task-priority-${task.priority}`;
 
   return (
-    <div className={`task-row${dimmed ? ' task-row-dimmed' : ''}`}>
+    <div
+      className={`task-row${dimmed ? ' task-row-dimmed' : ''}${isDragging ? ' is-dragging-task' : ''}`}
+      draggable={!editing}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
       <button
         className="task-complete-btn"
         title="Mark complete"
@@ -254,6 +279,7 @@ function TaskRow({ task, setTaskStatus, updateTask, removeTask, onTaskDone, addL
       >
         ○
       </button>
+      <span className="task-drag-handle" title="Drag to timeline">⠿</span>
       <span className={priorityClass} title={task.priority} />
       {editing ? (
         <input
@@ -268,7 +294,7 @@ function TaskRow({ task, setTaskStatus, updateTask, removeTask, onTaskDone, addL
         <span
           className="task-title"
           onDoubleClick={() => { setEditing(true); setEditTitle(task.title); }}
-          title="Double-click to edit"
+          title="Double-click to edit · Drag to schedule"
         >
           {task.title}
         </span>

@@ -78,6 +78,7 @@ export const ProjectsContext = createContext({
 
 export const DragDropContext = createContext({
   draggedTaskId: null,
+  dragPayload: null,
   dragOverMinutes: null,
   canDropTaskAtMinutes: () => false,
   onTaskDragStart: () => {},
@@ -229,11 +230,60 @@ function App() {
     return !todayScheduleBlocks.some((b) => startMinutes < toMinutes(b.end) && endMinutes > toMinutes(b.start));
   }, [stopWork, todayScheduleBlocks]);
 
-  const handleDragStart = useCallback((blockId) => setDraggedBlockId(blockId), []);
-  const handleDragEnd = useCallback(() => { setDraggedBlockId(null); setDragOverMinutes(null); }, []);
+  // Drag state stores the dragged item's info (task or block)
+  const [dragPayload, setDragPayload] = useState(null);
+
+  const handleDragStart = useCallback((id, payload) => {
+    setDraggedBlockId(id);
+    setDragPayload(payload || null);
+  }, []);
+  const handleDragEnd = useCallback(() => {
+    setDraggedBlockId(null);
+    setDragOverMinutes(null);
+    setDragPayload(null);
+  }, []);
   const handleTimelineDragOver = useCallback((slotMinutes) => { setDragOverMinutes(slotMinutes); return false; }, []);
   const handleTimelineDragLeave = useCallback(() => setDragOverMinutes(null), []);
-  const handleTimelineDrop = useCallback(() => { setDraggedBlockId(null); setDragOverMinutes(null); return false; }, []);
+
+  const handleTimelineDrop = useCallback((slotMinutes) => {
+    if (!dragPayload) {
+      setDraggedBlockId(null);
+      setDragOverMinutes(null);
+      setDragPayload(null);
+      return;
+    }
+
+    const duration = dragPayload.duration || 30;
+    const snapMinutes = Math.round(slotMinutes / 15) * 15;
+
+    if (canPlaceDurationAtMinutes(snapMinutes, duration)) {
+      const startHH = `${String(Math.floor(snapMinutes / 60)).padStart(2, '0')}:${String(snapMinutes % 60).padStart(2, '0')}`;
+      const endMin = snapMinutes + duration;
+      const endHH = `${String(Math.floor(endMin / 60)).padStart(2, '0')}:${String(endMin % 60).padStart(2, '0')}`;
+
+      if (dragPayload.type === 'task') {
+        addPlannerBlock(date, {
+          type: 'work',
+          label: dragPayload.title,
+          start: startHH,
+          end: endHH,
+        });
+      } else if (dragPayload.type === 'block-move') {
+        // Reorder: remove old block, add at new position
+        removePlannerBlock(date, dragPayload.blockId);
+        addPlannerBlock(date, {
+          type: dragPayload.blockType || 'work',
+          label: dragPayload.title,
+          start: startHH,
+          end: endHH,
+        });
+      }
+    }
+
+    setDraggedBlockId(null);
+    setDragOverMinutes(null);
+    setDragPayload(null);
+  }, [addPlannerBlock, canPlaceDurationAtMinutes, date, dragPayload, removePlannerBlock]);
 
   const handleStartBlock = useCallback(() => { setActivePage('today'); setFocusMode(true); }, []);
   const handleExitFocus = useCallback(() => { setFocusMode(false); setActiveBlockId(null); }, []);
@@ -537,6 +587,7 @@ function App() {
 
   const dragDropValue = useMemo(() => ({
     draggedTaskId: draggedBlockId,
+    dragPayload,
     dragOverMinutes,
     canDropTaskAtMinutes: canPlaceDurationAtMinutes,
     onTaskDragStart: handleDragStart,
@@ -544,7 +595,7 @@ function App() {
     onTimelineDragOver: handleTimelineDragOver,
     onTimelineDragLeave: handleTimelineDragLeave,
     onTimelineDrop: handleTimelineDrop,
-  }), [draggedBlockId, dragOverMinutes, canPlaceDurationAtMinutes, handleDragStart, handleDragEnd, handleTimelineDragOver, handleTimelineDragLeave, handleTimelineDrop]);
+  }), [draggedBlockId, dragPayload, dragOverMinutes, canPlaceDurationAtMinutes, handleDragStart, handleDragEnd, handleTimelineDragOver, handleTimelineDragLeave, handleTimelineDrop]);
 
   const appClass = ['app-shell', theme].join(' ');
 

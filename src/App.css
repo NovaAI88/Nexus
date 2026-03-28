@@ -956,9 +956,110 @@ button:disabled {
   filter: none;
   background: rgba(255, 255, 255, 0.015);
 }
-.task-item.is-dragging-task {
-  opacity: 0.58;
-  transform: translateY(-2px) rotate(-1deg);
+.task-item.is-dragging-task,
+.task-row.is-dragging-task {
+  opacity: 0.4;
+  transform: scale(0.97);
+  background: rgba(123, 140, 255, 0.06);
+  border-radius: var(--radius-8);
+}
+
+/* Drag handle */
+.task-drag-handle {
+  color: var(--color-text-meta);
+  font-size: 11px;
+  opacity: 0;
+  cursor: grab;
+  user-select: none;
+  transition: opacity var(--motion-fast);
+  flex-shrink: 0;
+  letter-spacing: 1px;
+}
+
+.task-row:hover .task-drag-handle {
+  opacity: 0.5;
+}
+
+.task-row:hover .task-drag-handle:hover {
+  opacity: 1;
+  color: var(--color-accent);
+}
+
+/* Timeline block dragging */
+.timeline-block.is-dragging {
+  opacity: 0.35;
+  transform: scale(0.96);
+}
+
+.timeline-drag-hint {
+  color: var(--color-text-meta);
+  font-size: 10px;
+  opacity: 0;
+  transition: opacity var(--motion-fast);
+  letter-spacing: 1px;
+}
+
+.timeline-block:hover .timeline-drag-hint {
+  opacity: 0.4;
+}
+
+/* Drop slot improvements */
+.timeline-drop-slot {
+  height: 14px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  opacity: 0;
+  color: transparent;
+  transform: none;
+  position: relative;
+  transition: all var(--motion-fast);
+  padding: 0;
+  cursor: default;
+}
+
+.timeline-drop-slot.is-visible {
+  opacity: 1;
+  height: 20px;
+  background: rgba(123, 140, 255, 0.03);
+  border-radius: var(--radius-4);
+}
+
+.timeline-drop-slot.is-visible:hover {
+  background: rgba(123, 140, 255, 0.06);
+  transform: none;
+  filter: none;
+}
+
+.timeline-drop-slot.is-active {
+  background: rgba(123, 140, 255, 0.1);
+  border: 1px dashed rgba(123, 140, 255, 0.3);
+  border-radius: var(--radius-4);
+  height: 28px;
+}
+
+.timeline-drop-slot.is-invalid {
+  background: rgba(200, 122, 133, 0.06);
+  border: 1px dashed rgba(200, 122, 133, 0.2);
+  border-radius: var(--radius-4);
+  height: 28px;
+}
+
+.drop-slot-time-hint {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--color-accent);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.timeline-drop-slot.is-invalid .drop-slot-time-hint {
+  color: var(--color-danger);
 }
 .active-task-item {
   background: rgba(123, 140, 255, 0.05);
@@ -1039,13 +1140,10 @@ button:disabled {
   background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
 }
 .timeline-drop-slots {
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 16px;
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
-  padding-top: var(--space-4);
+  gap: 1px;
+  margin-bottom: var(--space-8);
 }
 .timeline-drop-slot {
   height: 18px;

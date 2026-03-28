@@ -6,6 +6,7 @@ import TimelineBlock from './TimelineBlock';
 function TimelinePanel({ blocks, currentTime, currentBlockId, nextBlockId, onAddBlock, onRemoveBlock }) {
   const {
     draggedTaskId,
+    dragPayload,
     dragOverMinutes,
     canDropTaskAtMinutes,
     onTimelineDragOver,
@@ -15,9 +16,9 @@ function TimelinePanel({ blocks, currentTime, currentBlockId, nextBlockId, onAdd
 
   const dropSlots = useMemo(() => {
     const slots = [];
-    const dayStart = 7 * 60 + 30;
+    const dayStart = 7 * 60;
     const dayEnd = 22 * 60;
-    for (let minutes = dayStart; minutes <= dayEnd - 30; minutes += 30) {
+    for (let minutes = dayStart; minutes <= dayEnd - 15; minutes += 15) {
       slots.push(minutes);
     }
     return slots;
@@ -31,11 +32,14 @@ function TimelinePanel({ blocks, currentTime, currentBlockId, nextBlockId, onAdd
           <strong>{currentTime}</strong>
         </div>
 
-        <div className="timeline-surface">
+        {/* Drop zone grid — visible only when dragging */}
+        {draggedTaskId && (
           <div className="timeline-drop-slots">
             {dropSlots.map((slotMinutes) => {
               const isActive = dragOverMinutes === slotMinutes;
-              const canDrop = draggedTaskId ? canDropTaskAtMinutes(draggedTaskId, slotMinutes) : false;
+              const duration = dragPayload?.duration || 30;
+              const canDrop = draggedTaskId ? canDropTaskAtMinutes(slotMinutes, duration) : false;
+              const timeLabel = `${String(Math.floor(slotMinutes / 60)).padStart(2, '0')}:${String(slotMinutes % 60).padStart(2, '0')}`;
               return (
                 <button
                   key={`drop-slot-${slotMinutes}`}
@@ -43,8 +47,8 @@ function TimelinePanel({ blocks, currentTime, currentBlockId, nextBlockId, onAdd
                   className={[
                     'timeline-drop-slot',
                     draggedTaskId ? 'is-visible' : '',
-                    isActive ? 'is-active' : '',
-                    draggedTaskId && !canDrop ? 'is-invalid' : ''
+                    isActive && canDrop ? 'is-active' : '',
+                    isActive && !canDrop ? 'is-invalid' : ''
                   ].filter(Boolean).join(' ')}
                   onDragOver={(event) => {
                     event.preventDefault();
@@ -62,12 +66,16 @@ function TimelinePanel({ blocks, currentTime, currentBlockId, nextBlockId, onAdd
                     event.preventDefault();
                     onTimelineDrop(slotMinutes);
                   }}
-                  aria-label={`Drop at ${String(Math.floor(slotMinutes / 60)).padStart(2, '0')}:${String(slotMinutes % 60).padStart(2, '0')}`}
-                />
+                  aria-label={`Drop at ${timeLabel}`}
+                >
+                  {isActive && <span className="drop-slot-time-hint">{timeLabel}</span>}
+                </button>
               );
             })}
           </div>
+        )}
 
+        <div className="timeline-surface">
           <div className="timeline-list">
             {blocks.map((block) => {
               let state = 'upcoming';
