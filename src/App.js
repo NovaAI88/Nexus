@@ -122,6 +122,32 @@ function App() {
   }, []);
   useEffect(() => { setTimerNow(now); }, [now]);
 
+  // Global keyboard shortcuts
+  useEffect(() => {
+    const handler = (e) => {
+      // Skip if user is typing in an input/textarea
+      const tag = e.target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target.isContentEditable) return;
+
+      if (e.key === 'n' && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        window.dispatchEvent(new Event('nexus:new-task'));
+      }
+      if (e.key === ' ' && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        if (focusMode) {
+          setFocusMode(false);
+          setActiveBlockId(null);
+        } else {
+          setActivePage('today');
+          setFocusMode(true);
+        }
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [focusMode]);
+
   const date = useMemo(() => formatDate(now), [now]);
   const currentTime = useMemo(() => formatTime(now), [now]);
   const currentMinutes = useMemo(() => now.getHours() * 60 + now.getMinutes(), [now]);
@@ -136,7 +162,7 @@ function App() {
       type: b.type,
       start: b.start,
       end: b.end,
-      fixed: true,
+      fixed: false,
       taskId: null,
     }));
     return plannerBlocks.sort((a, b) => toMinutes(a.start) - toMinutes(b.start));
@@ -398,6 +424,7 @@ function App() {
             onExitFocus={handleExitFocus}
             onAddBlock={addPlannerBlock}
             onRemoveBlock={(blockId) => removePlannerBlock(date, blockId)}
+            onUpdateBlock={(blockId, patch) => updatePlannerBlock(date, blockId, patch)}
             taskEnginePanel={taskPanel}
             dayConstraintsPanel={plannerPanel}
             quickLogPanel={quickLogPanel}
@@ -423,6 +450,7 @@ function App() {
             departmentQueue={departmentQueue}
             engineReasoning={engineReasoning}
             addPlannerBlock={addPlannerBlock}
+            removePlannerBlock={removePlannerBlock}
             getPlannerBlocks={getPlannerBlocks}
             getTasksForDate={getTasksForDate}
             onNavigate={setActivePage}
@@ -488,6 +516,7 @@ function App() {
     timelineState.nextBlock,
     timelineState.normalizedBlocks,
     todayScheduleBlocks,
+    updatePlannerBlock,
     updateProject,
   ]);
 

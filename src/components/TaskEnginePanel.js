@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { DragDropContext } from '../App';
 import { TASK_STATUS, TASK_PRIORITY } from '../core/tasks/useTaskEngine';
 
@@ -43,6 +43,12 @@ function TaskEnginePanel({
   const [adding, setAdding] = useState(false);
   const [draft, setDraft] = useState({ title: '', priority: TASK_PRIORITY.NORMAL, scope: 'today' });
   const [projectFeedback, setProjectFeedback] = useState(null);
+
+  useEffect(() => {
+    const handler = () => setAdding(true);
+    window.addEventListener('nexus:new-task', handler);
+    return () => window.removeEventListener('nexus:new-task', handler);
+  }, []);
 
   const openTasks = tasks.filter((t) => t.status !== TASK_STATUS.DONE && t.status !== TASK_STATUS.CANCELLED);
   const doneTasks = tasks.filter((t) => t.status === TASK_STATUS.DONE);

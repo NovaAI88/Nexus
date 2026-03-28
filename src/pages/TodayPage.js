@@ -18,6 +18,7 @@ function TodayPage({
   onExitFocus,
   onAddBlock,
   onRemoveBlock,
+  onUpdateBlock,
   taskEnginePanel,
   dayConstraintsPanel,
   quickLogPanel,
@@ -190,6 +191,7 @@ function TodayPage({
             nextBlockId={nextBlock?.id}
             onAddBlock={onAddBlock}
             onRemoveBlock={onRemoveBlock}
+            onUpdateBlock={onUpdateBlock}
           />
 
           {allSuggestions.length > 0 && (

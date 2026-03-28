@@ -232,12 +232,12 @@ src/
 
 ## Remaining Web App Work
 
-### Phase E: Advanced Features
-- [ ] Drag to resize block duration
-- [ ] Drag tasks between days on WeeklyPage
+### Phase E: Advanced Features ✓
+- [x] Drag to resize block duration
+- [x] Drag tasks between days on WeeklyPage
+- [x] Keyboard shortcuts (n = new task, space = start/stop block)
 - [ ] Energy pattern visualization across the week
 - [ ] Search/filter across tasks and history
-- [ ] Keyboard shortcuts (n = new task, space = start/stop block)
 
 ### Phase F: Mac App Scaffolding
 - [ ] Create Xcode project with SwiftUI

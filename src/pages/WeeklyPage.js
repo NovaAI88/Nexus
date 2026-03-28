@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 
 const DEPT_COLORS = {
   nexus: '#7b8cff',
@@ -54,11 +54,13 @@ function WeeklyPage({
   departmentQueue = [],
   engineReasoning,
   addPlannerBlock,
+  removePlannerBlock,
   getPlannerBlocks,
   getTasksForDate,
   onNavigate,
 }) {
   const [weeklyIntent, setWeeklyIntent] = useState('');
+  const [dragOverDay, setDragOverDay] = useState(null);
 
   useEffect(() => {
     setWeeklyIntent(window.localStorage.getItem('nexus:weekly-intent') || '');
@@ -96,6 +98,48 @@ function WeeklyPage({
       end,
     });
   };
+
+  const handleBlockDragStart = useCallback((e, block, sourceDate) => {
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('application/json', JSON.stringify({
+      blockId: block.id,
+      sourceDate,
+      label: block.label,
+      type: block.type,
+      start: block.start,
+      end: block.end,
+    }));
+  }, []);
+
+  const handleDayDragOver = useCallback((e, dayDate) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverDay(dayDate);
+  }, []);
+
+  const handleDayDragLeave = useCallback(() => {
+    setDragOverDay(null);
+  }, []);
+
+  const handleDayDrop = useCallback((e, targetDate) => {
+    e.preventDefault();
+    setDragOverDay(null);
+    try {
+      const data = JSON.parse(e.dataTransfer.getData('application/json'));
+      if (!data.blockId || !data.sourceDate) return;
+      if (data.sourceDate === targetDate) return; // same day, no-op
+      // Remove from source day, add to target day
+      removePlannerBlock(data.sourceDate, data.blockId);
+      addPlannerBlock(targetDate, {
+        type: data.type,
+        label: data.label,
+        start: data.start,
+        end: data.end,
+      });
+    } catch {
+      // ignore invalid drag data
+    }
+  }, [addPlannerBlock, removePlannerBlock]);
 
   return (
     <div className="week-page">
@@ -141,7 +185,15 @@ function WeeklyPage({
         {weekData.map((day) => (
           <div
             key={day.date}
-            className={`week-day${day.isToday ? ' is-today' : ''}${day.isWeekend ? ' is-weekend' : ''}`}
+            className={[
+              'week-day',
+              day.isToday && 'is-today',
+              day.isWeekend && 'is-weekend',
+              dragOverDay === day.date && 'is-drag-over',
+            ].filter(Boolean).join(' ')}
+            onDragOver={(e) => handleDayDragOver(e, day.date)}
+            onDragLeave={handleDayDragLeave}
+            onDrop={(e) => handleDayDrop(e, day.date)}
           >
             <div className="week-day-header">
               <span className="week-day-name">{day.dayName}</span>
@@ -172,7 +224,10 @@ function WeeklyPage({
                       className="week-block"
                       style={{ '--block-bg': bg }}
                       title={`${block.start}–${block.end} ${block.label}`}
+                      draggable
+                      onDragStart={(e) => handleBlockDragStart(e, block, day.date)}
                     >
+                      <span className="week-block-drag">⠿</span>
                       <span className="week-block-time">{block.start}</span>
                       <span className="week-block-label">{block.label}</span>
                       <span className="week-block-duration">{duration}m</span>
