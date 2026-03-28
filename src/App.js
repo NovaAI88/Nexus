@@ -385,6 +385,9 @@ function App() {
             departmentQueue={departmentQueue}
             engineReasoning={engineReasoning}
             addPlannerBlock={addPlannerBlock}
+            getPlannerBlocks={getPlannerBlocks}
+            getTasksForDate={getTasksForDate}
+            onNavigate={setActivePage}
           />
         );
       case 'log':
@@ -467,6 +470,8 @@ function App() {
     focusProject,
     focusProjectId,
     getDepartment,
+    getPlannerBlocks,
+    getTasksForDate,
     handleExitFocus,
     handleStartBlock,
     handleTimelineDragLeave,

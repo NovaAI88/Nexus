@@ -1,19 +1,65 @@
-import { useState, useEffect } from 'react';
-import PageContainer from '../components/PageContainer';
-import SectionCard from '../components/SectionCard';
+import { useState, useEffect, useMemo } from 'react';
 
 const DEPT_COLORS = {
-  nexus: '#6b7cff',
+  nexus: '#7b8cff',
   hephaestus: '#22d3ee',
   xenon: '#a78bfa',
   aureon: '#34d399',
 };
 
-const DEPT_DURATIONS = { nexus: 60, hephaestus: 90, xenon: 45, aureon: 45 };
+const BLOCK_COLORS = {
+  work: 'rgba(123, 140, 255, 0.18)',
+  'side-job': 'rgba(245, 158, 11, 0.18)',
+  fitness: 'rgba(52, 211, 153, 0.18)',
+  gym: 'rgba(52, 211, 153, 0.18)',
+  life: 'rgba(167, 139, 250, 0.18)',
+  break: 'rgba(255, 255, 255, 0.06)',
+  meal: 'rgba(234, 179, 8, 0.14)',
+  recovery: 'rgba(167, 139, 250, 0.12)',
+  system: 'rgba(255, 255, 255, 0.04)',
+  custom: 'rgba(255, 255, 255, 0.08)',
+};
 
-function WeeklyPage({ date, projects, focusProjectId, departmentQueue = [], engineReasoning, addPlannerBlock }) {
+function toMinutes(t) {
+  const [h, m] = t.split(':').map(Number);
+  return h * 60 + m;
+}
+
+function getWeekDates(todayStr) {
+  const today = new Date(todayStr + 'T12:00:00');
+  const dow = today.getDay();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - ((dow + 6) % 7));
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    days.push({
+      date: `${y}-${m}-${day}`,
+      dayName: d.toLocaleDateString('en-US', { weekday: 'short' }),
+      dayNum: d.getDate(),
+      isToday: `${y}-${m}-${day}` === todayStr,
+      isWeekend: d.getDay() === 0 || d.getDay() === 6,
+    });
+  }
+  return days;
+}
+
+function WeeklyPage({
+  date,
+  projects,
+  focusProjectId,
+  departmentQueue = [],
+  engineReasoning,
+  addPlannerBlock,
+  getPlannerBlocks,
+  getTasksForDate,
+  onNavigate,
+}) {
   const [weeklyIntent, setWeeklyIntent] = useState('');
-  const [addedDepts, setAddedDepts] = useState(new Set());
 
   useEffect(() => {
     setWeeklyIntent(window.localStorage.getItem('nexus:weekly-intent') || '');
@@ -23,110 +69,178 @@ function WeeklyPage({ date, projects, focusProjectId, departmentQueue = [], engi
     window.localStorage.setItem('nexus:weekly-intent', weeklyIntent);
   }, [weeklyIntent]);
 
-  function handleAddToToday(dept) {
-    const duration = DEPT_DURATIONS[dept.id] ?? 60;
-    const now = new Date();
-    const nowMinutes = now.getHours() * 60 + now.getMinutes();
-    const startMinutes = Math.ceil(nowMinutes / 30) * 30;
-    const start = `${String(Math.floor(startMinutes / 60)).padStart(2, '0')}:${String(startMinutes % 60).padStart(2, '0')}`;
-    const endMinutes = startMinutes + duration;
-    const end = `${String(Math.floor(endMinutes / 60)).padStart(2, '0')}:${String(endMinutes % 60).padStart(2, '0')}`;
+  const weekDays = useMemo(() => getWeekDates(date), [date]);
 
-    addPlannerBlock(date, {
+  const weekData = useMemo(() => {
+    return weekDays.map((day) => {
+      const blocks = getPlannerBlocks ? getPlannerBlocks(day.date) : [];
+      const tasks = getTasksForDate ? getTasksForDate(day.date) : [];
+      const totalMinutes = blocks.reduce((sum, b) => {
+        return sum + (toMinutes(b.end) - toMinutes(b.start));
+      }, 0);
+      return { ...day, blocks, tasks, totalMinutes };
+    });
+  }, [weekDays, getPlannerBlocks, getTasksForDate]);
+
+  const completedProjects = projects.filter((p) => p.status === 'completed').length;
+  const progressPct = projects.length ? Math.round((completedProjects / projects.length) * 100) : 0;
+
+  const handleQuickAdd = (dayDate, dept) => {
+    const duration = 60;
+    const start = '09:00';
+    const endMin = toMinutes(start) + duration;
+    const end = `${String(Math.floor(endMin / 60)).padStart(2, '0')}:${String(endMin % 60).padStart(2, '0')}`;
+    addPlannerBlock(dayDate, {
       type: 'work',
       label: dept.nextAction || dept.name,
       start,
       end,
     });
-    setAddedDepts((s) => new Set([...s, dept.id]));
-  }
-
-  const urgencyOrder = { critical: 0, high: 1, normal: 2, low: 3 };
+  };
 
   return (
-    <PageContainer title="Weekly" subtitle="Plan across all departments" date={date} primaryAction={null}>
-      <div className="page-grid weekly-grid">
-        <div className="weekly-left">
-          {engineReasoning && (
-            <div className="weekly-engine-reasoning">
-              <span className="label">System Reasoning</span>
-              <p>{engineReasoning}</p>
+    <div className="week-page">
+      {/* Header */}
+      <header className="week-header">
+        <div>
+          <h1 className="week-title">Week</h1>
+          <p className="week-subtitle">
+            {weekDays[0]?.dayName} {weekDays[0]?.dayNum} — {weekDays[6]?.dayName} {weekDays[6]?.dayNum}
+          </p>
+        </div>
+        <div className="week-header-right">
+          <div className="week-progress-mini">
+            <span className="week-progress-label">{completedProjects}/{projects.length} projects</span>
+            <div className="week-progress-track">
+              <div className="week-progress-fill" style={{ width: `${progressPct}%` }} />
             </div>
-          )}
+          </div>
+        </div>
+      </header>
 
-          <SectionCard title="Department Priority" variant="primary">
-            <div className="weekly-dept-list">
-              {departmentQueue.length === 0 && (
-                <p className="weekly-empty">No department data. Configure state in each department page.</p>
-              )}
-              {[...departmentQueue]
-                .sort((a, b) => (urgencyOrder[a.urgency] ?? 2) - (urgencyOrder[b.urgency] ?? 2))
-                .map((dept) => {
-                  const color = DEPT_COLORS[dept.id] ?? '#6b7cff';
-                  const added = addedDepts.has(dept.id);
+      {/* Weekly intent */}
+      <div className="week-intent">
+        <input
+          className="week-intent-input"
+          type="text"
+          placeholder="This week's focus..."
+          value={weeklyIntent}
+          onChange={(e) => setWeeklyIntent(e.target.value)}
+        />
+      </div>
+
+      {/* Engine reasoning */}
+      {engineReasoning && (
+        <div className="week-reasoning">
+          <span className="week-reasoning-dot" />
+          <span>{engineReasoning}</span>
+        </div>
+      )}
+
+      {/* 7-day grid */}
+      <div className="week-grid">
+        {weekData.map((day) => (
+          <div
+            key={day.date}
+            className={`week-day${day.isToday ? ' is-today' : ''}${day.isWeekend ? ' is-weekend' : ''}`}
+          >
+            <div className="week-day-header">
+              <span className="week-day-name">{day.dayName}</span>
+              <span className={`week-day-num${day.isToday ? ' is-today' : ''}`}>{day.dayNum}</span>
+            </div>
+
+            {/* Hours summary */}
+            <div className="week-day-summary">
+              <span className="week-day-hours">
+                {day.totalMinutes > 0 ? `${(day.totalMinutes / 60).toFixed(1)}h` : '—'}
+              </span>
+              <span className="week-day-task-count">
+                {day.tasks.length > 0 && `${day.tasks.filter((t) => t.status === 'done').length}/${day.tasks.length}`}
+              </span>
+            </div>
+
+            {/* Blocks */}
+            <div className="week-day-blocks">
+              {day.blocks
+                .slice()
+                .sort((a, b) => toMinutes(a.start) - toMinutes(b.start))
+                .map((block) => {
+                  const duration = toMinutes(block.end) - toMinutes(block.start);
+                  const bg = BLOCK_COLORS[block.type] || BLOCK_COLORS.work;
                   return (
                     <div
-                      key={dept.id}
-                      className={`weekly-dept-row urgency-${dept.urgency}`}
-                      style={{ '--dept-color': color }}
+                      key={block.id}
+                      className="week-block"
+                      style={{ '--block-bg': bg }}
+                      title={`${block.start}–${block.end} ${block.label}`}
                     >
-                      <div className="weekly-dept-identity">
-                        <div className="weekly-dept-name-row">
-                          <span className="weekly-dept-color-dot" />
-                          <strong>{dept.name}</strong>
-                          <span className={`urgency-badge urgency-${dept.urgency}`}>
-                            {dept.urgency.toUpperCase()}
-                          </span>
-                          {dept.blockers?.length > 0 && (
-                            <span className="blocker-badge">BLOCKED</span>
-                          )}
-                        </div>
-                        <p className="weekly-dept-phase">{dept.phase}</p>
-                        <p className="weekly-dept-next">{dept.nextAction}</p>
-                        {dept.blockers?.length > 0 && (
-                          <p className="weekly-dept-blockers">
-                            Blockers: {dept.blockers.join(', ')}
-                          </p>
-                        )}
-                      </div>
-                      <button
-                        className={`weekly-add-today-btn ${added ? 'is-added' : ''}`}
-                        onClick={() => handleAddToToday(dept)}
-                        disabled={added}
-                      >
-                        {added ? 'Added ✓' : 'Add to Today'}
-                      </button>
+                      <span className="week-block-time">{block.start}</span>
+                      <span className="week-block-label">{block.label}</span>
+                      <span className="week-block-duration">{duration}m</span>
                     </div>
                   );
                 })}
-            </div>
-          </SectionCard>
-        </div>
 
-        <div className="weekly-right">
-          <SectionCard title="Weekly Intent" variant="primary">
-            <textarea
-              className="weekly-intent-input"
-              placeholder="Define the one intent that should guide this week..."
-              value={weeklyIntent}
-              onChange={(e) => setWeeklyIntent(e.target.value)}
-            />
-          </SectionCard>
+              {/* Tasks without blocks */}
+              {day.tasks
+                .filter((t) => !t.blockId && t.status !== 'done')
+                .map((task) => (
+                  <div key={task.id} className="week-task-chip">
+                    <span className="week-task-dot" />
+                    <span className="week-task-title">{task.title}</span>
+                  </div>
+                ))}
+            </div>
 
-          <SectionCard title="Project Progress" variant="muted">
-            <div className="weekly-progress-row">
-              <span>{projects.filter((p) => p.status === 'completed').length} / {projects.length} projects complete</span>
-            </div>
-            <div className="weekly-progress-bar">
-              <div
-                className="weekly-progress-fill"
-                style={{ width: `${projects.length ? Math.round((projects.filter((p) => p.status === 'completed').length / projects.length) * 100) : 0}%` }}
-              />
-            </div>
-          </SectionCard>
-        </div>
+            {/* Quick-add for today */}
+            {day.isToday && day.blocks.length === 0 && (
+              <button
+                className="week-day-add-btn"
+                onClick={() => onNavigate && onNavigate('today')}
+              >
+                Plan today
+              </button>
+            )}
+          </div>
+        ))}
       </div>
-    </PageContainer>
+
+      {/* Department queue below the grid */}
+      {departmentQueue.length > 0 && (
+        <div className="week-depts">
+          <h3 className="week-depts-title">Department Queue</h3>
+          <div className="week-depts-list">
+            {departmentQueue.map((dept) => {
+              const color = DEPT_COLORS[dept.id] || '#7b8cff';
+              return (
+                <div key={dept.id} className="week-dept-card" style={{ '--dept-color': color }}>
+                  <div className="week-dept-info">
+                    <span className="week-dept-dot" />
+                    <span className="week-dept-name">{dept.name}</span>
+                    <span className={`urgency-badge urgency-${dept.urgency}`}>
+                      {dept.urgency?.toUpperCase()}
+                    </span>
+                  </div>
+                  <p className="week-dept-action">{dept.nextAction}</p>
+                  <div className="week-dept-days">
+                    {weekDays.filter((d) => !d.isWeekend).map((day) => (
+                      <button
+                        key={day.date}
+                        className="week-dept-day-btn"
+                        onClick={() => handleQuickAdd(day.date, dept)}
+                        title={`Add to ${day.dayName}`}
+                      >
+                        {day.dayName.charAt(0)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
