@@ -23,6 +23,10 @@ function OverviewPage({
   weekHoursTarget,
   pipelineStats,
   healthData,
+  // N1: truth-layer data
+  nextActions,
+  revenueMilestones,
+  phaseDeadlines,
   onNavigate,
 }) {
   const hour = parseInt(currentTime?.split(':')[0] || '12', 10);
@@ -35,6 +39,17 @@ function OverviewPage({
   const weekPct = weekHoursTarget > 0
     ? Math.min(Math.round((weekHoursWorked / weekHoursTarget) * 100), 100)
     : 0;
+
+  // Top 3 next actions from truth layer (exclude stale VORTEX-only entries if irrelevant)
+  const topNextActions = (nextActions || []).slice(0, 3);
+
+  // Active AUREON revenue milestone
+  const aureonMilestone = (revenueMilestones || []).find(
+    (m) => m.target?.includes('AUREON') && m.status?.toLowerCase().includes('progress')
+  );
+
+  // N1 phase deadline
+  const n1Phase = (phaseDeadlines?.nexus || []).find((p) => p.phase?.startsWith('N1'));
 
   return (
     <div className="overview-page">
@@ -112,7 +127,7 @@ function OverviewPage({
           <HealthDashboardCard healthData={healthData} />
         </div>
 
-        {/* Department Health */}
+        {/* Department Health — from real company state via useCompanyState + useExecutionEngine */}
         {(departmentQueue || []).map((dept) => {
           const color = DEPT_COLORS[dept.id] || '#7b8cff';
           return (
@@ -129,6 +144,42 @@ function OverviewPage({
             </div>
           );
         })}
+
+        {/* N1 Company Intelligence — Next Actions from truth layer */}
+        {topNextActions.length > 0 && (
+          <div className="overview-card overview-card-next-actions">
+            <h3 className="overview-card-title">Next Actions</h3>
+            <ol className="overview-next-actions-list">
+              {topNextActions.map((action) => (
+                <li key={action.priority} className="overview-next-action-item">
+                  <span className="overview-next-action-text">{stripMarkdown(action.title)}</span>
+                </li>
+              ))}
+            </ol>
+            <span className="overview-card-meta">From truth layer · 05_shared/03_NEXT_ACTIONS.md</span>
+          </div>
+        )}
+
+        {/* N1 Revenue + Phase Status */}
+        {(aureonMilestone || n1Phase) && (
+          <div className="overview-card overview-card-phase-status">
+            <h3 className="overview-card-title">Phase Status</h3>
+            {aureonMilestone && (
+              <div className="overview-phase-row">
+                <span className="overview-phase-label">{aureonMilestone.target}</span>
+                <span className="overview-phase-value">{aureonMilestone.amount}</span>
+                <span className="overview-phase-deadline">by {aureonMilestone.deadline}</span>
+              </div>
+            )}
+            {n1Phase && (
+              <div className="overview-phase-row">
+                <span className="overview-phase-label">{n1Phase.phase}</span>
+                <span className="overview-phase-deadline">{n1Phase.start} → {n1Phase.targetEnd}</span>
+              </div>
+            )}
+            <span className="overview-card-meta">From CALENDAR.md</span>
+          </div>
+        )}
 
         {/* Upcoming Blocks */}
         <div className="overview-card overview-card-upcoming">
@@ -147,7 +198,7 @@ function OverviewPage({
           )}
         </div>
 
-        {/* Pipeline Snapshot */}
+        {/* Pipeline Snapshot — AUREON */}
         {pipelineStats && (
           <div className="overview-card overview-card-pipeline">
             <h3 className="overview-card-title">AUREON Pipeline</h3>
@@ -202,6 +253,15 @@ function formatDisplayDate(dateStr) {
   } catch {
     return dateStr;
   }
+}
+
+/**
+ * Strip markdown list numbering from action titles.
+ * e.g. "1. VORTEX — Resume from Phase 2..." → "VORTEX — Resume from Phase 2..."
+ */
+function stripMarkdown(str) {
+  if (!str) return '';
+  return str.replace(/^\d+\.\s+/, '').replace(/\*{1,2}/g, '').trim();
 }
 
 export default OverviewPage;

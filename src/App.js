@@ -456,6 +456,19 @@ function App() {
     } catch { return null; }
   }, [date]);
 
+  // N1: truth-layer data from generated JSON
+  const companyIntelligence = useMemo(() => {
+    try {
+      const gen = require('./data/companyData.generated.json');
+      return {
+        nextActions: gen.nextActions || [],
+        revenueMilestones: gen.revenueMilestones || [],
+        phaseDeadlines: gen.phaseDeadlines || {},
+        products: gen.products || [],
+      };
+    } catch { return { nextActions: [], revenueMilestones: [], phaseDeadlines: {}, products: [] }; }
+  }, []);
+
   const pageContent = useMemo(() => {
     switch (activePage) {
       case 'today':
@@ -542,6 +555,9 @@ function App() {
             weekHoursTarget={weekHoursData.target}
             pipelineStats={pipelineStats}
             healthData={healthData}
+            nextActions={companyIntelligence.nextActions}
+            revenueMilestones={companyIntelligence.revenueMilestones}
+            phaseDeadlines={companyIntelligence.phaseDeadlines}
             onNavigate={setActivePage}
           />
         );
@@ -555,6 +571,7 @@ function App() {
     addPlannerBlock,
     aureonPanel,
     chatPlannerPanel,
+    companyIntelligence,
     currentTime,
     currentZone,
     date,

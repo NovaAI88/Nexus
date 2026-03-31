@@ -1,16 +1,204 @@
 {
+  "products": [
+    {
+      "name": "NEXUS",
+      "deptId": "nexus",
+      "phase": "N1 — Truth Sync + Company Intelligence  Active",
+      "lastCompleted": "Phase 8.75 complete: generateCompanyData.js, initialCompanyState.js, useCompanyState.js, OverviewPage N1 surfaces, truthSync tests",
+      "nextStep": "N2 — AI Planning Core",
+      "blockers": "None",
+      "target": "",
+      "health": "N1 complete — dashboard reflects real company state from truth layer",
+      "source": "company_status"
+    },
+    {
+      "name": "VORTEX",
+      "deptId": "hephaestus",
+      "phase": "V4-P8 — Signal Metrics API  Complete",
+      "lastCompleted": "Signal Metrics API, full AETHER→VORTEX rename, Paperclip installed",
+      "nextStep": "V1 — Verification + Observability + Persistence",
+      "blockers": "None",
+      "target": "",
+      "health": "Ready for V1",
+      "source": "company_status"
+    },
+    {
+      "name": "HEPHAESTUS",
+      "deptId": "hephaestus",
+      "phase": "Phase 3 — Complete",
+      "lastCompleted": "Department populated, tech decisions log",
+      "nextStep": "Supports VORTEX V1 execution",
+      "blockers": "None",
+      "target": "",
+      "health": "Complete",
+      "source": "company_status"
+    },
+    {
+      "name": "XENON",
+      "deptId": "xenon",
+      "phase": "Phase 4 — Complete",
+      "lastCompleted": "All department files, 27 launch strategy docs, campaign template, channel tracker",
+      "nextStep": "Nicholas decides channel + format → first campaign",
+      "blockers": "Awaiting direction",
+      "target": "",
+      "health": "Complete — activation pending direction",
+      "source": "company_status"
+    },
+    {
+      "name": "AUREON",
+      "deptId": "aureon",
+      "phase": "A1 — First Revenue  Active",
+      "lastCompleted": "Full system built: offer, leads, outreach, sales, delivery, pipeline tracker",
+      "nextStep": "Research 30 Shopify leads → send 20 DMs",
+      "blockers": "None — execution-ready",
+      "target": "€1,000 within 14 days",
+      "health": "System ready, execution begins now",
+      "source": "company_status"
+    }
+  ],
+  "phaseDeadlines": {
+    "nexus": [
+      {
+        "phase": "N1 — Truth Sync",
+        "start": "March 31, 2026",
+        "targetEnd": "March 31, 2026",
+        "status": "Complete"
+      },
+      {
+        "phase": "N2 — AI Planning Core",
+        "start": "April 14, 2026",
+        "targetEnd": "April 21, 2026",
+        "status": "Pending"
+      },
+      {
+        "phase": "N3 — Review Engine",
+        "start": "April 24, 2026",
+        "targetEnd": "April 29, 2026",
+        "status": "Pending"
+      },
+      {
+        "phase": "N4 — Native Readiness",
+        "start": "May 2, 2026",
+        "targetEnd": "May 9, 2026",
+        "status": "Pending"
+      },
+      {
+        "phase": "N5 — Health Intelligence",
+        "start": "Post-launch",
+        "targetEnd": "TBD",
+        "status": "Pending"
+      }
+    ],
+    "vortex": [
+      {
+        "phase": "V1 — Verification + Persistence",
+        "start": "April 3, 2026",
+        "targetEnd": "April 8, 2026",
+        "status": "Pending"
+      },
+      {
+        "phase": "V2 — AI Research Layer",
+        "start": "April 11, 2026",
+        "targetEnd": "April 18, 2026",
+        "status": "Pending"
+      },
+      {
+        "phase": "V3 — Decision Safety",
+        "start": "April 21, 2026",
+        "targetEnd": "April 26, 2026",
+        "status": "Pending"
+      },
+      {
+        "phase": "V4 — Operator Console",
+        "start": "April 29, 2026",
+        "targetEnd": "May 9, 2026",
+        "status": "Pending"
+      },
+      {
+        "phase": "V5 — Profitability Loop",
+        "start": "May 12, 2026",
+        "targetEnd": "May 19, 2026",
+        "status": "Pending"
+      }
+    ],
+    "aureon": [
+      {
+        "phase": "A1 — First Revenue (€1,000)",
+        "start": "April 1, 2026",
+        "targetEnd": "April 14, 2026",
+        "status": "Active"
+      },
+      {
+        "phase": "A2 — Revenue Engine (€5k/mo)",
+        "start": "April 15, 2026",
+        "targetEnd": "June 1, 2026",
+        "status": "Pending"
+      },
+      {
+        "phase": "A3 — Scale + Productize (€10k/mo)",
+        "start": "June 2, 2026",
+        "targetEnd": "August 2026",
+        "status": "Pending"
+      }
+    ]
+  },
+  "revenueMilestones": [
+    {
+      "target": "AUREON First Revenue",
+      "amount": "€1,000",
+      "deadline": "April 14, 2026",
+      "status": "In Progress"
+    },
+    {
+      "target": "AUREON Monthly Recurring",
+      "amount": "€5,000/mo",
+      "deadline": "June 1, 2026",
+      "status": "Pending"
+    },
+    {
+      "target": "NEXUS App Store Launch",
+      "amount": "First paid users",
+      "deadline": "July 2026",
+      "status": "Pending"
+    },
+    {
+      "target": "AUREON Scale",
+      "amount": "€10,000/mo",
+      "deadline": "August 2026",
+      "status": "Pending"
+    },
+    {
+      "target": "VORTEX Paper Trading Profitable",
+      "amount": "Positive PnL (30 days)",
+      "deadline": "September 2026",
+      "status": "Pending"
+    },
+    {
+      "target": "Financial Independence",
+      "amount": "€15,000+/mo combined",
+      "deadline": "Q4 2026",
+      "status": "🎯 Target"
+    }
+  ],
   "departments": [
     {
       "name": "NEXUS",
-      "phase": "** Phase 8.75 — Foundation Cleanup Complete ✅",
+      "phase": "N1 — Truth Sync + Company Intelligence ✅ Complete",
+      "status": "card, AUREON Pipeline card, Department cards — all from truth layer",
+      "blockers": "** None",
+      "source": "current_state"
+    },
+    {
+      "name": "VORTEX",
+      "phase": "V4-P8 — Signal Metrics API ✅ Complete",
       "status": "active",
       "blockers": "** None",
       "source": "current_state"
     },
     {
       "name": "AUREON",
-      "phase": "** Phase 1 — Initialized ✅",
-      "status": "** System built and operational. Execution begins now.",
+      "phase": "Phase 1 — Initialized ✅",
+      "status": "System built and operational. Execution begins now.",
       "blockers": "** None — execution-ready",
       "source": "current_state"
     }
@@ -28,19 +216,6 @@
     ]
   },
   "pipeline": [
-    {
-      "_": "---",
-      "company": "---",
-      "founder": "---",
-      "score": "---:",
-      "channel": "---",
-      "dm_sent": "---",
-      "fu1_due": "---",
-      "fu2_due": "---",
-      "response": "---",
-      "status": "---",
-      "notes": "---"
-    },
     {
       "_": "1",
       "company": "Sternglas",
@@ -300,110 +475,6 @@
       "response": "None",
       "status": "🔵 Not contacted",
       "notes": "Audit-first approach"
-    },
-    {
-      "_": "Icon",
-      "company": "Meaning",
-      "founder": "",
-      "score": "",
-      "channel": "",
-      "dm_sent": "",
-      "fu1_due": "",
-      "fu2_due": "",
-      "response": "",
-      "status": "",
-      "notes": ""
-    },
-    {
-      "_": "🔵",
-      "company": "Not contacted",
-      "founder": "",
-      "score": "",
-      "channel": "",
-      "dm_sent": "",
-      "fu1_due": "",
-      "fu2_due": "",
-      "response": "",
-      "status": "",
-      "notes": ""
-    },
-    {
-      "_": "📤",
-      "company": "DM sent",
-      "founder": "",
-      "score": "",
-      "channel": "",
-      "dm_sent": "",
-      "fu1_due": "",
-      "fu2_due": "",
-      "response": "",
-      "status": "",
-      "notes": ""
-    },
-    {
-      "_": "📩",
-      "company": "Responded",
-      "founder": "",
-      "score": "",
-      "channel": "",
-      "dm_sent": "",
-      "fu1_due": "",
-      "fu2_due": "",
-      "response": "",
-      "status": "",
-      "notes": ""
-    },
-    {
-      "_": "📅",
-      "company": "Call booked",
-      "founder": "",
-      "score": "",
-      "channel": "",
-      "dm_sent": "",
-      "fu1_due": "",
-      "fu2_due": "",
-      "response": "",
-      "status": "",
-      "notes": ""
-    },
-    {
-      "_": "✅",
-      "company": "Deal closed",
-      "founder": "",
-      "score": "",
-      "channel": "",
-      "dm_sent": "",
-      "fu1_due": "",
-      "fu2_due": "",
-      "response": "",
-      "status": "",
-      "notes": ""
-    },
-    {
-      "_": "❌",
-      "company": "Dead",
-      "founder": "",
-      "score": "",
-      "channel": "",
-      "dm_sent": "",
-      "fu1_due": "",
-      "fu2_due": "",
-      "response": "",
-      "status": "",
-      "notes": ""
-    },
-    {
-      "_": "⏸️",
-      "company": "On hold",
-      "founder": "",
-      "score": "",
-      "channel": "",
-      "dm_sent": "",
-      "fu1_due": "",
-      "fu2_due": "",
-      "response": "",
-      "status": "",
-      "notes": ""
     }
   ],
   "tasks": {
@@ -413,32 +484,64 @@
   "nextActions": [
     {
       "priority": 1,
-      "title": "1. VORTEX — Resume from Phase 2 Complete (FIRST)",
-      "details": "**Owner:** Nova (Hephaestus mode)\n\n**Strict startup sequence (mandatory):**\n- [ ] Confirm exact repo path first:\n  - `cd /Users/nicholasgeorge/workspace/company/03_HEPHAESTUS/03_PROJECTS/VORTEX/code/b"
+      "title": "1. AUREON — Execute A1 First Revenue (ONGOING)",
+      "details": "**Owner:** Nicholas\n\n**Actions:**\n- [ ] Research 30 Shopify leads (DE market, €50k–€500k/yr revenue)\n- [ ] Send 20 personalized DMs (LinkedIn primary)\n- [ ] Follow up on 9 DMs sent 2026-03-27 (FU1 was due 2026-03-29)\n- [ ] Book 3–5 discovery calls\n- [ ] Close first deal (€500 setup + €150/month)\n\n**"
     },
     {
       "priority": 2,
-      "title": "2. VORTEX — Define Phase 3 RANGE Plan (after verification only)",
-      "details": "**Owner:** Nova\n\n**Actions:**\n- [ ] Propose Phase 3 using evidence from current Phase 2 behavior\n- [ ] Keep scope within RANGE strategy/router unless evidence requires expansion\n- [ ] Preserve staged "
+      "title": "2. VORTEX — Execute V1 (Verification + Persistence)",
+      "details": "**Owner:** FORGE (Codex agent)\n\n**Actions:**\n- [ ] Issue V1 Phase Brief to FORGE\n- [ ] Run paper trading, observe live signal metrics via `/api/performance/signal-metrics`\n- [ ] Baseline emission rate and success rate by triggerMode\n- [ ] Implement signal track persistence (DB or file)\n- [ ] Verify "
     },
     {
       "priority": 3,
-      "title": "3. NEXUS / XENON (deferred while VORTEX handoff is active)",
-      "details": "**Status:** Deferred to maintain clean continuation context and avoid cross-stream drift."
+      "title": "3. NEXUS — Begin N2 (AI Planning Core)",
+      "details": "**Owner:** ATLAS (Claude Code agent)\n\n**Actions:**\n- [ ] Issue N2 Phase Brief to ATLAS\n- [ ] N1 Truth Sync is complete — dashboard reflects real company state\n- [ ] N2 scope: AI-driven session planning, project context bridge, recommendation upgrade\n- [ ] Target start: April 14, 2026\n\n**Status:** N1"
     }
   ],
   "phaseTracker": [
     {
       "field": "**Phase**",
-      "status": "Phase 2 — Complete ✅"
+      "status": "Phase 8.75 — Foundation Cleanup Complete ✅"
     },
     {
       "field": "**Last Completed**",
-      "status": "nexus-ui build verified, SYSTEM files populated"
+      "status": "Persistent project/dept model, task engine, activity log, theme system, Session Start Panel, DepartmentPage with inline editing"
+    },
+    {
+      "field": "**Canonical Path**",
+      "status": "`~/workspace/company/02_NEXUS/PRODUCT/nexus-ui`"
     },
     {
       "field": "**Next Step**",
-      "status": "NEXUS Product Phase 2 (backend) — after Phase 5 begins"
+      "status": "N1 — Truth Sync + Company Intelligence"
+    },
+    {
+      "field": "**Blockers**",
+      "status": "None"
+    },
+    {
+      "field": "Field",
+      "status": "Status"
+    },
+    {
+      "field": "**Phase**",
+      "status": "V4-P8 — Signal Metrics API ✅ Complete"
+    },
+    {
+      "field": "**Canonical Path**",
+      "status": "`~/workspace/company/vortex`"
+    },
+    {
+      "field": "**GitHub**",
+      "status": "`https://github.com/NovaAI88/vortex.git` (main, clean, in sync)"
+    },
+    {
+      "field": "**Last Completed**",
+      "status": "Full AETHER→VORTEX rename, Phase 5 Signal Metrics API (2026-03-28)"
+    },
+    {
+      "field": "**Next Step**",
+      "status": "V1 — Verification + Observability + Persistence"
     },
     {
       "field": "**Blockers**",
@@ -458,7 +561,7 @@
     },
     {
       "field": "**Next Step**",
-      "status": "VORTEX architecture phase (Phase 5)"
+      "status": "Supports VORTEX V1 execution"
     },
     {
       "field": "**Blockers**",
@@ -470,35 +573,11 @@
     },
     {
       "field": "**Phase**",
-      "status": "Phase 0 — Pre-rebuild ✅"
-    },
-    {
-      "field": "**Current Location**",
-      "status": "`03_HEPHAESTUS/03_PROJECTS/VORTEX/` (canonical)"
-    },
-    {
-      "field": "**Last Completed**",
-      "status": "Moved to canonical location, product overview written"
-    },
-    {
-      "field": "**Next Step**",
-      "status": "Phase 5 — AETHER audit → architecture → rebuild"
-    },
-    {
-      "field": "**Blockers**",
-      "status": "Intentional — Phase 5 starts now"
-    },
-    {
-      "field": "Field",
-      "status": "Status"
-    },
-    {
-      "field": "**Phase**",
       "status": "Phase 4 — Complete ✅"
     },
     {
       "field": "**Last Completed**",
-      "status": "All 6 department files populated, campaign template, channel tracker"
+      "status": "All 6 department files populated, 27 launch strategy docs, campaign template, channel tracker"
     },
     {
       "field": "**Next Step**",
@@ -509,27 +588,59 @@
       "status": "Awaiting direction (channel/format decision)"
     },
     {
+      "field": "Field",
+      "status": "Status"
+    },
+    {
+      "field": "**Phase**",
+      "status": "A1 — First Revenue 🟡 Active"
+    },
+    {
+      "field": "**Canonical Path**",
+      "status": "`~/workspace/company/06_AUREON`"
+    },
+    {
+      "field": "**Last Completed**",
+      "status": "Full system built: offer, leads, outreach, sales, delivery, pipeline tracker"
+    },
+    {
+      "field": "**Target**",
+      "status": "€1,000 within 14 days"
+    },
+    {
+      "field": "**Next Step**",
+      "status": "Research 30 Shopify leads → send 20 DMs"
+    },
+    {
+      "field": "**Blockers**",
+      "status": "None — execution-ready"
+    },
+    {
       "field": "Project",
       "status": "Phase"
     },
     {
       "field": "NEXUS",
-      "status": "Phase 2"
+      "status": "Phase 8.75"
+    },
+    {
+      "field": "VORTEX",
+      "status": "V4-P8"
     },
     {
       "field": "HEPHAESTUS",
       "status": "Phase 3"
     },
     {
-      "field": "VORTEX",
-      "status": "Phase 0"
-    },
-    {
       "field": "XENON",
       "status": "Phase 4"
+    },
+    {
+      "field": "AUREON",
+      "status": "A1"
     }
   ],
-  "lastGenerated": "2026-03-28T22:48:54.608Z",
+  "lastGenerated": "2026-03-31T13:22:28.386Z",
   "currentFocus": {
     "hephaestus": "# HEPHAESTUS — Current Focus\n\n**Last updated:** 2026-03-22\n\n---\n\n## Active Focus\n\n**Phase 3 — Department structure and engineering visibility**\n\nHEPHAESTUS is being established as a functional department. The immediate work is structural — getting visibility in place before any product implementation begins.\n\n---\n\n## Current State\n\n| Area | Status | Notes |\n|------|--------|-------|\n| Department files | ✅ Populated | This session |\n| VORTEX canonical location | ✅ Established | `03_PROJECTS/VORTE",
     "xenon": "# XENON — Current Focus\n\n**Last updated:** 2026-03-22\n\n---\n\n## Active Focus\n\n**Phase 4 — Department structure established**\n\nXENON is structurally in place. No campaigns are running yet. First campaign definition is the immediate next step once Nicholas decides on channel and format.\n\n---\n\n## Current State\n\n| Area | Status | Notes |\n|------|--------|-------|\n| Department structure | ✅ Complete | This session |\n| First campaign defined | 🔴 Not started | Awaiting direction |\n| Channel accounts | "
