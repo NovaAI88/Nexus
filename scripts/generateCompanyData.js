@@ -21,7 +21,6 @@
 const fs = require('fs');
 const path = require('path');
 
-// Resolve company root (3 levels up from nexus-ui: nexus-ui → PRODUCT → 02_NEXUS → company)
 const COMPANY_ROOT = path.resolve(__dirname, '..', '..', '..', '..');
 const OUTPUT_PATH = path.resolve(__dirname, '..', 'src', 'data', 'companyData.generated.json');
 
@@ -35,10 +34,6 @@ function readFile(relativePath) {
   }
 }
 
-/**
- * Extract sections from markdown by heading level.
- * Returns { heading: content } map.
- */
 function extractSections(md, level = 2) {
   const prefix = '#'.repeat(level) + ' ';
   const sections = {};
@@ -47,25 +42,17 @@ function extractSections(md, level = 2) {
 
   for (const line of md.split('\n')) {
     if (line.startsWith(prefix) && !line.startsWith(prefix + '#')) {
-      if (currentHeading) {
-        sections[currentHeading] = currentContent.join('\n').trim();
-      }
+      if (currentHeading) sections[currentHeading] = currentContent.join('\n').trim();
       currentHeading = line.slice(prefix.length).trim();
       currentContent = [];
     } else {
       currentContent.push(line);
     }
   }
-  if (currentHeading) {
-    sections[currentHeading] = currentContent.join('\n').trim();
-  }
+  if (currentHeading) sections[currentHeading] = currentContent.join('\n').trim();
   return sections;
 }
 
-/**
- * Parse a markdown table into array of objects.
- * Expects | Header1 | Header2 | ... format.
- */
 function parseMarkdownTable(text) {
   const lines = text.split('\n').filter((l) => l.trim().startsWith('|'));
   if (lines.length < 2) return [];
@@ -75,8 +62,7 @@ function parseMarkdownTable(text) {
     .map((h) => h.trim())
     .filter(Boolean);
 
-  // Skip separator line (|---|---|...)
-  const dataLines = lines.slice(1).filter((l) => !l.match(/^\|[\s-|]+\|$/));
+  const dataLines = lines.slice(1).filter((l) => !l.match(/^\|(?:\s*[:-]+\s*\|)+\s*$/));
 
   return dataLines.map((line) => {
     const cells = line.split('|').map((c) => c.trim()).filter((_, i, arr) => i > 0 && i < arr.length);
@@ -88,27 +74,15 @@ function parseMarkdownTable(text) {
   });
 }
 
-/**
- * Extract checklist items from markdown.
- * Returns [{ done: boolean, text: string }]
- */
 function parseChecklist(text) {
   const items = [];
   for (const line of text.split('\n')) {
-    const match = line.match(/^-\s*\[([ xX✅⏳])\]\s*(.+)/);
-    if (match) {
-      items.push({
-        done: match[1] !== ' ',
-        text: match[2].trim(),
-      });
-    }
+    const match = line.match(/^-\s*\[([ xX✅⏳])]\s*(.+)/);
+    if (match) items.push({ done: match[1] !== ' ', text: match[2].trim() });
   }
   return items;
 }
 
-/**
- * Extract bullet points from markdown.
- */
 function parseBullets(text) {
   return text
     .split('\n')
@@ -116,60 +90,48 @@ function parseBullets(text) {
     .map((l) => l.replace(/^[-*]\s+/, '').trim());
 }
 
-/**
- * Strip markdown bold/italic markers from a string.
- */
 function cleanMarkdown(str) {
   if (!str) return '';
   return str
     .replace(/\*{1,2}([^*]*)\*{1,2}/g, '$1')
     .replace(/_{1,2}([^_]*)_{1,2}/g, '$1')
     .replace(/`([^`]*)`/g, '$1')
-    .replace(/✅|⏳|🟡|🔴|🟢|⏸️/g, '')
+    .replace(/✅|⏳|🟡|🔴|🟢|⏸️|🎯/g, '')
     .trim();
 }
 
-/**
- * Extract value from a two-column markdown table for a given field key.
- * Matches rows like | **Phase** | ... | or | Phase | ... |
- */
 function extractTableValue(tableText, fieldName) {
   const lines = tableText.split('\n').filter((l) => l.trim().startsWith('|'));
   for (const line of lines) {
     const cells = line.split('|').map((c) => c.trim()).filter(Boolean);
     if (cells.length >= 2) {
       const key = cleanMarkdown(cells[0]).toLowerCase();
-      if (key === fieldName.toLowerCase()) {
-        return cleanMarkdown(cells[1]);
-      }
+      if (key === fieldName.toLowerCase()) return cleanMarkdown(cells[1]);
     }
   }
   return '';
 }
 
-/**
- * Product name → department ID mapping.
- * Used to link product entries in COMPANY_STATUS to department IDs in the app.
- */
+function extractLabeledValue(text, label) {
+  const regex = new RegExp(`(?:^|\\n)\\s*\\*{0,2}${label}[:\\s*]+\\*{0,2}(.+?)(?:\\n|$)`, 'i');
+  const match = text.match(regex);
+  return match ? cleanMarkdown(match[1]) : '';
+}
+
 const PRODUCT_TO_DEPT_ID = {
   NEXUS: 'nexus',
-  VORTEX: 'hephaestus',   // VORTEX is the active product under HEPHAESTUS dept
+  VORTEX: 'hephaestus',
   HEPHAESTUS: 'hephaestus',
   XENON: 'xenon',
   AUREON: 'aureon',
 };
 
-/**
- * Parse 01_NOVA/03_COMPANY_STATUS.md into a structured products[] array.
- * Each product section is a ## heading containing a two-column | Field | Status | table.
- */
 function parseCompanyStatus(md) {
   if (!md) return [];
   const sections = extractSections(md, 2);
   const products = [];
 
   for (const [heading, content] of Object.entries(sections)) {
-    // Match any ALLCAPS product name (NEXUS, VORTEX, HEPHAESTUS, XENON, AUREON)
     const nameMatch = heading.match(/^([A-Z][A-Z0-9_]+)/);
     if (!nameMatch) continue;
 
@@ -182,8 +144,6 @@ function parseCompanyStatus(md) {
     const nextStep = extractTableValue(content, 'Next Step');
     const blockers = extractTableValue(content, 'Blockers');
     const target = extractTableValue(content, 'Target');
-
-    // Extract health line: **Health:** 🟢 ...
     const healthMatch = content.match(/\*{0,2}Health[:\s*]+\*{0,2}\s*(.+)/i);
     const health = healthMatch ? healthMatch[1].replace(/\*+/g, '').trim() : '';
 
@@ -203,9 +163,6 @@ function parseCompanyStatus(md) {
   return products;
 }
 
-/**
- * Parse CALENDAR.md into structured phaseDeadlines per product + revenue milestones.
- */
 function parseCalendar(md) {
   if (!md) return { phaseDeadlines: {}, revenueMilestones: [] };
 
@@ -213,7 +170,6 @@ function parseCalendar(md) {
   const phaseDeadlines = {};
   const revenueMilestones = [];
 
-  // Revenue Milestones section
   if (sections['Revenue Milestones']) {
     const rows = parseMarkdownTable(sections['Revenue Milestones']);
     for (const row of rows) {
@@ -228,7 +184,6 @@ function parseCalendar(md) {
     }
   }
 
-  // Phase Deadlines sections — look for ### NEXUS, ### VORTEX, ### AUREON subsections
   const phaseSection = sections['Phase Deadlines'] || '';
   const subSections = extractSections(phaseSection, 3);
   for (const [heading, content] of Object.entries(subSections)) {
@@ -238,7 +193,7 @@ function parseCalendar(md) {
     const rows = parseMarkdownTable(content);
     if (rows.length > 0) {
       phaseDeadlines[name] = rows.map((r) => ({
-        phase: cleanMarkdown(r.phase || r['phase'] || ''),
+        phase: cleanMarkdown(r.phase || ''),
         start: cleanMarkdown(r.start || ''),
         targetEnd: cleanMarkdown(r.target_end || r['target end'] || ''),
         status: cleanMarkdown(r.status || ''),
@@ -249,43 +204,80 @@ function parseCalendar(md) {
   return { phaseDeadlines, revenueMilestones };
 }
 
-// ─── Main ───
+function parseCurrentState(md) {
+  if (!md) return [];
+  const sections = extractSections(md, 2);
+  const departments = [];
+
+  for (const [heading, content] of Object.entries(sections)) {
+    const deptMatch = heading.match(/^([A-Z][A-Z0-9_]+)/);
+    if (!deptMatch) continue;
+
+    const name = deptMatch[1];
+    const phase = extractLabeledValue(content, 'Phase');
+    const status = extractLabeledValue(content, 'Status') || 'active';
+    const blockers = extractLabeledValue(content, 'Blockers') || extractLabeledValue(content, 'Blocker');
+
+    departments.push({
+      name,
+      phase,
+      status,
+      blockers: blockers || 'None',
+      source: 'current_state',
+    });
+  }
+
+  return departments;
+}
+
+function parsePhaseTracker(md) {
+  if (!md) return [];
+  const rows = parseMarkdownTable(md);
+  return rows.filter((row) => {
+    const field = cleanMarkdown(row.field || '');
+    const project = cleanMarkdown(row.project || '');
+    if (!field && !project) return false;
+    if (field === 'Field' || project === 'Project') return false;
+    return true;
+  });
+}
+
+function parsePipeline(md) {
+  if (!md) return [];
+  const table = parseMarkdownTable(md);
+  return table.filter((r) => {
+    const company = cleanMarkdown(r.company || '');
+    const marker = cleanMarkdown(r._ || '');
+    if (!company || company.length <= 2) return false;
+    if (company === 'Current' || company === 'Meaning' || company === '---') return false;
+    if (marker === 'Metric' || marker === '---') return false;
+    return true;
+  });
+}
 
 function generate() {
   console.log('[generateCompanyData] Reading company truth layer...');
 
   const output = {
-    // Core truth: per-product structured status
     products: [],
-    // Phase deadlines from CALENDAR
     phaseDeadlines: {},
-    // Revenue milestones from CALENDAR
     revenueMilestones: [],
-    // Legacy: departments array from CURRENT_STATE (kept for compat)
     departments: [],
-    // Backlog items
     backlog: {},
-    // AUREON pipeline leads
     pipeline: [],
-    // Task checklists
     tasks: {},
-    // Active blockers
     blockers: [],
-    // Next actions (priority ordered)
     nextActions: [],
-    // Phase tracker tables
     phaseTracker: [],
     lastGenerated: new Date().toISOString(),
   };
 
-  // 1. Company Status (primary source for per-product state)
   const companyStatus = readFile('01_NOVA/03_COMPANY_STATUS.md');
   if (companyStatus) {
     output.products = parseCompanyStatus(companyStatus);
     console.log(`  - ${output.products.length} products from company status`);
   }
 
-  // 2. Calendar (phase deadlines + revenue milestones)
   const calendarMd = readFile('CALENDAR.md');
   if (calendarMd) {
     const { phaseDeadlines, revenueMilestones } = parseCalendar(calendarMd);
@@ -294,102 +286,59 @@ function generate() {
     console.log(`  - ${revenueMilestones.length} revenue milestones from calendar`);
   }
 
-  // 3. Current State (legacy dept enrichment from shared truth)
   const currentState = readFile('05_shared/01_CURRENT_STATE.md');
   if (currentState) {
-    const sections = extractSections(currentState, 2);
-    for (const [heading, content] of Object.entries(sections)) {
-      // Match headings like "NEXUS (Product)", "VORTEX", "AUREON (Capital Generation)"
-      const deptMatch = heading.match(/^([A-Z][A-Z0-9_]+)/);
-      if (deptMatch) {
-        const name = deptMatch[1];
-        const phaseMatch = content.match(/\*{0,2}Phase[:\s*]+\*{0,2}\s*(.+?)(?:\n|$)/i);
-        const statusMatch = content.match(/\*{0,2}Status[:\s*]+\*{0,2}\s*(.+?)(?:\n|$)/i);
-        const blockerLines = content.match(/Blocker[s]?[:\s]+(.+?)(?:\n|$)/i);
-        output.departments.push({
-          name,
-          phase: phaseMatch?.[1]?.trim() || '',
-          status: statusMatch?.[1]?.trim() || 'active',
-          blockers: blockerLines?.[1]?.trim() || 'None',
-          source: 'current_state',
-        });
-      }
-    }
+    output.departments = parseCurrentState(currentState);
     console.log(`  - ${output.departments.length} departments from current state`);
   }
 
-  // 4. Next Actions
   const nextActions = readFile('05_shared/03_NEXT_ACTIONS.md');
   if (nextActions) {
     const sections = extractSections(nextActions, 3);
     let priority = 1;
     for (const [heading, content] of Object.entries(sections)) {
-      output.nextActions.push({
-        priority,
-        title: heading,
-        details: content.slice(0, 300),
-      });
+      output.nextActions.push({ priority, title: heading, details: content.slice(0, 300) });
       priority++;
     }
     console.log(`  - ${output.nextActions.length} next actions`);
   }
 
-  // 5. Phase Tracker
   const phaseTracker = readFile('05_shared/04_PHASE_TRACKER.md');
-  if (phaseTracker) {
-    output.phaseTracker = parseMarkdownTable(phaseTracker);
-  }
+  if (phaseTracker) output.phaseTracker = parsePhaseTracker(phaseTracker);
 
-  // 6. Blockers
   const blockers = readFile('05_shared/05_BLOCKERS.md');
   if (blockers) {
     output.blockers = parseBullets(blockers).filter((b) => b.length > 0);
-    if (output.blockers.length > 0) {
-      console.log(`  - ${output.blockers.length} blockers`);
-    }
+    if (output.blockers.length > 0) console.log(`  - ${output.blockers.length} blockers`);
   }
 
-  // 7. Hephaestus Backlog
   const hephBacklog = readFile('03_HEPHAESTUS/04_BACKLOG.md');
   if (hephBacklog) {
     const items = parseChecklist(hephBacklog);
-    output.backlog.hephaestus = items.length > 0
-      ? items
-      : parseBullets(hephBacklog).map((text) => ({ done: false, text }));
+    output.backlog.hephaestus = items.length > 0 ? items : parseBullets(hephBacklog).map((text) => ({ done: false, text }));
   }
 
-  // 8. Aureon Pipeline
   const pipeline = readFile('06_AUREON/04_tracking/pipeline.md');
   if (pipeline) {
-    const table = parseMarkdownTable(pipeline);
-    if (table.length > 0) {
-      // Filter out legend/icon rows (rows without a meaningful company name)
-      output.pipeline = table.filter((r) => r.company && r.company.length > 3 && !r.company.startsWith('---') && !['Meaning', 'Not contacted', 'DM sent', 'Responded', 'Call booked', 'Deal closed', 'Dead', 'On hold'].includes(r.company));
-    }
+    output.pipeline = parsePipeline(pipeline);
     console.log(`  - ${output.pipeline.length} pipeline entries`);
   }
 
-  // 9. Nexus Tasks
   const nexusTasks = readFile('02_NEXUS/PRODUCT/03_TASKS.md');
-  if (nexusTasks) {
-    output.tasks.nexus = parseChecklist(nexusTasks);
-  }
+  if (nexusTasks) output.tasks.nexus = parseChecklist(nexusTasks);
 
-  // 10. Hephaestus Focus
   const hephFocus = readFile('03_HEPHAESTUS/01_CURRENT_FOCUS.md');
   if (hephFocus) {
     output.currentFocus = output.currentFocus || {};
     output.currentFocus.hephaestus = hephFocus.slice(0, 500);
   }
 
-  // 11. Xenon Focus
   const xenonFocus = readFile('04_XENON/01_CURRENT_FOCUS.md');
   if (xenonFocus) {
     output.currentFocus = output.currentFocus || {};
     output.currentFocus.xenon = xenonFocus.slice(0, 500);
   }
 
-  // Write output
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(output, null, 2), 'utf-8');
   console.log(`[generateCompanyData] Written to ${OUTPUT_PATH}`);
 }

@@ -11,6 +11,7 @@
     "@testing-library/user-event": "^13.5.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
+    "react-router-dom": "^7.13.2",
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4"
   },
@@ -18,8 +19,9 @@
     "@capacitor/cli": "^6.2.1"
   },
   "scripts": {
-    "prestart": "node scripts/generateCompanyData.js",
-    "prebuild": "node scripts/generateCompanyData.js",
+    "refresh:company-data": "node scripts/generateCompanyData.js",
+    "prestart": "npm run refresh:company-data",
+    "prebuild": "npm run refresh:company-data",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",

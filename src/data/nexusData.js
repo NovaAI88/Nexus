@@ -1,12 +1,13 @@
 const nexusData = {
   navigation: {
     main: [
-      { id: 'overview', label: 'Overview', icon: '◈' },
+      { id: 'home', label: 'Home', icon: '◈' },
       { id: 'today', label: 'Today', icon: '●' },
       { id: 'week', label: 'Week', icon: '◷' },
+      { id: 'revenue', label: 'Revenue', icon: '◎' },
       { id: 'company', label: 'Company', icon: '◫' },
-      { id: 'log', label: 'Log', icon: '◌' },
-      { id: 'review', label: 'Review', icon: '◎' },
+      { id: 'agents', label: 'Agents', icon: '◍' },
+      { id: 'history', label: 'History', icon: '◌' },
     ],
     departments: [],
     viewModes: [],

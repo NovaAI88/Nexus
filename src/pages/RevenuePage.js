@@ -1,0 +1,458 @@
+import { useState } from 'react';
+import PageContainer from '../components/PageContainer';
+import SectionCard from '../components/SectionCard';
+import {
+  useDraftReview,
+  DRAFT_STATUS_LABELS,
+  DRAFT_STATUSES,
+} from '../core/drafts/useDraftReview';
+
+// ─── Shared helpers ───────────────────────────────────────────────────────────
+
+function parseStatus(rawStatus) {
+  if (!rawStatus) return null;
+  const s = rawStatus.toLowerCase();
+  if (s.includes('draft')) return 'draft';
+  if (s.includes('review')) return 'review';
+  if (s.includes('sent')) return 'sent';
+  if (s.includes('respon') || s.includes('replied')) return 'replied';
+  if (s.includes('hot')) return 'hot';
+  if (s.includes('closed') || s.includes('deal')) return 'closed';
+  if (s.includes('dead')) return 'dead';
+  if (s.includes('hold')) return 'hold';
+  return null;
+}
+
+const STATUS_LABELS = {
+  draft: 'Draft Ready',
+  review: 'Needs Review',
+  sent: 'Sent',
+  replied: 'Replied',
+  hot: 'Hot',
+  closed: 'Closed',
+  dead: 'Dead',
+  hold: 'On Hold',
+};
+
+// ─── Pipeline components ──────────────────────────────────────────────────────
+
+function ScoreBadge({ score }) {
+  const n = parseInt(score, 10);
+  const cls = n >= 20 ? 'revenue-score-high' : n >= 16 ? 'revenue-score-mid' : 'revenue-score-low';
+  return <span className={`revenue-score-badge ${cls}`}>{score}</span>;
+}
+
+function StatusBadge({ rawStatus }) {
+  const key = parseStatus(rawStatus);
+  if (!key) return null;
+  return (
+    <span className={`revenue-status-badge revenue-status-${key}`}>
+      {STATUS_LABELS[key] || rawStatus}
+    </span>
+  );
+}
+
+function LeadRow({ lead }) {
+  return (
+    <div className="revenue-lead-row">
+      <div className="revenue-lead-header">
+        <span className="revenue-lead-company">{lead.company}</span>
+        <div className="revenue-lead-badges">
+          {lead.score && <ScoreBadge score={lead.score} />}
+          <StatusBadge rawStatus={lead.status} />
+        </div>
+      </div>
+      {(lead.founder || lead.channel) && (
+        <div className="revenue-lead-meta">
+          {lead.founder && <span className="revenue-lead-founder">{lead.founder}</span>}
+          {lead.channel && <span className="revenue-lead-channel">{lead.channel}</span>}
+        </div>
+      )}
+      {lead.notes && <p className="revenue-lead-notes">{lead.notes}</p>}
+    </div>
+  );
+}
+
+function MetricCell({ label, value, highlight }) {
+  return (
+    <div className={`revenue-metric-cell${highlight ? ' revenue-metric-highlight' : ''}`}>
+      <span className="revenue-metric-label">{label}</span>
+      <strong className="revenue-metric-value">{value ?? 0}</strong>
+    </div>
+  );
+}
+
+// ─── Draft Review components ──────────────────────────────────────────────────
+
+const DRAFT_STATUS_COLORS = {
+  awaiting_review: 'draft-status-awaiting',
+  approved: 'draft-status-approved',
+  rejected: 'draft-status-rejected',
+  archived: 'draft-status-archived',
+  generated: 'draft-status-generated',
+};
+
+function DraftStatusChip({ status }) {
+  return (
+    <span className={`draft-status-chip ${DRAFT_STATUS_COLORS[status] || ''}`}>
+      {DRAFT_STATUS_LABELS[status] || status}
+    </span>
+  );
+}
+
+function DraftQueueItem({ draft, isSelected, onSelect }) {
+  return (
+    <button
+      className={`draft-queue-item${isSelected ? ' draft-queue-item--selected' : ''}`}
+      onClick={() => onSelect(isSelected ? null : draft.id)}
+    >
+      <div className="draft-queue-item-header">
+        <span className="draft-queue-item-company">{draft.company}</span>
+        <DraftStatusChip status={draft.draftStatus} />
+      </div>
+      <div className="draft-queue-item-meta">
+        <span className="draft-queue-item-recipient">{draft.recipient}</span>
+        <span className="draft-queue-item-channel">{draft.channel}</span>
+      </div>
+      <div className="draft-queue-item-subject">{draft.subject}</div>
+    </button>
+  );
+}
+
+function DraftDetailPanel({ draft, onApprove, onReject, onArchive, onReturn, editingNoteId, setEditingNoteId, notes, onSaveNote }) {
+  const [noteText, setNoteText] = useState(notes[draft.id] || '');
+  const isEditing = editingNoteId === draft.id;
+
+  const handleEditStart = () => {
+    setNoteText(notes[draft.id] || '');
+    setEditingNoteId(draft.id);
+  };
+
+  return (
+    <div className="draft-detail-panel">
+      {/* Header */}
+      <div className="draft-detail-header">
+        <div className="draft-detail-title-row">
+          <span className="draft-detail-company">{draft.company}</span>
+          <DraftStatusChip status={draft.draftStatus} />
+        </div>
+        {draft.score && (
+          <div className="draft-detail-lead-meta">
+            <ScoreBadge score={draft.score} />
+            <span className="draft-detail-lead-notes">{draft.notes}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Email envelope fields */}
+      <div className="draft-detail-envelope">
+        <div className="draft-detail-field">
+          <span className="draft-detail-field-label">To</span>
+          <span className="draft-detail-field-value">{draft.recipient}</span>
+        </div>
+        <div className="draft-detail-field">
+          <span className="draft-detail-field-label">Via</span>
+          <span className="draft-detail-field-value">{draft.channel}</span>
+        </div>
+        <div className="draft-detail-field">
+          <span className="draft-detail-field-label">Subject</span>
+          <span className="draft-detail-field-value draft-detail-subject">{draft.subject}</span>
+        </div>
+      </div>
+
+      {/* Email body */}
+      <div className="draft-detail-body">
+        <pre className="draft-body-text">{draft.body}</pre>
+      </div>
+
+      {/* Reviewer note */}
+      <div className="draft-detail-note-section">
+        {isEditing ? (
+          <div className="draft-note-edit">
+            <textarea
+              className="draft-note-textarea"
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value)}
+              placeholder="Add a reviewer note…"
+              rows={3}
+            />
+            <div className="draft-note-edit-actions">
+              <button className="draft-note-save-btn" onClick={() => onSaveNote(draft.id, noteText)}>Save note</button>
+              <button className="draft-note-cancel-btn" onClick={() => setEditingNoteId(null)}>Cancel</button>
+            </div>
+          </div>
+        ) : (
+          <div className="draft-note-display">
+            {notes[draft.id] ? (
+              <p className="draft-note-text">Note: {notes[draft.id]}</p>
+            ) : null}
+            <button className="draft-note-edit-trigger" onClick={handleEditStart}>
+              {notes[draft.id] ? 'Edit note' : '+ Add reviewer note'}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Review actions */}
+      <div className="draft-review-actions">
+        {draft.draftStatus === DRAFT_STATUSES.AWAITING_REVIEW || draft.draftStatus === DRAFT_STATUSES.GENERATED ? (
+          <>
+            <button className="draft-action-btn draft-action-approve" onClick={() => onApprove(draft.id)}>
+              Approve
+            </button>
+            <button className="draft-action-btn draft-action-reject" onClick={() => onReject(draft.id)}>
+              Reject
+            </button>
+            <button className="draft-action-btn draft-action-hold" onClick={() => onArchive(draft.id)}>
+              Hold
+            </button>
+          </>
+        ) : (
+          <button className="draft-action-btn draft-action-return" onClick={() => onReturn(draft.id)}>
+            Return to Review
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const FILTER_TABS = [
+  { key: 'awaiting_review', label: 'Awaiting Review' },
+  { key: 'approved', label: 'Approved' },
+  { key: 'rejected', label: 'Rejected' },
+  { key: 'all', label: 'All' },
+];
+
+function DraftReviewSystem({ leads }) {
+  const {
+    filteredDrafts,
+    selectedDraft,
+    selectedDraftId,
+    setSelectedDraftId,
+    activeFilter,
+    setActiveFilter,
+    counts,
+    approve,
+    reject,
+    archive,
+    returnToReview,
+    editingNoteId,
+    setEditingNoteId,
+    notes,
+    saveNote,
+  } = useDraftReview(leads);
+
+  const totalDrafts = counts.all;
+
+  if (totalDrafts === 0) {
+    return (
+      <SectionCard title="Draft Queue" variant="primary">
+        <p className="revenue-empty-note">No drafts ready. Generate outreach drafts to begin review.</p>
+      </SectionCard>
+    );
+  }
+
+  return (
+    <div className="draft-review-system">
+      {/* Filter tabs */}
+      <div className="draft-filter-bar">
+        {FILTER_TABS.map((tab) => {
+          const count = tab.key === 'all' ? counts.all : counts[tab.key];
+          return (
+            <button
+              key={tab.key}
+              className={`draft-filter-tab${activeFilter === tab.key ? ' draft-filter-tab--active' : ''}`}
+              onClick={() => { setActiveFilter(tab.key); setSelectedDraftId(null); }}
+            >
+              {tab.label}
+              {count > 0 && <span className="draft-filter-count">{count}</span>}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Split pane: queue list + detail */}
+      <div className={`draft-review-pane${selectedDraft ? ' draft-review-pane--split' : ''}`}>
+        {/* Queue list */}
+        <div className="draft-queue-list">
+          {filteredDrafts.length === 0 ? (
+            <p className="draft-queue-empty">No drafts in this category.</p>
+          ) : (
+            filteredDrafts.map((draft) => (
+              <DraftQueueItem
+                key={draft.id}
+                draft={draft}
+                isSelected={selectedDraftId === draft.id}
+                onSelect={setSelectedDraftId}
+              />
+            ))
+          )}
+        </div>
+
+        {/* Detail panel */}
+        {selectedDraft && (
+          <DraftDetailPanel
+            draft={selectedDraft}
+            onApprove={approve}
+            onReject={reject}
+            onArchive={archive}
+            onReturn={returnToReview}
+            editingNoteId={editingNoteId}
+            setEditingNoteId={setEditingNoteId}
+            notes={notes}
+            onSaveNote={saveNote}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── RevenuePage ──────────────────────────────────────────────────────────────
+
+function RevenuePage({
+  date,
+  pipelineStats,
+  revenueMilestones,
+  aureonConnected,
+  pipelineEntries,
+  aureonStats,
+  aureonPrimaryAction,
+  generatedPipeline,
+}) {
+  const leads = generatedPipeline?.length > 0 ? generatedPipeline : (pipelineEntries || []);
+  const milestones = revenueMilestones || [];
+
+  const totalLeads = leads.length;
+  const draftsReady = leads.filter(
+    (l) => l.draft === '✅' || parseStatus(l.status) === 'draft'
+  ).length;
+  const outreachSent = leads.filter(
+    (l) => (l.sent && l.sent !== '—' && l.sent !== '') || parseStatus(l.status) === 'sent'
+  ).length;
+  const replies = leads.filter(
+    (l) =>
+      (l.response && l.response !== '—' && l.response !== '' && l.response !== 'None') ||
+      parseStatus(l.status) === 'replied'
+  ).length;
+
+  const attentionLeads = leads.filter((l) => {
+    const s = parseStatus(l.status);
+    return s === 'hot' || s === 'replied';
+  });
+
+  const derivedAction = (() => {
+    if (replies > 0) return { label: `Respond to ${replies} ${replies === 1 ? 'reply' : 'replies'} now`, urgency: 'critical' };
+    if (draftsReady > 0) return { label: `Review and approve ${draftsReady} ready ${draftsReady === 1 ? 'draft' : 'drafts'}`, urgency: 'high' };
+    return { label: 'Research and add new leads to pipeline', urgency: 'low' };
+  })();
+  const primaryAction = aureonPrimaryAction || derivedAction;
+
+  const activeTarget = milestones.find((m) => m.status === 'In Progress');
+
+  return (
+    <PageContainer
+      title="Revenue"
+      subtitle="AUREON · Pipeline · Outreach execution"
+      date={date}
+      primaryAction={null}
+    >
+      <div className="page-grid two-column">
+
+        {/* Metrics strip */}
+        <div style={{ gridColumn: '1 / -1' }}>
+          <SectionCard title="Pipeline Metrics" variant="primary">
+            <div className="revenue-metrics-row">
+              <MetricCell label="Total Leads" value={totalLeads} />
+              <MetricCell label="Drafts Ready" value={draftsReady} highlight={draftsReady > 0} />
+              <MetricCell label="Outreach Sent" value={outreachSent} />
+              <MetricCell label="Replies" value={replies} highlight={replies > 0} />
+            </div>
+          </SectionCard>
+        </div>
+
+        {/* Primary action */}
+        <SectionCard title="Primary Action">
+          <div className={`revenue-action-block revenue-action-${primaryAction.urgency || 'low'}`}>
+            <span className="revenue-action-label">Focus now</span>
+            <strong className="revenue-action-text">{primaryAction.label}</strong>
+          </div>
+          {activeTarget && (
+            <div className="revenue-target-chip">
+              <span className="label">Target</span>
+              <strong>{activeTarget.amount}</strong>
+              <span className="label">by {activeTarget.deadline}</span>
+            </div>
+          )}
+          {!aureonConnected && (
+            <p className="revenue-disconnect-note">AUREON not connected — pipeline from truth layer</p>
+          )}
+        </SectionCard>
+
+        {/* Revenue milestones */}
+        {milestones.length > 0 && (
+          <SectionCard title="Revenue Targets">
+            <div className="revenue-milestone-list">
+              {milestones.map((m, i) => {
+                const statusKey = m.status?.toLowerCase().replace(/\s+/g, '-') || 'pending';
+                return (
+                  <div key={i} className={`revenue-milestone-row revenue-milestone-${statusKey}`}>
+                    <div className="revenue-milestone-header">
+                      <span className="revenue-milestone-target">{m.target}</span>
+                      <span className="revenue-milestone-amount">{m.amount}</span>
+                    </div>
+                    <div className="revenue-milestone-footer">
+                      <span className="label">{m.deadline}</span>
+                      <span className={`revenue-milestone-status revenue-milestone-status-${statusKey}`}>{m.status}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </SectionCard>
+        )}
+
+        {/* Hot / attention leads */}
+        {attentionLeads.length > 0 && (
+          <div style={{ gridColumn: '1 / -1' }}>
+            <SectionCard title={`Hot / Needs Action (${attentionLeads.length})`}>
+              <div className="revenue-lead-list">
+                {attentionLeads.map((lead, i) => (
+                  <LeadRow key={lead._ || i} lead={lead} />
+                ))}
+              </div>
+            </SectionCard>
+          </div>
+        )}
+
+        {/* Draft Review System — N4.4 */}
+        <div style={{ gridColumn: '1 / -1' }}>
+          <SectionCard title={`Draft Queue${draftsReady > 0 ? ` — ${draftsReady} ready for review` : ''}`} variant="primary">
+            <DraftReviewSystem leads={leads} />
+          </SectionCard>
+        </div>
+
+        {/* Full pipeline */}
+        <div style={{ gridColumn: '1 / -1' }}>
+          {leads.length > 0 ? (
+            <SectionCard title={`Pipeline — ${leads.length} Active Leads`}>
+              <div className="revenue-lead-list">
+                {leads.map((lead, i) => (
+                  <LeadRow key={lead._ || i} lead={lead} />
+                ))}
+              </div>
+            </SectionCard>
+          ) : (
+            <SectionCard title="Pipeline">
+              <p className="revenue-empty-note">No leads loaded. Add leads to begin AUREON execution.</p>
+            </SectionCard>
+          )}
+        </div>
+
+      </div>
+    </PageContainer>
+  );
+}
+
+export default RevenuePage;

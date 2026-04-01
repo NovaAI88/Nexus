@@ -1,4 +1,5 @@
 import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate, useLocation, Routes, Route } from 'react-router-dom';
 import './App.css';
 import nexusData from './data/nexusData';
 
@@ -10,7 +11,8 @@ import WeeklyPage from './pages/WeeklyPage';
 import HistoryPage from './pages/HistoryPage';
 import CompanyPage from './pages/CompanyPage';
 import OverviewPage from './pages/OverviewPage';
-import ReviewPage from './pages/ReviewPage';
+import RevenuePage from './pages/RevenuePage';
+import AgentsPage from './pages/AgentsPage';
 
 import PlannerBlocksPanel from './components/PlannerBlocksPanel';
 import TaskEnginePanel from './components/TaskEnginePanel';
@@ -114,7 +116,11 @@ function App() {
 
   const { departments: companyDepts } = useCompanyState();
 
-  const [activePage, setActivePage] = useState('today');
+  const navigate = useNavigate();
+  const location = useLocation();
+  const currentPage = location.pathname === '/' ? 'home' : (location.pathname.slice(1).split('/')[0] || 'home');
+  const navigateTo = useCallback((id) => navigate(id === 'home' ? '/' : `/${id}`), [navigate]);
+
   const [now, setNow] = useState(new Date());
   const [timerNow, setTimerNow] = useState(new Date());
   const [focusMode, setFocusMode] = useState(false);
@@ -147,14 +153,14 @@ function App() {
           setFocusMode(false);
           setActiveBlockId(null);
         } else {
-          setActivePage('today');
+          navigate('/today');
           setFocusMode(true);
         }
       }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [focusMode]);
+  }, [focusMode, navigate]);
 
   const date = useMemo(() => formatDate(now), [now]);
   const currentTime = useMemo(() => formatTime(now), [now]);
@@ -323,7 +329,7 @@ function App() {
     setDragPayload(null);
   }, [addPlannerBlock, canPlaceDurationAtMinutes, date, dragPayload, removePlannerBlock]);
 
-  const handleStartBlock = useCallback(() => { setActivePage('today'); setFocusMode(true); }, []);
+  const handleStartBlock = useCallback(() => { navigate('/today'); setFocusMode(true); }, [navigate]);
   const handleExitFocus = useCallback(() => { setFocusMode(false); setActiveBlockId(null); }, []);
 
   const focusProject = useMemo(() =>
@@ -462,6 +468,14 @@ function App() {
     } catch { return null; }
   }, [date]);
 
+  const generatedPipeline = useMemo(() => {
+    try {
+      const gen = require('./data/companyData.generated.json');
+      if (!gen?.pipeline?.length) return [];
+      return gen.pipeline.filter((e) => e.score && !isNaN(parseInt(e.score, 10)));
+    } catch { return []; }
+  }, []);
+
   // N1: truth-layer data from generated JSON
   const companyIntelligence = useMemo(() => {
     try {
@@ -475,159 +489,6 @@ function App() {
     } catch { return { nextActions: [], revenueMilestones: [], phaseDeadlines: {}, products: [] }; }
   }, []);
 
-  const pageContent = useMemo(() => {
-    switch (activePage) {
-      case 'today':
-        return (
-          <TodayPage
-            date={date}
-            currentTime={currentTime}
-            currentBlock={timelineState.currentBlock}
-            nextBlock={timelineState.nextBlock}
-            scheduleBlocks={timelineState.normalizedBlocks}
-            focusMode={focusMode}
-            activeBlock={timelineState.currentBlock || (activeBlockId ? todayScheduleBlocks.find((b) => b.id === activeBlockId) || null : null)}
-            timerDisplay={timerState.display}
-            timerProgress={timerState.progress}
-            onStartBlock={handleStartBlock}
-            onExitFocus={handleExitFocus}
-            onAddBlock={addPlannerBlock}
-            onRemoveBlock={(blockId) => removePlannerBlock(date, blockId)}
-            onUpdateBlock={(blockId, patch) => updatePlannerBlock(date, blockId, patch)}
-            chatPanel={chatPlannerPanel}
-            taskEnginePanel={taskPanel}
-            dayConstraintsPanel={plannerPanel}
-            quickLogPanel={quickLogPanel}
-            aureonPanel={aureonPanel}
-            focusProject={focusProject}
-            sessionBudgetText={sessionBudgetText}
-            projectContextPreview={truncateText(focusProject?.nextAction || '', 96)}
-            enginePrimaryAction={enginePrimaryAction}
-            recommendedBlocks={recommendedBlocks}
-            lifeBlockSuggestions={lifeBlockSuggestions}
-            dismissDept={dismissDept}
-            engineReasoning={engineReasoning}
-            energyBar={energyBarPanel}
-            lifeBlockPicker={lifeBlockPickerPanel}
-            currentZone={currentZone}
-          />
-        );
-      case 'week':
-        return (
-          <WeeklyPage
-            date={date}
-            projects={projects}
-            departmentQueue={departmentQueue}
-            engineReasoning={engineReasoning}
-            addPlannerBlock={addPlannerBlock}
-            removePlannerBlock={removePlannerBlock}
-            getPlannerBlocks={getPlannerBlocks}
-            getTasksForDate={getTasksForDate}
-            setTaskStatus={setTaskStatus}
-            onNavigate={setActivePage}
-          />
-        );
-      case 'log':
-        return <HistoryPage date={date} activityLog={activityLog} tasks={tasks} />;
-      case 'company':
-        return (
-          <CompanyPage
-            projects={projects}
-            departments={departments}
-            getDepartment={getDepartment}
-            updateProject={updateProject}
-            focusProjectId={focusProjectId}
-            setFocusProject={setFocusProject}
-            departmentQueue={departmentQueue}
-            engineReasoning={engineReasoning}
-            onNavigate={setActivePage}
-            date={date}
-          />
-        );
-      case 'overview':
-        return (
-          <OverviewPage
-            date={date}
-            currentTime={currentTime}
-            currentZone={currentZone}
-            scheduleBlocks={timelineState.normalizedBlocks}
-            todayTasks={todayTasks}
-            doneTodayCount={doneTodayCount}
-            openTodayCount={openTodayCount}
-            sessionBudgetText={sessionBudgetText}
-            departmentQueue={departmentQueue}
-            engineReasoning={engineReasoning}
-            weekHoursWorked={weekHoursData.worked}
-            weekHoursTarget={weekHoursData.target}
-            pipelineStats={pipelineStats}
-            healthData={healthData}
-            nextActions={companyIntelligence.nextActions}
-            revenueMilestones={companyIntelligence.revenueMilestones}
-            phaseDeadlines={companyIntelligence.phaseDeadlines}
-            planningOutput={planningOutput}
-            reviewOutput={reviewOutput}
-            onNavigate={setActivePage}
-          />
-        );
-      case 'review':
-        return <ReviewPage reviewOutput={reviewOutput} date={date} />;
-      default:
-        return null;
-    }
-  }, [
-    activePage,
-    activityLog,
-    activeBlockId,
-    addPlannerBlock,
-    aureonPanel,
-    chatPlannerPanel,
-    companyIntelligence,
-    currentTime,
-    currentZone,
-    date,
-    departments,
-    departmentQueue,
-    dismissDept,
-    energyBarPanel,
-    enginePrimaryAction,
-    engineReasoning,
-    openTodayCount,
-    planningOutput,
-    reviewOutput,
-    weekHoursData,
-    pipelineStats,
-    todayTasks,
-    doneTodayCount,
-    healthData,
-    focusMode,
-    focusProject,
-    focusProjectId,
-    getDepartment,
-    getPlannerBlocks,
-    getTasksForDate,
-    handleExitFocus,
-    handleStartBlock,
-    lifeBlockPickerPanel,
-    lifeBlockSuggestions,
-    plannerPanel,
-    projects,
-    quickLogPanel,
-    recommendedBlocks,
-    removePlannerBlock,
-    sessionBudgetText,
-    setFocusProject,
-    setTaskStatus,
-    taskPanel,
-    tasks,
-    timerState.display,
-    timerState.progress,
-    timelineState.currentBlock,
-    timelineState.nextBlock,
-    timelineState.normalizedBlocks,
-    todayScheduleBlocks,
-    updatePlannerBlock,
-    updateProject,
-  ]);
 
   const projectsContextValue = useMemo(() => ({
     projects,
@@ -687,23 +548,124 @@ function App() {
         <div className={appClass}>
           <Sidebar
             navigation={nexusData.navigation}
-            activePage={activePage}
-            onNavigate={setActivePage}
+            activePage={currentPage}
+            onNavigate={navigateTo}
           />
           <main className="main-shell">
             <div className="app-theme-toggle-wrapper">
               <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
             </div>
-            {pageContent}
+            <Routes>
+              <Route path="/" element={
+                <OverviewPage
+                  date={date}
+                  currentTime={currentTime}
+                  currentZone={currentZone}
+                  scheduleBlocks={timelineState.normalizedBlocks}
+                  todayTasks={todayTasks}
+                  doneTodayCount={doneTodayCount}
+                  openTodayCount={openTodayCount}
+                  sessionBudgetText={sessionBudgetText}
+                  departmentQueue={departmentQueue}
+                  engineReasoning={engineReasoning}
+                  weekHoursWorked={weekHoursData.worked}
+                  weekHoursTarget={weekHoursData.target}
+                  pipelineStats={pipelineStats}
+                  healthData={healthData}
+                  nextActions={companyIntelligence.nextActions}
+                  revenueMilestones={companyIntelligence.revenueMilestones}
+                  phaseDeadlines={companyIntelligence.phaseDeadlines}
+                  planningOutput={planningOutput}
+                  reviewOutput={reviewOutput}
+                  onNavigate={navigateTo}
+                />
+              } />
+              <Route path="/today" element={
+                <TodayPage
+                  date={date}
+                  currentTime={currentTime}
+                  currentBlock={timelineState.currentBlock}
+                  nextBlock={timelineState.nextBlock}
+                  scheduleBlocks={timelineState.normalizedBlocks}
+                  focusMode={focusMode}
+                  activeBlock={timelineState.currentBlock || (activeBlockId ? todayScheduleBlocks.find((b) => b.id === activeBlockId) || null : null)}
+                  timerDisplay={timerState.display}
+                  timerProgress={timerState.progress}
+                  onStartBlock={handleStartBlock}
+                  onExitFocus={handleExitFocus}
+                  onAddBlock={addPlannerBlock}
+                  onRemoveBlock={(blockId) => removePlannerBlock(date, blockId)}
+                  onUpdateBlock={(blockId, patch) => updatePlannerBlock(date, blockId, patch)}
+                  chatPanel={chatPlannerPanel}
+                  taskEnginePanel={taskPanel}
+                  dayConstraintsPanel={plannerPanel}
+                  quickLogPanel={quickLogPanel}
+                  aureonPanel={aureonPanel}
+                  focusProject={focusProject}
+                  sessionBudgetText={sessionBudgetText}
+                  projectContextPreview={truncateText(focusProject?.nextAction || '', 96)}
+                  enginePrimaryAction={enginePrimaryAction}
+                  recommendedBlocks={recommendedBlocks}
+                  lifeBlockSuggestions={lifeBlockSuggestions}
+                  dismissDept={dismissDept}
+                  engineReasoning={engineReasoning}
+                  energyBar={energyBarPanel}
+                  lifeBlockPicker={lifeBlockPickerPanel}
+                  currentZone={currentZone}
+                />
+              } />
+              <Route path="/week" element={
+                <WeeklyPage
+                  date={date}
+                  projects={projects}
+                  departmentQueue={departmentQueue}
+                  engineReasoning={engineReasoning}
+                  addPlannerBlock={addPlannerBlock}
+                  removePlannerBlock={removePlannerBlock}
+                  getPlannerBlocks={getPlannerBlocks}
+                  getTasksForDate={getTasksForDate}
+                  setTaskStatus={setTaskStatus}
+                  onNavigate={navigateTo}
+                />
+              } />
+              <Route path="/revenue" element={
+                <RevenuePage
+                  date={date}
+                  pipelineStats={pipelineStats}
+                  revenueMilestones={companyIntelligence.revenueMilestones}
+                  aureonConnected={aureonConnected}
+                  pipelineEntries={pipelineEntries}
+                  aureonStats={aureonStats}
+                  aureonPrimaryAction={aureonPrimaryAction}
+                  generatedPipeline={generatedPipeline}
+                />
+              } />
+              <Route path="/company" element={
+                <CompanyPage
+                  projects={projects}
+                  departments={departments}
+                  getDepartment={getDepartment}
+                  updateProject={updateProject}
+                  focusProjectId={focusProjectId}
+                  setFocusProject={setFocusProject}
+                  departmentQueue={departmentQueue}
+                  engineReasoning={engineReasoning}
+                  onNavigate={navigateTo}
+                  date={date}
+                />
+              } />
+              <Route path="/agents" element={<AgentsPage date={date} />} />
+              <Route path="/history" element={<HistoryPage date={date} activityLog={activityLog} tasks={tasks} />} />
+            </Routes>
           </main>
           <nav className="mobile-tab-bar" aria-label="Navigation">
             {nexusData.navigation.main.map((item) => (
               <button
                 key={item.id}
-                className={activePage === item.id ? 'mobile-tab-item active' : 'mobile-tab-item'}
-                onClick={() => setActivePage(item.id)}
+                className={currentPage === item.id ? 'mobile-tab-item active' : 'mobile-tab-item'}
+                onClick={() => navigateTo(item.id)}
                 aria-label={item.label}
-                aria-current={activePage === item.id ? 'page' : undefined}
+                aria-current={currentPage === item.id ? 'page' : undefined}
               >
                 <span className="mobile-tab-icon" aria-hidden="true">{item.icon}</span>
                 <span className="mobile-tab-label">{item.label}</span>
