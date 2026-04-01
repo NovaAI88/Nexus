@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import App from './App';
 
-test('renders learn react link', () => {
+test('renders the NEXUS shell', () => {
   render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+  expect(screen.getAllByText(/^NEXUS$/i).length).toBeGreaterThan(0);
+  expect(screen.getByText(/Good\s+(morning|afternoon|evening),\s*Nicholas/i)).toBeInTheDocument();
 });

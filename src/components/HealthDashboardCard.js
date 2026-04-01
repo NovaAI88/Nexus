@@ -1,5 +1,19 @@
 import ActivityRings from './ActivityRings';
 
+const RECOVERY_COLORS = {
+  high: '#30D158',
+  normal: '#FFD60A',
+  low: '#FF9F0A',
+  critical: '#FF453A',
+};
+
+const FATIGUE_LABEL = (index) => {
+  if (index >= 70) return 'High fatigue';
+  if (index >= 50) return 'Moderate fatigue';
+  if (index >= 30) return 'Low fatigue';
+  return 'Well recovered';
+};
+
 function HealthDashboardCard({ healthData }) {
   if (!healthData) return null;
 
@@ -10,6 +24,9 @@ function HealthDashboardCard({ healthData }) {
   const recoveryColor = healthData.recoveryScore >= 70 ? '#30D158'
     : healthData.recoveryScore >= 40 ? '#FFD60A'
     : '#FF453A';
+
+  const hi = healthData.healthIntelligence;
+  const recoveryLevelColor = hi ? (RECOVERY_COLORS[hi.recoveryLevel] || '#9ca3af') : recoveryColor;
 
   return (
     <div className="health-dashboard-card">
@@ -64,6 +81,42 @@ function HealthDashboardCard({ healthData }) {
             <span className="health-stat-unit">recovery</span>
           </div>
         </div>
+
+        {/* N5 Health Intelligence */}
+        {hi && (
+          <div className="health-intelligence">
+            <div className="health-intel-row">
+              <div className="health-intel-item">
+                <span className="health-intel-label">Fatigue</span>
+                <div className="health-intel-bar-wrap">
+                  <div
+                    className="health-intel-bar"
+                    style={{
+                      width: `${hi.fatigueIndex}%`,
+                      background: hi.fatigueIndex >= 70 ? '#FF453A'
+                        : hi.fatigueIndex >= 50 ? '#FF9F0A'
+                        : hi.fatigueIndex >= 30 ? '#FFD60A'
+                        : '#30D158',
+                    }}
+                  />
+                </div>
+                <span className="health-intel-value">{FATIGUE_LABEL(hi.fatigueIndex)}</span>
+              </div>
+              <div className="health-intel-item">
+                <span className="health-intel-label">Recovery</span>
+                <span
+                  className="health-intel-badge"
+                  style={{ color: recoveryLevelColor, borderColor: recoveryLevelColor }}
+                >
+                  {hi.recoveryLevel.toUpperCase()}
+                </span>
+              </div>
+            </div>
+            {hi.healthNote && (
+              <p className="health-intel-note">{hi.healthNote}</p>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

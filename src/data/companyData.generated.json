@@ -3,12 +3,12 @@
     {
       "name": "NEXUS",
       "deptId": "nexus",
-      "phase": "N1 — Truth Sync + Company Intelligence  Active",
-      "lastCompleted": "Phase 8.75 complete: generateCompanyData.js, initialCompanyState.js, useCompanyState.js, OverviewPage N1 surfaces, truthSync tests",
-      "nextStep": "N2 — AI Planning Core",
+      "phase": "N2 — AI Planning Core  Complete",
+      "lastCompleted": "Deterministic planning core, planning hook, OverviewPage planning surfaces, N2 tests, app test fix, validation passing",
+      "nextStep": "N3 — Review Engine",
       "blockers": "None",
       "target": "",
-      "health": "N1 complete — dashboard reflects real company state from truth layer",
+      "health": "N2 complete — NEXUS now surfaces planning guidance from real company state",
       "source": "company_status"
     },
     {
@@ -183,9 +183,9 @@
   "departments": [
     {
       "name": "NEXUS",
-      "phase": "N1 — Truth Sync + Company Intelligence ✅ Complete",
-      "status": "card, AUREON Pipeline card, Department cards — all from truth layer",
-      "blockers": "** None",
+      "phase": "N2 — AI Planning Core ✅ Complete",
+      "status": "active",
+      "blockers": "classification, deadline risk surfacing, execution sequencing, and planning insight generation",
       "source": "current_state"
     },
     {
@@ -494,18 +494,18 @@
     },
     {
       "priority": 3,
-      "title": "3. NEXUS — Begin N2 (AI Planning Core)",
-      "details": "**Owner:** ATLAS (Claude Code agent)\n\n**Actions:**\n- [ ] Issue N2 Phase Brief to ATLAS\n- [ ] N1 Truth Sync is complete — dashboard reflects real company state\n- [ ] N2 scope: AI-driven session planning, project context bridge, recommendation upgrade\n- [ ] Target start: April 14, 2026\n\n**Status:** N1"
+      "title": "3. NEXUS — Review N2, Then Prepare N3 (Review Engine)",
+      "details": "**Owner:** Nova + Nicholas\n\n**Actions:**\n- [ ] Review N2 delivery in NEXUS\n- [ ] Confirm quality score and approve phase completion formally\n- [ ] Define N3 — Review Engine scope and review gate\n- [ ] Issue N3 phase brief only after approval\n\n**Status:** N2 complete in code and validated. Awaiting r"
     }
   ],
   "phaseTracker": [
     {
       "field": "**Phase**",
-      "status": "Phase 8.75 — Foundation Cleanup Complete ✅"
+      "status": "N2 — AI Planning Core ✅ Complete"
     },
     {
       "field": "**Last Completed**",
-      "status": "Persistent project/dept model, task engine, activity log, theme system, Session Start Panel, DepartmentPage with inline editing"
+      "status": "Revenue-first planning core, blocker/deadline intelligence, OverviewPage planning surfaces, validation passing"
     },
     {
       "field": "**Canonical Path**",
@@ -513,7 +513,7 @@
     },
     {
       "field": "**Next Step**",
-      "status": "N1 — Truth Sync + Company Intelligence"
+      "status": "N3 — Review Engine"
     },
     {
       "field": "**Blockers**",
@@ -529,7 +529,7 @@
     },
     {
       "field": "**Canonical Path**",
-      "status": "`~/workspace/company/vortex`"
+      "status": "`~/workspace/company/03_HEPHAESTUS/03_PROJECTS/VORTEX`"
     },
     {
       "field": "**GitHub**",
@@ -640,7 +640,7 @@
       "status": "A1"
     }
   ],
-  "lastGenerated": "2026-03-31T13:22:28.386Z",
+  "lastGenerated": "2026-04-01T09:22:18.029Z",
   "currentFocus": {
     "hephaestus": "# HEPHAESTUS — Current Focus\n\n**Last updated:** 2026-03-22\n\n---\n\n## Active Focus\n\n**Phase 3 — Department structure and engineering visibility**\n\nHEPHAESTUS is being established as a functional department. The immediate work is structural — getting visibility in place before any product implementation begins.\n\n---\n\n## Current State\n\n| Area | Status | Notes |\n|------|--------|-------|\n| Department files | ✅ Populated | This session |\n| VORTEX canonical location | ✅ Established | `03_PROJECTS/VORTE",
     "xenon": "# XENON — Current Focus\n\n**Last updated:** 2026-03-22\n\n---\n\n## Active Focus\n\n**Phase 4 — Department structure established**\n\nXENON is structurally in place. No campaigns are running yet. First campaign definition is the immediate next step once Nicholas decides on channel and format.\n\n---\n\n## Current State\n\n| Area | Status | Notes |\n|------|--------|-------|\n| Department structure | ✅ Complete | This session |\n| First campaign defined | 🔴 Not started | Awaiting direction |\n| Channel accounts | "

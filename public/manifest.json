@@ -1,6 +1,7 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "NEXUS",
+  "name": "NEXUS — Life & Work OS",
+  "description": "Execution OS for life and work. Daily planning, company intelligence, and focused execution.",
   "icons": [
     {
       "src": "favicon.ico",
@@ -10,16 +11,22 @@
     {
       "src": "logo192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
       "src": "logo512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
   "start_url": ".",
+  "scope": "/",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "orientation": "portrait",
+  "theme_color": "#0e1117",
+  "background_color": "#0e1117",
+  "categories": ["productivity", "utilities"],
+  "lang": "en"
 }

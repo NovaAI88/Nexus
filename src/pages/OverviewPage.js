@@ -8,6 +8,25 @@ const DEPT_COLORS = {
   aureon: '#34d399',
 };
 
+const PRIORITY_COLORS = {
+  critical: '#f87171',
+  high: '#fb923c',
+  normal: '#60a5fa',
+  low: '#9ca3af',
+};
+
+const BLOCKER_TYPE_LABEL = {
+  external: 'External',
+  internal: 'Internal',
+};
+
+const VERDICT_COLORS = {
+  pass: '#34d399',
+  warn: '#fb923c',
+  risk: '#f87171',
+  fail: '#ef4444',
+};
+
 function OverviewPage({
   date,
   currentTime,
@@ -27,6 +46,10 @@ function OverviewPage({
   nextActions,
   revenueMilestones,
   phaseDeadlines,
+  // N2: planning intelligence
+  planningOutput,
+  // N3: review engine
+  reviewOutput,
   onNavigate,
 }) {
   const hour = parseInt(currentTime?.split(':')[0] || '12', 10);
@@ -220,6 +243,115 @@ function OverviewPage({
                 <span className="overview-stat-label">FU Due</span>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* N2 Planning Intelligence — Today's Execution Sequence */}
+        {planningOutput?.todayRecommendations?.length > 0 && (
+          <div className="overview-card overview-card-planning">
+            <h3 className="overview-card-title">Today's Plan</h3>
+            {planningOutput.insight && (
+              <p className="overview-planning-insight">{planningOutput.insight}</p>
+            )}
+            <ol className="overview-planning-sequence">
+              {planningOutput.todayRecommendations.map((rec) => (
+                <li key={rec.departmentId} className="overview-planning-step">
+                  <div className="overview-planning-step-header">
+                    <span
+                      className="overview-planning-step-num"
+                      style={{ '--step-color': PRIORITY_COLORS[rec.priority] || '#9ca3af' }}
+                    >
+                      {rec.step}
+                    </span>
+                    <span className="overview-planning-step-dept">{rec.departmentName}</span>
+                    {rec.revenueRelevant && (
+                      <span className="overview-planning-revenue-badge">€</span>
+                    )}
+                    <span className="overview-planning-step-mins">{rec.estimatedMinutes}m</span>
+                  </div>
+                  <p className="overview-planning-step-action">{rec.action}</p>
+                  <p className="overview-planning-step-reason">{rec.reason}</p>
+                  {rec.healthNote && (
+                    <p className="overview-planning-health-note">{rec.healthNote}</p>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
+
+        {/* N2 Planning Intelligence — Active Blockers */}
+        {planningOutput?.blockers?.length > 0 && (
+          <div className="overview-card overview-card-blockers">
+            <h3 className="overview-card-title">Blockers</h3>
+            <ul className="overview-blockers-list">
+              {planningOutput.blockers.map((blocker, idx) => (
+                <li key={`${blocker.departmentId}-${idx}`} className="overview-blocker-item">
+                  <div className="overview-blocker-header">
+                    <span className="overview-blocker-dept">{blocker.departmentName}</span>
+                    <span className={`overview-blocker-type overview-blocker-type--${blocker.type}`}>
+                      {BLOCKER_TYPE_LABEL[blocker.type] || blocker.type}
+                    </span>
+                  </div>
+                  <p className="overview-blocker-description">{blocker.description}</p>
+                  {blocker.unlockPath && (
+                    <p className="overview-blocker-unlock">→ {blocker.unlockPath}</p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* N2 Planning Intelligence — Week Risk Items */}
+        {planningOutput?.weekItems?.length > 0 && (
+          <div className="overview-card overview-card-week-risk">
+            <h3 className="overview-card-title">Week Deadlines</h3>
+            <ul className="overview-week-risk-list">
+              {planningOutput.weekItems.map((item, idx) => (
+                <li key={`${item.departmentId}-${idx}`} className={`overview-week-risk-item overview-week-risk--${item.risk}`}>
+                  <span className="overview-week-risk-phase">{item.phase}</span>
+                  <span className="overview-week-risk-deadline">
+                    {item.daysRemaining !== null && item.daysRemaining >= 0
+                      ? `${item.daysRemaining}d`
+                      : item.daysRemaining !== null
+                        ? 'Overdue'
+                        : item.deadline}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* N3 Review Gate — score widget */}
+        {reviewOutput && (
+          <div className="overview-card overview-card-review" style={{ '--verdict-color': VERDICT_COLORS[reviewOutput.verdict?.level] || '#7b8cff' }}>
+            <div className="overview-review-header">
+              <h3 className="overview-card-title">Review Gate</h3>
+              <span className="overview-review-verdict-badge">
+                {reviewOutput.verdict?.label}
+              </span>
+            </div>
+            <div className="overview-review-score-row">
+              <span className="overview-review-score">{reviewOutput.score}</span>
+              <span className="overview-review-score-max">/100</span>
+              <div className="overview-review-score-bar">
+                <div
+                  className="overview-review-score-fill"
+                  style={{ width: `${reviewOutput.score}%`, background: 'var(--verdict-color)' }}
+                />
+              </div>
+            </div>
+            {reviewOutput.driftItems?.length > 0 && (
+              <p className="overview-review-drift-count">
+                {reviewOutput.driftItems.length} drift item{reviewOutput.driftItems.length !== 1 ? 's' : ''}
+              </p>
+            )}
+            <p className="overview-review-summary">{reviewOutput.verdict?.description}</p>
+            <button className="overview-action-btn overview-review-open-btn" onClick={() => onNavigate('review')}>
+              Open Review
+            </button>
           </div>
         )}
 

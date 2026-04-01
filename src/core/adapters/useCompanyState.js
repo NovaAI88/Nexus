@@ -91,6 +91,7 @@ export function useCompanyState() {
 
   const isLoaded = state !== null;
   const departments = useMemo(() => (isLoaded ? state.departments : []), [isLoaded, state]);
+  const _generated = useMemo(() => (isLoaded ? state._generated ?? {} : {}), [isLoaded, state]);
 
   const updateDepartment = useCallback((id, patch) => {
     setState((current) => {
@@ -115,6 +116,7 @@ export function useCompanyState() {
   return {
     isLoaded,
     departments,
+    _generated,
     updateDepartment,
     getDepartment,
   };

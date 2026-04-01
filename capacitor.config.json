@@ -1,0 +1,23 @@
+{
+  "appId": "com.openclaw.nexus",
+  "appName": "NEXUS",
+  "webDir": "build",
+  "server": {
+    "androidScheme": "https"
+  },
+  "ios": {
+    "backgroundColor": "#0e1117",
+    "preferredContentMode": "mobile",
+    "scrollEnabled": false,
+    "limitsNavigationsToAppBoundDomains": true
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 800,
+      "backgroundColor": "#0e1117",
+      "androidSplashResourceName": "splash",
+      "androidScaleType": "CENTER_CROP",
+      "showSpinner": false
+    }
+  }
+}

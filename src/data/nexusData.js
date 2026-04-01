@@ -6,6 +6,7 @@ const nexusData = {
       { id: 'week', label: 'Week', icon: '◷' },
       { id: 'company', label: 'Company', icon: '◫' },
       { id: 'log', label: 'Log', icon: '◌' },
+      { id: 'review', label: 'Review', icon: '◎' },
     ],
     departments: [],
     viewModes: [],

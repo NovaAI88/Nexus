@@ -10,6 +10,7 @@ import WeeklyPage from './pages/WeeklyPage';
 import HistoryPage from './pages/HistoryPage';
 import CompanyPage from './pages/CompanyPage';
 import OverviewPage from './pages/OverviewPage';
+import ReviewPage from './pages/ReviewPage';
 
 import PlannerBlocksPanel from './components/PlannerBlocksPanel';
 import TaskEnginePanel from './components/TaskEnginePanel';
@@ -27,6 +28,8 @@ import { useActivityLog } from './core/log/useActivityLog';
 import { useAureon } from './core/aureon/useAureon';
 import { useCompanyState } from './core/adapters/useCompanyState';
 import { useExecutionEngine } from './core/engine/useExecutionEngine';
+import { usePlanningEngine } from './core/planning/usePlanningEngine';
+import { useReviewEngine } from './core/planning/useReviewEngine';
 import { useEnergyProfile } from './core/energy/useEnergyProfile';
 import { useHealthData } from './core/health/useHealthData';
 
@@ -254,6 +257,9 @@ function App() {
     reasoning: engineReasoning,
     dismissDept,
   } = useExecutionEngine(companyStateForEngine, timeContextForEngine, energyContextForEngine);
+
+  const planningOutput = usePlanningEngine(date, healthData.healthIntelligence ?? null);
+  const reviewOutput = useReviewEngine(date, tasks, activityLog);
 
   const canPlaceDurationAtMinutes = useCallback((startMinutes, duration) => {
     const dayEnd = stopWork.enabled ? toMinutes(stopWork.time) : 22 * 60;
@@ -558,9 +564,13 @@ function App() {
             nextActions={companyIntelligence.nextActions}
             revenueMilestones={companyIntelligence.revenueMilestones}
             phaseDeadlines={companyIntelligence.phaseDeadlines}
+            planningOutput={planningOutput}
+            reviewOutput={reviewOutput}
             onNavigate={setActivePage}
           />
         );
+      case 'review':
+        return <ReviewPage reviewOutput={reviewOutput} date={date} />;
       default:
         return null;
     }
@@ -582,6 +592,8 @@ function App() {
     enginePrimaryAction,
     engineReasoning,
     openTodayCount,
+    planningOutput,
+    reviewOutput,
     weekHoursData,
     pipelineStats,
     todayTasks,
@@ -684,6 +696,20 @@ function App() {
             </div>
             {pageContent}
           </main>
+          <nav className="mobile-tab-bar" aria-label="Navigation">
+            {nexusData.navigation.main.map((item) => (
+              <button
+                key={item.id}
+                className={activePage === item.id ? 'mobile-tab-item active' : 'mobile-tab-item'}
+                onClick={() => setActivePage(item.id)}
+                aria-label={item.label}
+                aria-current={activePage === item.id ? 'page' : undefined}
+              >
+                <span className="mobile-tab-icon" aria-hidden="true">{item.icon}</span>
+                <span className="mobile-tab-label">{item.label}</span>
+              </button>
+            ))}
+          </nav>
         </div>
       </DragDropContext.Provider>
     </ProjectsContext.Provider>

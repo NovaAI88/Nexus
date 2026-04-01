@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { computeRecoveryScore, calorieProjection } from './healthModel';
+import { computeHealthContext } from './healthIntelligence';
 
 const STORAGE_KEY = 'nexus:health';
 
@@ -58,7 +59,7 @@ export function useHealthData(currentMinutes) {
     const hoursRemaining = Math.max(0, 22 - hourOfDay);
     const projectedCalories = calorieProjection(totalCalories, activeMinutes, hoursRemaining);
 
-    return {
+    const rawData = {
       calories: { burned: totalCalories, active: activeCalories, goal: calorieGoal, projected: projectedCalories },
       activeMinutes: { current: activeMinutes, goal: activeGoal },
       steps: { current: steps, goal: stepsGoal },
@@ -68,6 +69,11 @@ export function useHealthData(currentMinutes) {
       recoveryScore,
       workouts: [], // No mock workouts for now
       lastSynced: new Date().toISOString(),
+    };
+
+    return {
+      ...rawData,
+      healthIntelligence: computeHealthContext(rawData),
     };
   }, [currentMinutes, sleepInput]);
 
