@@ -1,6 +1,6 @@
 # NEXUS — PHASE 4: QUALITY + COMPLETION
 Implementation prompt for Codex
-Project: /Users/nicholasgeorge/workspace/company/02_NEXUS/PRODUCT/nexus-ui
+Project: /Users/nicholasgeorge/workspace/company/03_HEPHAESTUS/03_PROJECTS/NEXUS
 
 ---
 

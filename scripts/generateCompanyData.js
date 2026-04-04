@@ -13,6 +13,7 @@
  *   05_shared/03_NEXT_ACTIONS.md   — next steps (priority order)
  *   05_shared/04_PHASE_TRACKER.md  — phase status tables
  *   05_shared/05_BLOCKERS.md       — current blockers
+ *   Paperclip API (localhost:3100)  — live agent roster + assignments
  *   CALENDAR.md                    — phase deadlines & revenue milestones
  *   SCOREBOARD.md                  — weekly KPIs
  *   06_AUREON/04_tracking/pipeline.md — AUREON pipeline leads
@@ -20,6 +21,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const http = require('http');
 
 const COMPANY_ROOT = path.resolve(__dirname, '..', '..', '..', '..');
 const OUTPUT_PATH = path.resolve(__dirname, '..', 'src', 'data', 'companyData.generated.json');
@@ -248,14 +250,121 @@ function parsePipeline(md) {
   return table.filter((r) => {
     const company = cleanMarkdown(r.company || '');
     const marker = cleanMarkdown(r._ || '');
+    const score = cleanMarkdown(r.score || '');
+    // Must have a real company name
     if (!company || company.length <= 2) return false;
-    if (company === 'Current' || company === 'Meaning' || company === '---') return false;
-    if (marker === 'Metric' || marker === '---') return false;
+    // Skip legend/header rows — real leads have a numeric row number or a numeric score
+    const hasNumericIndex = /^\d+$/.test(marker.trim());
+    const hasNumericScore = /^\d+$/.test(score.trim());
+    if (!hasNumericIndex && !hasNumericScore) return false;
+    // Skip known junk strings
+    if (company === 'Current' || company === 'Meaning' || company === '---' || company === 'Reason') return false;
+    if (marker === 'Metric' || marker === '---' || marker === 'Company') return false;
     return true;
   });
 }
 
-function generate() {
+/** Assign each Paperclip role to a display tier for grouping in the Agents page. */
+const ROLE_TIER = {
+  ceo: 'executive',
+  cmo: 'revenue',
+  engineer: 'engineering',
+};
+
+/** Fetch a JSON endpoint from the local Paperclip API. Returns null on failure. */
+function fetchPaperclip(urlPath) {
+  return new Promise((resolve) => {
+    const apiUrl = process.env.PAPERCLIP_API_URL || 'http://127.0.0.1:3100';
+    const apiKey = process.env.PAPERCLIP_API_KEY || '';
+    const url = new URL(urlPath, apiUrl);
+    const options = {
+      hostname: url.hostname,
+      port: url.port || 3100,
+      path: url.pathname + url.search,
+      method: 'GET',
+      headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : {},
+      timeout: 3000,
+    };
+    const req = http.request(options, (res) => {
+      let body = '';
+      res.on('data', (chunk) => { body += chunk; });
+      res.on('end', () => {
+        try { resolve(JSON.parse(body)); } catch { resolve(null); }
+      });
+    });
+    req.on('error', () => resolve(null));
+    req.on('timeout', () => { req.destroy(); resolve(null); });
+    req.end();
+  });
+}
+
+async function fetchAgentRoster(companyId) {
+  if (!companyId) return [];
+  const agents = await fetchPaperclip(`/api/companies/${companyId}/agents`);
+  if (!Array.isArray(agents)) return [];
+  return agents;
+}
+
+async function fetchAgentAssignments(companyId) {
+  if (!companyId) return {};
+  const issues = await fetchPaperclip(
+    `/api/companies/${companyId}/issues?status=in_progress,todo`
+  );
+  if (!Array.isArray(issues)) return {};
+  const map = {};
+  for (const issue of issues) {
+    if (issue.assigneeAgentId) {
+      if (!map[issue.assigneeAgentId]) map[issue.assigneeAgentId] = [];
+      map[issue.assigneeAgentId].push({
+        id: issue.id,
+        identifier: issue.identifier,
+        title: issue.title,
+        status: issue.status,
+        priority: issue.priority,
+      });
+    }
+  }
+  return map;
+}
+
+function buildAgentData(rawAgents, assignmentMap) {
+  return rawAgents
+    .filter((a) => !a.metadata?.displayOnly)
+    .map((a) => ({
+      id: a.id,
+      name: a.name,
+      role: a.role,
+      title: a.title || a.role,
+      tier: ROLE_TIER[a.role] || 'engineering',
+      status: a.status,
+      adapterType: a.adapterType,
+      lastHeartbeatAt: a.lastHeartbeatAt || null,
+      assignments: assignmentMap[a.id] || [],
+      capabilities: (a.capabilities || '').slice(0, 200),
+      urlKey: a.urlKey,
+    }))
+    .concat(
+      // Always include human principal separately for display
+      rawAgents
+        .filter((a) => a.metadata?.displayOnly)
+        .map((a) => ({
+          id: a.id,
+          name: a.name,
+          role: a.role,
+          title: a.title || a.role,
+          tier: 'executive',
+          status: a.status,
+          adapterType: a.adapterType,
+          lastHeartbeatAt: a.lastHeartbeatAt || null,
+          assignments: assignmentMap[a.id] || [],
+          capabilities: (a.capabilities || '').slice(0, 200),
+          urlKey: a.urlKey,
+          isHuman: true,
+        }))
+    );
+}
+
+async function generate() {
   console.log('[generateCompanyData] Reading company truth layer...');
 
   const output = {
@@ -339,8 +448,29 @@ function generate() {
     output.currentFocus.xenon = xenonFocus.slice(0, 500);
   }
 
+  // ── Agents (live Paperclip API) ─────────────────────────────────────────────
+  const companyId = process.env.PAPERCLIP_COMPANY_ID || '';
+  if (companyId) {
+    const [rawAgents, assignmentMap] = await Promise.all([
+      fetchAgentRoster(companyId),
+      fetchAgentAssignments(companyId),
+    ]);
+    if (rawAgents.length > 0) {
+      output.agents = buildAgentData(rawAgents, assignmentMap);
+      console.log(`  - ${output.agents.length} agents from Paperclip API`);
+    } else {
+      console.warn('  [agents] Paperclip API unavailable — agents omitted from generated data');
+      output.agents = [];
+    }
+  } else {
+    output.agents = [];
+  }
+
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(output, null, 2), 'utf-8');
   console.log(`[generateCompanyData] Written to ${OUTPUT_PATH}`);
 }
 
-generate();
+generate().catch((err) => {
+  console.error('[generateCompanyData] Fatal error:', err);
+  process.exit(1);
+});
