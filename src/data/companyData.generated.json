@@ -3,175 +3,90 @@
     {
       "name": "NEXUS",
       "deptId": "nexus",
-      "phase": "N3 — Review Engine  Complete",
-      "lastCompleted": "Deterministic review engine, review hook, ReviewPage surface, 107 tests passing, build successful",
-      "nextStep": "N4 — Native Readiness",
+      "phase": "N4.5 — Agents Control Layer  Complete",
+      "lastCompleted": "Agent roster, role/status/assignment visibility, tier grouping (executive/engineering/revenue), action scaffolding reserved for N4.6, live Paperclip data polling via useAgentData",
+      "nextStep": "N4.6 — Agent Actions + AUREON Control Integration",
       "blockers": "None",
       "target": "",
-      "health": "NEXUS now has both planning and review intelligence grounded in company truth.",
+      "health": "NEXUS is a functional execution OS. Agent control layer live. N4.6 activates real agent actions + AUREON integration.",
       "source": "company_status"
     },
     {
       "name": "VORTEX",
       "deptId": "hephaestus",
-      "phase": "V1 — Verification + Persistence  Complete",
-      "lastCompleted": "Verification snapshot endpoint, explicit reload-from-disk hydration, persistence-focused test coverage",
-      "nextStep": "V2 — AI Research Layer",
-      "blockers": "None",
+      "phase": "V5 — Profitability Loop  Complete",
+      "lastCompleted": "V5 Profitability Loop — full trading loop with profitability controls",
+      "nextStep": "V6 — to be defined when FORGE unblocked",
+      "blockers": "FORGE rate limited (Codex — recovers automatically)",
       "target": "",
-      "health": "VORTEX validation is materially more trustworthy than before.",
+      "health": "V5 complete. V6 brief will be issued once FORGE rate limit clears.",
       "source": "company_status"
     },
     {
       "name": "HEPHAESTUS",
       "deptId": "hephaestus",
-      "phase": "Phase 3 — Complete",
-      "lastCompleted": "Department populated, tech decisions log, project wrapper stabilized",
-      "nextStep": "Support V2 brief prep and N4 discipline",
+      "phase": "Active — supporting NEXUS and VORTEX",
+      "lastCompleted": "",
+      "nextStep": "Support N4.6 (ATLAS) and V6 when FORGE unblocked",
       "blockers": "None",
       "target": "",
-      "health": "Complete.",
+      "health": "Active and supporting both product repos.",
       "source": "company_status"
     },
     {
       "name": "XENON",
       "deptId": "xenon",
       "phase": "Phase 4 — Complete",
-      "lastCompleted": "All department files, 27 launch strategy docs, campaign template, channel tracker",
+      "lastCompleted": "All department files, launch strategy docs, campaign template, channel tracker",
       "nextStep": "Nicholas decides channel + format → first campaign",
-      "blockers": "Awaiting direction",
+      "blockers": "Awaiting direction from Nicholas",
       "target": "",
-      "health": "Complete — activation pending direction.",
+      "health": "Complete — activation pending channel decision.",
       "source": "company_status"
     },
     {
       "name": "AUREON",
       "deptId": "aureon",
       "phase": "A1 — First Revenue  Active",
-      "lastCompleted": "Full system built: offer, leads, outreach, sales, delivery, canonical pipeline tracker",
-      "nextStep": "Clear follow-up backlog → research 30 Shopify leads → send 20 DMs",
-      "blockers": "None",
-      "target": "€1,000 by April 14, 2026",
-      "health": "System ready. Revenue execution is now the constraint.",
+      "lastCompleted": "",
+      "nextStep": "",
+      "blockers": "None — execution is the only constraint",
+      "target": "€1,000 by April 14, 2026 (10 days remaining)",
+      "health": "Pipeline exists but outreach has not started. 10 days to €1,000 target. This is the highest-urgency item in the company.",
       "source": "company_status"
     }
   ],
-  "phaseDeadlines": {
-    "nexus": [
-      {
-        "phase": "N1 — Truth Sync",
-        "start": "March 31, 2026",
-        "targetEnd": "March 31, 2026",
-        "status": "Complete"
-      },
-      {
-        "phase": "N2 — AI Planning Core",
-        "start": "April 1, 2026",
-        "targetEnd": "April 1, 2026",
-        "status": "Complete"
-      },
-      {
-        "phase": "N3 — Review Engine",
-        "start": "April 1, 2026",
-        "targetEnd": "April 12, 2026",
-        "status": "Complete"
-      },
-      {
-        "phase": "N4 — Native Readiness",
-        "start": "May 2, 2026",
-        "targetEnd": "May 9, 2026",
-        "status": "Pending brief"
-      },
-      {
-        "phase": "N5 — Health Intelligence",
-        "start": "Post-launch",
-        "targetEnd": "TBD",
-        "status": "Pending"
-      }
-    ],
-    "vortex": [
-      {
-        "phase": "V1 — Verification + Persistence",
-        "start": "April 1, 2026",
-        "targetEnd": "April 8, 2026",
-        "status": "Complete"
-      },
-      {
-        "phase": "V2 — AI Research Layer",
-        "start": "April 11, 2026",
-        "targetEnd": "April 18, 2026",
-        "status": "Pending brief"
-      },
-      {
-        "phase": "V3 — Decision Safety",
-        "start": "April 21, 2026",
-        "targetEnd": "April 26, 2026",
-        "status": "Pending"
-      },
-      {
-        "phase": "V4 — Operator Console",
-        "start": "April 29, 2026",
-        "targetEnd": "May 9, 2026",
-        "status": "Pending"
-      },
-      {
-        "phase": "V5 — Profitability Loop",
-        "start": "May 12, 2026",
-        "targetEnd": "May 19, 2026",
-        "status": "Pending"
-      }
-    ],
-    "aureon": [
-      {
-        "phase": "A1 — First Revenue (€1,000)",
-        "start": "April 1, 2026",
-        "targetEnd": "April 14, 2026",
-        "status": "Active"
-      },
-      {
-        "phase": "A2 — Revenue Engine (€5k/mo)",
-        "start": "April 15, 2026",
-        "targetEnd": "June 1, 2026",
-        "status": "Pending"
-      },
-      {
-        "phase": "A3 — Scale + Productize (€10k/mo)",
-        "start": "June 2, 2026",
-        "targetEnd": "August 2026",
-        "status": "Pending"
-      }
-    ]
-  },
+  "phaseDeadlines": {},
   "revenueMilestones": [
     {
       "target": "AUREON First Revenue",
       "amount": "€1,000",
       "deadline": "April 14, 2026",
-      "status": "In Progress"
+      "status": "Active — 10 days"
     },
     {
       "target": "AUREON Monthly Recurring",
       "amount": "€5,000/mo",
       "deadline": "June 1, 2026",
-      "status": "Pending"
+      "status": "Pending A2"
     },
     {
       "target": "NEXUS App Store Launch",
       "amount": "First paid users",
       "deadline": "July 2026",
-      "status": "Pending"
+      "status": "Pending N6"
     },
     {
       "target": "AUREON Scale",
       "amount": "€10,000/mo",
       "deadline": "August 2026",
-      "status": "Pending"
+      "status": "Pending A3"
     },
     {
       "target": "VORTEX Paper Trading Profitable",
       "amount": "Positive PnL (30 days)",
       "deadline": "September 2026",
-      "status": "Pending"
+      "status": "Pending V6+"
     },
     {
       "target": "Financial Independence",
@@ -183,23 +98,23 @@
   "departments": [
     {
       "name": "NEXUS",
-      "phase": "N3 — Review Engine  Complete",
+      "phase": "history (reconstructed):",
       "status": "active",
       "blockers": "None",
       "source": "current_state"
     },
     {
       "name": "VORTEX",
-      "phase": "V1 — Verification + Persistence  Complete",
+      "phase": "history (reconstructed):",
       "status": "active",
-      "blockers": "None",
+      "blockers": "FORGE rate limited (Codex usage — will recover)",
       "source": "current_state"
     },
     {
       "name": "AUREON",
       "phase": "A1 — First Revenue  Active",
-      "status": "System built. Revenue execution is now the main variable.",
-      "blockers": "None — execution-ready",
+      "status": "MERCURY active — NOV-26 assigned 2026-04-05. Building to 30 leads, converting 3 existing drafts to queue.json format.",
+      "blockers": "None operational — execution is the constraint",
       "source": "current_state"
     }
   ],
@@ -220,6 +135,7 @@
       "_": "1",
       "company": "NAVUCKO",
       "founder": "Nataša Vučković",
+      "country": "DE",
       "score": "21",
       "channel": "Email",
       "draft": "✅",
@@ -232,6 +148,7 @@
       "_": "2",
       "company": "Pfeffersack & Soehne",
       "founder": "Stefan / Christian / Tom / Raphael",
+      "country": "DE",
       "score": "17",
       "channel": "Email",
       "draft": "✅",
@@ -244,6 +161,7 @@
       "_": "3",
       "company": "BINU Beauty",
       "founder": "Nami / Katharina",
+      "country": "DE",
       "score": "16",
       "channel": "Email",
       "draft": "✅",
@@ -256,6 +174,7 @@
       "_": "4",
       "company": "BLACKPOLISH",
       "founder": "Benjamin Luzolo",
+      "country": "DE",
       "score": "18",
       "channel": "Email / site contact",
       "draft": "—",
@@ -263,126 +182,6 @@
       "response": "—",
       "status": "🔵 Needs review",
       "notes": "Offer fit less direct because service mix"
-    },
-    {
-      "_": "Company",
-      "company": "Reason",
-      "founder": "",
-      "score": "",
-      "channel": "",
-      "draft": "",
-      "sent": "",
-      "response": "",
-      "status": "",
-      "notes": ""
-    },
-    {
-      "_": "Lockenbox",
-      "company": "Too mature to prioritize for current ICP",
-      "founder": "",
-      "score": "",
-      "channel": "",
-      "draft": "",
-      "sent": "",
-      "response": "",
-      "status": "",
-      "notes": ""
-    },
-    {
-      "_": "🔵",
-      "company": "Needs review / not contacted",
-      "founder": "",
-      "score": "",
-      "channel": "",
-      "draft": "",
-      "sent": "",
-      "response": "",
-      "status": "",
-      "notes": ""
-    },
-    {
-      "_": "📝",
-      "company": "Draft ready",
-      "founder": "",
-      "score": "",
-      "channel": "",
-      "draft": "",
-      "sent": "",
-      "response": "",
-      "status": "",
-      "notes": ""
-    },
-    {
-      "_": "📤",
-      "company": "Sent",
-      "founder": "",
-      "score": "",
-      "channel": "",
-      "draft": "",
-      "sent": "",
-      "response": "",
-      "status": "",
-      "notes": ""
-    },
-    {
-      "_": "📩",
-      "company": "Responded",
-      "founder": "",
-      "score": "",
-      "channel": "",
-      "draft": "",
-      "sent": "",
-      "response": "",
-      "status": "",
-      "notes": ""
-    },
-    {
-      "_": "🔥",
-      "company": "Hot opportunity",
-      "founder": "",
-      "score": "",
-      "channel": "",
-      "draft": "",
-      "sent": "",
-      "response": "",
-      "status": "",
-      "notes": ""
-    },
-    {
-      "_": "✅",
-      "company": "Deal closed",
-      "founder": "",
-      "score": "",
-      "channel": "",
-      "draft": "",
-      "sent": "",
-      "response": "",
-      "status": "",
-      "notes": ""
-    },
-    {
-      "_": "❌",
-      "company": "Dead",
-      "founder": "",
-      "score": "",
-      "channel": "",
-      "draft": "",
-      "sent": "",
-      "response": "",
-      "status": "",
-      "notes": ""
-    },
-    {
-      "_": "⏸️",
-      "company": "On hold",
-      "founder": "",
-      "score": "",
-      "channel": "",
-      "draft": "",
-      "sent": "",
-      "response": "",
-      "status": "",
-      "notes": ""
     }
   ],
   "tasks": {
@@ -392,81 +191,74 @@
   "nextActions": [
     {
       "priority": 1,
-      "title": "1. AUREON — Execute A1 First Revenue (ONGOING)",
-      "details": "**Owner:** Nicholas\n\n**Actions:**\n- [ ] Review leads #1–#9 and update whether FU1 / FU2 / response / dead status is accurate\n- [ ] Research remaining Shopify leads to reach 30 total\n- [ ] Send 20 personalized DMs total\n- [ ] Book 3–5 discovery calls\n- [ ] Close first deal (€500 setup + €150/month)\n\n"
+      "title": "1. AUREON — Execute A1 First Revenue (ONGOING — CRITICAL)",
+      "details": "**Owner:** Nicholas\n**Deadline:** €1,000 by April 14, 2026 — 10 days remaining\n\n**Actions:**\n- [ ] Confirm current lead count and status in `06_AUREON/04_tracking/pipeline.md`\n- [ ] Research leads to reach 30 total researched\n- [ ] Send personalized DMs (target: 20 total sent)\n- [ ] Book 3–5 discove"
     },
     {
       "priority": 2,
-      "title": "2. VORTEX — Hold approved state, prepare V2 only when needed",
-      "details": "**Owner:** Nova\n\n**Actions:**\n- [x] Formal V1 phase brief issued\n- [x] V1 implementation delivered and validated\n- [x] Formal Nova review completed (9/10)\n- [ ] Draft V2 brief only when Nicholas wants the next VORTEX push\n\n**Review:** `05_shared/phases/2026-04-01_VORTEX_V1_REVIEW.md`\n**Real repo pat"
+      "title": "2. NEXUS — N4.6 Approved → Brief ATLAS to Start",
+      "details": "**Owner:** Nova\n**Brief:** `05_shared/phases/2026-04-04_NEXUS_N4_6_BRIEF.md`\n**Approved:** 2026-04-05 by Nicholas\n\n**Actions:**\n- [x] Nicholas approved N4.6 brief — 2026-04-05\n- [ ] Nova issues the brief to ATLAS via Paperclip — READY NOW\n- [ ] ATLAS executes N4.6 (Agent Actions + AUREON Control Int"
     },
     {
       "priority": 3,
-      "title": "3. NEXUS — Hold approved state, prepare N4 only when needed",
-      "details": "**Owner:** Nova\n\n**Actions:**\n- [x] N2 approval recorded\n- [x] N3 phase brief issued\n- [x] N3 delivered, validated, and reviewed (8/10)\n- [ ] Draft N4 brief only when Nicholas wants the next NEXUS push\n\n**Review:** `05_shared/phases/2026-04-01_NEXUS_N3_REVIEW.md`\n**Real repo path:** `~/workspace/com"
+      "title": "3. VORTEX — Monitor, Resume When FORGE Unblocked",
+      "details": "**Owner:** Nova\n**Blocker:** FORGE rate limited (Codex — recovers automatically)\n\n**Actions:**\n- [ ] Check if FORGE rate limit has cleared\n- [ ] When cleared: draft V6 brief with Nicholas\n- [ ] Issue V6 brief to FORGE\n\n**Current phase:** V5 ✅ Complete — V6 pending brief\n\n---"
     },
     {
       "priority": 4,
-      "title": "4. Monthly / strategic closeout",
-      "details": "**Owner:** Nova\n\n**Actions:**\n- [x] Monthly strategic review recorded\n- [x] Next month priority order proposed\n- [ ] Refresh SCOREBOARD actuals as AUREON execution data arrives\n\n**Review record:** `05_shared/phases/2026-04-01_MONTHLY_STRATEGIC_REVIEW.md`"
+      "title": "4. Truth Layer — Maintain Daily Discipline",
+      "details": "**Owner:** Nova + Nicholas\n\n**Actions:**\n- [ ] Update `05_shared/01_CURRENT_STATE.md` at end of every session\n- [ ] Update this file when priority order changes\n- [ ] Update `SCOREBOARD.md` weekly (Monday or first session of week)\n- [ ] Run NEXUS after truth layer updates (triggers data refresh)\n\n**"
+    },
+    {
+      "priority": 5,
+      "title": "5. Paperclip — Restore Agent Instructions",
+      "details": "**Owner:** Nicholas (UI paste) or Nova (via API with confirmation)\n\n**Actions:**\n- [ ] Restore Nova SOUL.md instructions in Paperclip agent config\n- [ ] Restore ATLAS SOUL.md instructions in Paperclip agent config\n- [ ] Verify FORGE instructions still intact (rate limited, not wiped)\n\n**Files:** `~/"
     }
   ],
   "phaseTracker": [
     {
-      "field": "**Phase**",
-      "status": "N3 — Review Engine ✅ Complete"
+      "field": "**Current Phase**",
+      "status": "N4.5 — Agents Control Layer ✅ Complete"
     },
     {
       "field": "**Real Repo Path**",
       "status": "`~/workspace/company/03_HEPHAESTUS/03_PROJECTS/NEXUS`"
     },
     {
-      "field": "**Compatibility Path**",
-      "status": "`~/workspace/company/02_NEXUS/PRODUCT/nexus-ui`"
-    },
-    {
-      "field": "**Last Completed**",
-      "status": "Deterministic review engine, review UI surface, test coverage, build passing"
-    },
-    {
       "field": "**Next Step**",
-      "status": "N4 — Native Readiness"
+      "status": "N4.6 — Agent Actions + AUREON Control Integration"
     },
     {
-      "field": "**Gate to Unlock Next Step**",
-      "status": "N3 reviewed and approved; N4 requires a formal brief"
+      "field": "**Gate**",
+      "status": "N4.6 brief written 2026-04-04 — awaiting Nicholas approval before ATLAS starts"
     },
     {
       "field": "**Blockers**",
       "status": "None"
     },
     {
-      "field": "**Phase**",
-      "status": "V1 — Verification + Persistence ✅ Complete"
+      "field": "**Current Phase**",
+      "status": "V5 — Profitability Loop ✅ Complete"
     },
     {
       "field": "**Real Repo Path**",
       "status": "`~/workspace/company/03_HEPHAESTUS/03_PROJECTS/VORTEX`"
     },
     {
-      "field": "**Compatibility Path**",
-      "status": "`~/workspace/company/vortex`"
-    },
-    {
-      "field": "**Current Backend Path**",
-      "status": "`~/workspace/company/03_HEPHAESTUS/03_PROJECTS/VORTEX/backend`"
-    },
-    {
-      "field": "**Last Completed**",
-      "status": "Verification snapshot endpoint, restart-safe signal outcome reload path, persistence-focused tests"
-    },
-    {
       "field": "**Next Step**",
-      "status": "V2 — AI Research Layer"
+      "status": "V6 — to be defined"
     },
     {
-      "field": "**Gate to Unlock Next Step**",
-      "status": "V1 reviewed and approved; V2 requires a formal brief"
+      "field": "**Gate**",
+      "status": "V5 complete; next phase requires formal brief"
+    },
+    {
+      "field": "**Blockers**",
+      "status": "FORGE rate limited (Codex usage limit)"
+    },
+    {
+      "field": "**Phase**",
+      "status": "Active — supporting NEXUS and VORTEX"
     },
     {
       "field": "**Blockers**",
@@ -474,31 +266,11 @@
     },
     {
       "field": "**Phase**",
-      "status": "Phase 3 — Complete ✅"
-    },
-    {
-      "field": "**Last Completed**",
-      "status": "Department files populated, project wrapper stabilized, tech decisions log in place"
+      "status": "Phase 4 ✅ Complete"
     },
     {
       "field": "**Next Step**",
-      "status": "Support V2 brief prep and N4 discipline"
-    },
-    {
-      "field": "**Blockers**",
-      "status": "None"
-    },
-    {
-      "field": "**Phase**",
-      "status": "Phase 4 — Complete ✅"
-    },
-    {
-      "field": "**Last Completed**",
-      "status": "Launch strategy docs, campaign template, channel tracker"
-    },
-    {
-      "field": "**Next Step**",
-      "status": "Nicholas decides channel + format → first campaign"
+      "status": "Awaiting channel decision from Nicholas"
     },
     {
       "field": "**Blockers**",
@@ -509,53 +281,54 @@
       "status": "A1 — First Revenue 🟡 Active"
     },
     {
-      "field": "**Canonical Path**",
-      "status": "`~/workspace/company/06_AUREON`"
+      "field": "**Target**",
+      "status": "€1,000 by April 14, 2026"
     },
     {
-      "field": "**Last Completed**",
-      "status": "Offer, lead analysis, outreach, sales, delivery, pipeline system, and tracker normalization established"
+      "field": "**Offer**",
+      "status": "Abandoned Cart Recovery — €500 setup + €150/month"
     },
     {
-      "field": "**Next Step**",
-      "status": "Clear follow-up backlog, research 30 Shopify leads, send 20 DMs"
+      "field": "**Market**",
+      "status": "Shopify stores €50k–€500k/year"
     },
     {
-      "field": "**Gate to Unlock Next Step**",
-      "status": "First-revenue milestone reached"
+      "field": "**Next Action**",
+      "status": "Update pipeline, research leads, send DMs"
     },
     {
       "field": "**Blockers**",
-      "status": "None"
+      "status": "None — execution-ready"
     },
     {
-      "field": "Project",
+      "field": "Product",
       "status": "Current Phase"
     },
     {
       "field": "NEXUS",
-      "status": "N3 ✅ Complete"
+      "status": "N4.5 — Agents Control Layer ✅"
     },
     {
       "field": "VORTEX",
-      "status": "V1 ✅ Complete"
+      "status": "V5 — Profitability Loop ✅"
     },
     {
       "field": "HEPHAESTUS",
-      "status": "Phase 3 ✅ Complete"
+      "status": "Active"
     },
     {
       "field": "XENON",
-      "status": "Phase 4 ✅ Complete"
+      "status": "Phase 4 ✅"
     },
     {
       "field": "AUREON",
       "status": "A1 🟡 Active"
     }
   ],
-  "lastGenerated": "2026-04-01T21:01:23.674Z",
+  "lastGenerated": "2026-04-05T21:37:26.944Z",
   "currentFocus": {
     "hephaestus": "# HEPHAESTUS — Current Focus\n\n**Last updated:** 2026-03-22\n\n---\n\n## Active Focus\n\n**Phase 3 — Department structure and engineering visibility**\n\nHEPHAESTUS is being established as a functional department. The immediate work is structural — getting visibility in place before any product implementation begins.\n\n---\n\n## Current State\n\n| Area | Status | Notes |\n|------|--------|-------|\n| Department files | ✅ Populated | This session |\n| VORTEX canonical location | ✅ Established | `03_PROJECTS/VORTE",
     "xenon": "# XENON — Current Focus\n\n**Last updated:** 2026-03-22\n\n---\n\n## Active Focus\n\n**Phase 4 — Department structure established**\n\nXENON is structurally in place. No campaigns are running yet. First campaign definition is the immediate next step once Nicholas decides on channel and format.\n\n---\n\n## Current State\n\n| Area | Status | Notes |\n|------|--------|-------|\n| Department structure | ✅ Complete | This session |\n| First campaign defined | 🔴 Not started | Awaiting direction |\n| Channel accounts | "
-  }
+  },
+  "agents": []
 }

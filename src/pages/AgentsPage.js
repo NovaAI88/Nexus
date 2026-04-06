@@ -1,4 +1,9 @@
+import { useState, useEffect, useCallback } from 'react';
 import { useAgentData } from '../core/agents/useAgentData';
+
+const API_URL = process.env.REACT_APP_PAPERCLIP_API_URL || 'http://127.0.0.1:3100';
+const COMPANY_ID = process.env.REACT_APP_PAPERCLIP_COMPANY_ID || '';
+const API_KEY = process.env.REACT_APP_PAPERCLIP_API_KEY || '';
 
 // ─── Status helpers ───────────────────────────────────────────────────────────
 
@@ -32,6 +37,247 @@ const PRIORITY_COLOR = {
   low:      '#4b5563',
 };
 
+// ─── Panel: Inspect ───────────────────────────────────────────────────────────
+
+function InspectPanel({ agent, onClose }) {
+  const [issue, setIssue] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const assignment = agent.assignments?.[0];
+    if (!assignment) return;
+    setLoading(true);
+    fetch(`${API_URL}/api/issues/${assignment.id}`)
+      .then((r) => r.ok ? r.json() : Promise.reject(r.statusText))
+      .then((data) => { setIssue(data); setLoading(false); })
+      .catch((e) => { setError(String(e)); setLoading(false); });
+  }, [agent]);
+
+  const assignment = agent.assignments?.[0];
+
+  return (
+    <div className="acl-panel">
+      <div className="acl-panel-header">
+        <span className="acl-panel-title">Inspect — {agent.name}</span>
+        <button className="acl-panel-close" onClick={onClose} aria-label="Close">✕</button>
+      </div>
+      {!assignment && (
+        <p className="acl-panel-empty">No active assignment for this agent.</p>
+      )}
+      {assignment && loading && <p className="acl-panel-loading">Loading…</p>}
+      {assignment && error && <p className="acl-panel-error">{error}</p>}
+      {issue && (
+        <div className="acl-panel-body">
+          <div className="acl-inspect-field">
+            <span className="acl-inspect-label">ID</span>
+            <span className="acl-inspect-value acl-inspect-mono">{issue.identifier}</span>
+          </div>
+          <div className="acl-inspect-field">
+            <span className="acl-inspect-label">Title</span>
+            <span className="acl-inspect-value acl-inspect-title">{issue.title}</span>
+          </div>
+          <div className="acl-inspect-row">
+            <div className="acl-inspect-field">
+              <span className="acl-inspect-label">Status</span>
+              <span className={`acl-inspect-status acl-inspect-status--${issue.status}`}>{issue.status}</span>
+            </div>
+            <div className="acl-inspect-field">
+              <span className="acl-inspect-label">Priority</span>
+              <span className="acl-inspect-value">{issue.priority}</span>
+            </div>
+          </div>
+          {issue.description && (
+            <div className="acl-inspect-field">
+              <span className="acl-inspect-label">Description</span>
+              <p className="acl-inspect-desc">
+                {issue.description.slice(0, 500)}{issue.description.length > 500 ? '…' : ''}
+              </p>
+            </div>
+          )}
+          <div className="acl-inspect-row">
+            {issue.createdAt && (
+              <div className="acl-inspect-field">
+                <span className="acl-inspect-label">Created</span>
+                <span className="acl-inspect-value">{new Date(issue.createdAt).toLocaleDateString()}</span>
+              </div>
+            )}
+            {issue.updatedAt && (
+              <div className="acl-inspect-field">
+                <span className="acl-inspect-label">Updated</span>
+                <span className="acl-inspect-value">{new Date(issue.updatedAt).toLocaleDateString()}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Panel: Review Output ─────────────────────────────────────────────────────
+
+function ReviewPanel({ agent, onClose }) {
+  const [items, setItems] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!COMPANY_ID) {
+      setError('REACT_APP_PAPERCLIP_COMPANY_ID not configured.');
+      return;
+    }
+    setLoading(true);
+    fetch(`${API_URL}/api/companies/${COMPANY_ID}/issues?assigneeAgentId=${agent.id}&status=done`)
+      .then((r) => r.ok ? r.json() : Promise.reject(r.statusText))
+      .then((data) => {
+        const arr = Array.isArray(data) ? data : (data.items || data.issues || []);
+        setItems(arr.slice(0, 5));
+        setLoading(false);
+      })
+      .catch((e) => { setError(String(e)); setLoading(false); });
+  }, [agent]);
+
+  return (
+    <div className="acl-panel">
+      <div className="acl-panel-header">
+        <span className="acl-panel-title">Recent Output — {agent.name}</span>
+        <button className="acl-panel-close" onClick={onClose} aria-label="Close">✕</button>
+      </div>
+      {loading && <p className="acl-panel-loading">Loading…</p>}
+      {error && <p className="acl-panel-error">{error}</p>}
+      {items !== null && items.length === 0 && !loading && (
+        <p className="acl-panel-empty">No completed activity on record.</p>
+      )}
+      {items && items.length > 0 && (
+        <div className="acl-panel-body">
+          {items.map((issue) => (
+            <div key={issue.id} className="acl-review-item">
+              <span className="acl-review-id">{issue.identifier}</span>
+              <span className="acl-review-title">{issue.title}</span>
+              {issue.updatedAt && (
+                <span className="acl-review-date">{new Date(issue.updatedAt).toLocaleDateString()}</span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Panel: Redirect ──────────────────────────────────────────────────────────
+
+function RedirectPanel({ agent, onClose }) {
+  const [issues, setIssues] = useState(null);
+  const [selectedId, setSelectedId] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!COMPANY_ID) {
+      setError('REACT_APP_PAPERCLIP_COMPANY_ID not configured.');
+      return;
+    }
+    setLoading(true);
+    fetch(`${API_URL}/api/companies/${COMPANY_ID}/issues?status=todo,in_progress`)
+      .then((r) => r.ok ? r.json() : Promise.reject(r.statusText))
+      .then((data) => {
+        const arr = Array.isArray(data) ? data : (data.items || data.issues || []);
+        setIssues(arr.filter((i) => i.assigneeAgentId !== agent.id));
+        setLoading(false);
+      })
+      .catch((e) => { setError(String(e)); setLoading(false); });
+  }, [agent]);
+
+  const handleRedirect = useCallback(async () => {
+    if (!selectedId) return;
+    setSubmitting(true);
+    try {
+      const headers = { 'Content-Type': 'application/json' };
+      if (API_KEY) headers['Authorization'] = `Bearer ${API_KEY}`;
+      const res = await fetch(`${API_URL}/api/issues/${selectedId}`, {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify({ assigneeAgentId: agent.id, status: 'todo' }),
+      });
+      if (res.ok) {
+        setResult({ ok: true, message: `Issue reassigned to ${agent.name}.` });
+      } else {
+        const text = await res.text().catch(() => '');
+        setResult({ ok: false, message: `Failed: ${res.status} ${text.slice(0, 120)}` });
+      }
+    } catch (e) {
+      setResult({ ok: false, message: String(e) });
+    } finally {
+      setSubmitting(false);
+    }
+  }, [selectedId, agent]);
+
+  const selectedIssue = issues?.find((i) => i.id === selectedId);
+
+  return (
+    <div className="acl-panel">
+      <div className="acl-panel-header">
+        <span className="acl-panel-title">Redirect — {agent.name}</span>
+        <button className="acl-panel-close" onClick={onClose} aria-label="Close">✕</button>
+      </div>
+      {loading && <p className="acl-panel-loading">Loading open issues…</p>}
+      {error && <p className="acl-panel-error">{error}</p>}
+      {result && (
+        <div className={`acl-redirect-result${result.ok ? ' acl-redirect-result--ok' : ' acl-redirect-result--err'}`}>
+          {result.message}
+          {result.ok && (
+            <button className="acl-action-btn" style={{ marginTop: 12 }} onClick={onClose}>Close</button>
+          )}
+        </div>
+      )}
+      {!result && issues && (
+        <div className="acl-panel-body">
+          <p className="acl-redirect-label">
+            Assign a different issue to <strong>{agent.name}</strong>:
+          </p>
+          <select
+            className="acl-redirect-select"
+            value={selectedId}
+            onChange={(e) => setSelectedId(e.target.value)}
+          >
+            <option value="">— select issue —</option>
+            {issues.map((i) => (
+              <option key={i.id} value={i.id}>
+                [{i.identifier}] {i.title}
+              </option>
+            ))}
+          </select>
+          {selectedIssue && (
+            <div className="acl-redirect-preview">
+              <span className={`acl-inspect-status acl-inspect-status--${selectedIssue.status}`}>
+                {selectedIssue.status}
+              </span>
+              <span className="acl-inspect-value">{selectedIssue.priority}</span>
+            </div>
+          )}
+          {issues.length === 0 && !loading && (
+            <p className="acl-panel-empty">No unassigned open issues found.</p>
+          )}
+          <div className="acl-redirect-actions">
+            <button
+              className="acl-action-btn acl-action-btn--primary"
+              disabled={!selectedId || submitting}
+              onClick={handleRedirect}
+            >
+              {submitting ? 'Redirecting…' : 'Confirm Redirect'}
+            </button>
+            <button className="acl-action-btn" onClick={onClose}>Cancel</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function StatusDot({ status }) {
@@ -59,23 +305,35 @@ function AssignmentTag({ assignment }) {
   );
 }
 
-function AgentActions() {
+function AgentActions({ agent, onInspect, onReview, onRedirect }) {
   return (
     <div className="acl-actions">
-      <button className="acl-action-btn" disabled title="Inspect assignment — available in N4.6">
+      <button
+        className="acl-action-btn acl-action-btn--active"
+        onClick={() => onInspect(agent)}
+        title="Inspect current assignment"
+      >
         Inspect
       </button>
-      <button className="acl-action-btn" disabled title="Review output — available in N4.6">
+      <button
+        className="acl-action-btn acl-action-btn--active"
+        onClick={() => onReview(agent)}
+        title="Review recent agent output"
+      >
         Review
       </button>
-      <button className="acl-action-btn acl-action-btn--danger" disabled title="Redirect — available in N4.6">
+      <button
+        className="acl-action-btn acl-action-btn--danger acl-action-btn--active"
+        onClick={() => onRedirect(agent)}
+        title="Redirect agent to a different issue"
+      >
         Redirect
       </button>
     </div>
   );
 }
 
-function AgentCard({ agent }) {
+function AgentCard({ agent, onInspect, onReview, onRedirect }) {
   const meta = getStatusMeta(agent.status);
   const heartbeat = formatHeartbeat(agent.lastHeartbeatAt);
   const hasAssignments = agent.assignments && agent.assignments.length > 0;
@@ -112,13 +370,20 @@ function AgentCard({ agent }) {
         )}
       </div>
 
-      {/* Structural action area */}
-      {!agent.isHuman && <AgentActions />}
+      {/* Action area */}
+      {!agent.isHuman && (
+        <AgentActions
+          agent={agent}
+          onInspect={onInspect}
+          onReview={onReview}
+          onRedirect={onRedirect}
+        />
+      )}
     </div>
   );
 }
 
-function TierSection({ title, agents, accent }) {
+function TierSection({ title, agents, accent, onInspect, onReview, onRedirect }) {
   if (agents.length === 0) return null;
   return (
     <div className="acl-tier" style={{ '--tier-accent': accent }}>
@@ -128,7 +393,15 @@ function TierSection({ title, agents, accent }) {
         <span className="acl-tier-count">{agents.length}</span>
       </div>
       <div className="acl-tier-grid">
-        {agents.map((a) => <AgentCard key={a.id} agent={a} />)}
+        {agents.map((a) => (
+          <AgentCard
+            key={a.id}
+            agent={a}
+            onInspect={onInspect}
+            onReview={onReview}
+            onRedirect={onRedirect}
+          />
+        ))}
       </div>
     </div>
   );
@@ -177,6 +450,12 @@ function SystemHealthBar({ agents, isLive, lastFetched }) {
 
 function AgentsPage({ date }) {
   const { agents, byTier, isLive, lastFetched } = useAgentData();
+  const [panel, setPanel] = useState(null); // { type: 'inspect'|'review'|'redirect', agent }
+
+  const openInspect  = useCallback((agent) => setPanel({ type: 'inspect',  agent }), []);
+  const openReview   = useCallback((agent) => setPanel({ type: 'review',   agent }), []);
+  const openRedirect = useCallback((agent) => setPanel({ type: 'redirect', agent }), []);
+  const closePanel   = useCallback(() => setPanel(null), []);
 
   return (
     <div className="acl-page">
@@ -195,22 +474,38 @@ function AgentsPage({ date }) {
           title="Executive"
           agents={byTier.executive}
           accent="#a78bfa"
+          onInspect={openInspect}
+          onReview={openReview}
+          onRedirect={openRedirect}
         />
         <TierSection
           title="Engineering"
           agents={byTier.engineering}
           accent="#6b7cff"
+          onInspect={openInspect}
+          onReview={openReview}
+          onRedirect={openRedirect}
         />
         <TierSection
           title="Revenue"
           agents={byTier.revenue}
           accent="#34d399"
+          onInspect={openInspect}
+          onReview={openReview}
+          onRedirect={openRedirect}
         />
       </div>
 
-      <div className="acl-footer-note">
-        <span>Full runtime control (pause · resume · redirect) available in N4.6.</span>
-      </div>
+      {/* Slide-over panel overlay */}
+      {panel && (
+        <div className="acl-panel-overlay" onClick={closePanel}>
+          <div className="acl-panel-drawer" onClick={(e) => e.stopPropagation()}>
+            {panel.type === 'inspect'  && <InspectPanel  agent={panel.agent} onClose={closePanel} />}
+            {panel.type === 'review'   && <ReviewPanel   agent={panel.agent} onClose={closePanel} />}
+            {panel.type === 'redirect' && <RedirectPanel agent={panel.agent} onClose={closePanel} />}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -224,7 +224,7 @@ const FILTER_TABS = [
   { key: 'all', label: 'All' },
 ];
 
-function DraftReviewSystem({ leads }) {
+function DraftReviewSystem({ draftReview }) {
   const {
     filteredDrafts,
     selectedDraft,
@@ -241,11 +241,9 @@ function DraftReviewSystem({ leads }) {
     setEditingNoteId,
     notes,
     saveNote,
-  } = useDraftReview(leads);
+  } = draftReview;
 
-  const totalDrafts = counts.all;
-
-  if (totalDrafts === 0) {
+  if (counts.all === 0) {
     return (
       <SectionCard title="Draft Queue" variant="primary">
         <p className="revenue-empty-note">No drafts ready. Generate outreach drafts to begin review.</p>
@@ -309,6 +307,99 @@ function DraftReviewSystem({ leads }) {
   );
 }
 
+// ─── AUREON Control Surface ───────────────────────────────────────────────────
+
+const A1_TARGET_AMOUNT = 1000;
+const A1_DEADLINE_DATE = '2026-04-14';
+
+function aureonStage(rawStatus) {
+  const s = (rawStatus || '').toLowerCase().replace(/[^\w\s-]/g, '');
+  if (s.includes('closed') || s.includes('deal')) return 'closed';
+  if (s.includes('call') || s.includes('hot')) return 'call-booked';
+  if (s.includes('replied') || s.includes('responded')) return 'replied';
+  if (s.includes('sent') || s.includes('dm')) return 'dm-sent';
+  return 'researched';
+}
+
+const AUREON_STAGE_META = {
+  'researched':  { label: 'Researched',  cls: 'stage-researched'  },
+  'dm-sent':     { label: 'DM Sent',     cls: 'stage-dm-sent'     },
+  'replied':     { label: 'Replied',     cls: 'stage-replied'     },
+  'call-booked': { label: 'Call Booked', cls: 'stage-call-booked' },
+  'closed':      { label: 'Closed',      cls: 'stage-closed'      },
+};
+
+function AureonStageBadge({ rawStatus }) {
+  const stage = aureonStage(rawStatus);
+  const meta = AUREON_STAGE_META[stage] || AUREON_STAGE_META['researched'];
+  return <span className={`aureon-stage-badge ${meta.cls}`}>{meta.label}</span>;
+}
+
+function AureonKPIBar({ current, target, deadline }) {
+  const progress = Math.min((current / target) * 100, 100);
+  const daysLeft = Math.max(0, Math.floor((new Date(deadline) - new Date()) / 86400000));
+  return (
+    <div className="aureon-kpi">
+      <div className="aureon-kpi-header">
+        <span className="aureon-kpi-label">A1 Target — €{target.toLocaleString()}</span>
+        <span className="aureon-kpi-deadline">{daysLeft}d remaining · April 14</span>
+      </div>
+      <div className="aureon-kpi-track">
+        <div className="aureon-kpi-fill" style={{ width: `${progress}%` }} />
+      </div>
+      <div className="aureon-kpi-footer">
+        <span className="aureon-kpi-current">€{current.toLocaleString()} raised</span>
+        <span className="aureon-kpi-pct">{progress.toFixed(0)}%</span>
+      </div>
+    </div>
+  );
+}
+
+function AureonControlSurface({ leads }) {
+  const total       = leads.length;
+  const dmSent      = leads.filter((l) => ['dm-sent', 'replied', 'call-booked', 'closed'].includes(aureonStage(l.status))).length;
+  const callsBooked = leads.filter((l) => ['call-booked', 'closed'].includes(aureonStage(l.status))).length;
+  const convRate    = dmSent > 0 ? ((callsBooked / dmSent) * 100).toFixed(0) : '—';
+
+  return (
+    <div className="aureon-control-surface">
+      <AureonKPIBar current={0} target={A1_TARGET_AMOUNT} deadline={A1_DEADLINE_DATE} />
+
+      <div className="aureon-summary-row">
+        <div className="aureon-summary-cell">
+          <strong className="aureon-summary-value">{total}</strong>
+          <span className="aureon-summary-label">Active Leads</span>
+        </div>
+        <div className="aureon-summary-cell">
+          <strong className="aureon-summary-value">{dmSent}</strong>
+          <span className="aureon-summary-label">DMs Sent</span>
+        </div>
+        <div className="aureon-summary-cell">
+          <strong className="aureon-summary-value">{callsBooked}</strong>
+          <span className="aureon-summary-label">Calls Booked</span>
+        </div>
+        <div className="aureon-summary-cell">
+          <strong className="aureon-summary-value">{convRate}{convRate !== '—' ? '%' : ''}</strong>
+          <span className="aureon-summary-label">Conversion</span>
+        </div>
+      </div>
+
+      {leads.length > 0 ? (
+        <div className="aureon-lead-status-list">
+          {leads.map((lead, i) => (
+            <div key={lead._ || i} className="aureon-lead-status-row">
+              <span className="aureon-lead-status-company">{lead.company}</span>
+              <AureonStageBadge rawStatus={lead.status} />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="aureon-empty">No leads in pipeline. Add leads to begin A1 execution.</p>
+      )}
+    </div>
+  );
+}
+
 // ─── RevenuePage ──────────────────────────────────────────────────────────────
 
 function RevenuePage({
@@ -323,11 +414,10 @@ function RevenuePage({
 }) {
   const leads = generatedPipeline?.length > 0 ? generatedPipeline : (pipelineEntries || []);
   const milestones = revenueMilestones || [];
+  const draftReview = useDraftReview(leads);
 
   const totalLeads = leads.length;
-  const draftsReady = leads.filter(
-    (l) => l.draft === '✅' || parseStatus(l.status) === 'draft'
-  ).length;
+  const draftsReady = draftReview.counts.awaiting_review;
   const outreachSent = leads.filter(
     (l) => (l.sent && l.sent !== '—' && l.sent !== '') || parseStatus(l.status) === 'sent'
   ).length;
@@ -369,6 +459,13 @@ function RevenuePage({
               <MetricCell label="Outreach Sent" value={outreachSent} />
               <MetricCell label="Replies" value={replies} highlight={replies > 0} />
             </div>
+          </SectionCard>
+        </div>
+
+        {/* AUREON Control Surface */}
+        <div style={{ gridColumn: '1 / -1' }}>
+          <SectionCard title="AUREON Pipeline Control" variant="primary">
+            <AureonControlSurface leads={leads} />
           </SectionCard>
         </div>
 
@@ -428,8 +525,8 @@ function RevenuePage({
 
         {/* Draft Review System — N4.4 */}
         <div style={{ gridColumn: '1 / -1' }}>
-          <SectionCard title={`Draft Queue${draftsReady > 0 ? ` — ${draftsReady} ready for review` : ''}`} variant="primary">
-            <DraftReviewSystem leads={leads} />
+          <SectionCard title={`Draft Queue${draftsReady > 0 ? ` — ${draftsReady} awaiting review` : ''}`} variant="primary">
+            <DraftReviewSystem draftReview={draftReview} />
           </SectionCard>
         </div>
 
