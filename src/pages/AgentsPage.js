@@ -8,11 +8,11 @@ const API_KEY = process.env.REACT_APP_PAPERCLIP_API_KEY || '';
 // ─── Status helpers ───────────────────────────────────────────────────────────
 
 const STATUS_META = {
-  running:  { color: '#6fcf97', label: 'Running',  pulse: true  },
-  idle:     { color: '#b1bac4', label: 'Idle',     pulse: false },
-  error:    { color: '#eb5757', label: 'Error',    pulse: false },
-  paused:   { color: '#f2c94c', label: 'Paused',   pulse: false },
-  default:  { color: '#6e7681', label: 'Unknown',  pulse: false },
+  running:  { color: 'var(--accent-success)', label: 'Running',  pulse: true  },
+  idle:     { color: 'var(--color-text-body)', label: 'Idle',     pulse: false },
+  error:    { color: 'var(--color-danger)', label: 'Error',    pulse: false },
+  paused:   { color: 'var(--accent-warning)', label: 'Paused',   pulse: false },
+  default:  { color: 'var(--color-text-meta)', label: 'Unknown',  pulse: false },
 };
 
 function getStatusMeta(status) {
@@ -31,10 +31,10 @@ function formatHeartbeat(iso) {
 }
 
 const PRIORITY_COLOR = {
-  critical: '#ff4d6d',
-  high:     '#f59e0b',
-  medium:   '#6b7cff',
-  low:      '#4b5563',
+  critical: 'var(--color-urgency-critical)',
+  high:     'var(--accent-warning)',
+  medium:   'var(--color-dept-nexus)',
+  low:      'var(--color-urgency-low)',
 };
 
 // ─── Panel: Inspect ───────────────────────────────────────────────────────────
@@ -473,7 +473,7 @@ function AgentsPage({ date }) {
         <TierSection
           title="Executive"
           agents={byTier.executive}
-          accent="#a78bfa"
+          accent="var(--color-dept-xenon)"
           onInspect={openInspect}
           onReview={openReview}
           onRedirect={openRedirect}
@@ -481,7 +481,7 @@ function AgentsPage({ date }) {
         <TierSection
           title="Engineering"
           agents={byTier.engineering}
-          accent="#6b7cff"
+          accent="var(--color-dept-nexus)"
           onInspect={openInspect}
           onReview={openReview}
           onRedirect={openRedirect}
@@ -489,7 +489,7 @@ function AgentsPage({ date }) {
         <TierSection
           title="Revenue"
           agents={byTier.revenue}
-          accent="#34d399"
+          accent="var(--accent-success)"
           onInspect={openInspect}
           onReview={openReview}
           onRedirect={openRedirect}

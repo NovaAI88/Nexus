@@ -889,7 +889,7 @@
       "status": "Phase 4 ✅"
     }
   ],
-  "lastGenerated": "2026-04-08T13:37:30.633Z",
+  "lastGenerated": "2026-04-08T13:48:57.391Z",
   "aureonDrafts": [
     {
       "id": "draft_001-navucko",
@@ -1248,16 +1248,8 @@
       "tier": "engineering",
       "status": "running",
       "adapterType": "claude_local",
-      "lastHeartbeatAt": "2026-04-08T13:25:34.227Z",
-      "assignments": [
-        {
-          "id": "9fa60925-ef91-48a5-9dd6-3c3520561440",
-          "identifier": "NOV-25",
-          "title": "N4.6 — Agent Actions + AUREON Control Integration",
-          "status": "in_progress",
-          "priority": "high"
-        }
-      ],
+      "lastHeartbeatAt": "2026-04-08T13:38:25.898Z",
+      "assignments": [],
       "capabilities": "Frontend implementation, React components, UI/UX, product logic, App Store readiness, truth layer sync, and issue execution with strict scope control.",
       "urlKey": "atlas"
     },
