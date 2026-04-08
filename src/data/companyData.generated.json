@@ -56,7 +56,170 @@
       "source": "company_status"
     }
   ],
-  "phaseDeadlines": {},
+  "phaseDeadlines": {
+    "nexus": [
+      {
+        "phase": "N1",
+        "start": "",
+        "targetEnd": "",
+        "status": "Complete"
+      },
+      {
+        "phase": "N2",
+        "start": "",
+        "targetEnd": "",
+        "status": "Complete (8/10)"
+      },
+      {
+        "phase": "N3",
+        "start": "",
+        "targetEnd": "",
+        "status": "Complete (8/10)"
+      },
+      {
+        "phase": "N4",
+        "start": "",
+        "targetEnd": "",
+        "status": "Complete"
+      },
+      {
+        "phase": "N4.1",
+        "start": "",
+        "targetEnd": "",
+        "status": "Complete"
+      },
+      {
+        "phase": "N4.2",
+        "start": "",
+        "targetEnd": "",
+        "status": "Complete"
+      },
+      {
+        "phase": "N4.3",
+        "start": "",
+        "targetEnd": "",
+        "status": "Complete"
+      },
+      {
+        "phase": "N4.4",
+        "start": "",
+        "targetEnd": "",
+        "status": "Complete"
+      },
+      {
+        "phase": "N4.5",
+        "start": "",
+        "targetEnd": "",
+        "status": "Complete"
+      },
+      {
+        "phase": "N5",
+        "start": "",
+        "targetEnd": "",
+        "status": "Complete"
+      },
+      {
+        "phase": "R1",
+        "start": "",
+        "targetEnd": "",
+        "status": "Complete"
+      },
+      {
+        "phase": "N4.6",
+        "start": "",
+        "targetEnd": "",
+        "status": "Approved — delivery awaiting review gate"
+      },
+      {
+        "phase": "N4.7",
+        "start": "",
+        "targetEnd": "",
+        "status": "Not yet briefed"
+      },
+      {
+        "phase": "N4.8",
+        "start": "",
+        "targetEnd": "",
+        "status": "Not yet briefed"
+      },
+      {
+        "phase": "N6",
+        "start": "",
+        "targetEnd": "",
+        "status": "Post N4.8"
+      },
+      {
+        "phase": "N7",
+        "start": "",
+        "targetEnd": "",
+        "status": "Post N6"
+      }
+    ],
+    "vortex": [
+      {
+        "phase": "V1",
+        "start": "",
+        "targetEnd": "",
+        "status": "Complete (9/10)"
+      },
+      {
+        "phase": "V2",
+        "start": "",
+        "targetEnd": "",
+        "status": "Complete"
+      },
+      {
+        "phase": "V3",
+        "start": "",
+        "targetEnd": "",
+        "status": "Complete"
+      },
+      {
+        "phase": "V4",
+        "start": "",
+        "targetEnd": "",
+        "status": "Complete"
+      },
+      {
+        "phase": "V5",
+        "start": "",
+        "targetEnd": "",
+        "status": "Complete"
+      },
+      {
+        "phase": "V6",
+        "start": "",
+        "targetEnd": "",
+        "status": "Pending brief (FORGE rate limited)"
+      }
+    ],
+    "aureon": [
+      {
+        "phase": "A1",
+        "start": "",
+        "targetEnd": "",
+        "status": "Active"
+      },
+      {
+        "phase": "A2",
+        "start": "",
+        "targetEnd": "",
+        "status": "Starts after A1 closes"
+      },
+      {
+        "phase": "A3",
+        "start": "",
+        "targetEnd": "",
+        "status": "Pending"
+      },
+      {
+        "phase": "A4",
+        "start": "",
+        "targetEnd": "",
+        "status": "Pending"
+      }
+    ]
+  },
   "revenueMilestones": [
     {
       "target": "AUREON First Revenue",
@@ -98,23 +261,30 @@
   "departments": [
     {
       "name": "NEXUS",
-      "phase": "history (reconstructed):",
-      "status": "active",
-      "blockers": "None",
+      "phase": "history: N1 → N2 → N3 → N4 → N4.1 → N4.2 → N4.3 → N4.4 → N4.5 → N5 → R1",
+      "status": "Brief approved 2026-04-05. ATLAS has NOT yet delivered. No new commits since 2026-04-06.",
+      "blockers": "None — ATLAS needs to start execution",
       "source": "current_state"
     },
     {
       "name": "VORTEX",
-      "phase": "history (reconstructed):",
+      "phase": "history:",
       "status": "active",
-      "blockers": "FORGE rate limited (Codex usage — will recover)",
+      "blockers": "None — FORGE switched to Claude Opus 4.6 (no longer rate limited)",
+      "source": "current_state"
+    },
+    {
+      "name": "PAWLY",
+      "phase": "",
+      "status": "active",
+      "blockers": "Nicholas must create Supabase project + RevenueCat account before P1 backend wiring",
       "source": "current_state"
     },
     {
       "name": "AUREON",
       "phase": "A1 — First Revenue  Active",
-      "status": "MERCURY active — NOV-26 assigned 2026-04-05. Building to 30 leads, converting 3 existing drafts to queue.json format.",
-      "blockers": "None operational — execution is the constraint",
+      "status": "MERCURY active on NOV-26 (lead research). Pipeline has 14 leads identified. 3 German drafts ready. 0 DMs sent. 0 calls booked. Execution is the bottleneck.",
+      "blockers": "None operational — execution pace is the only risk.",
       "source": "current_state"
     }
   ],
@@ -137,12 +307,10 @@
       "founder": "Nataša Vučković",
       "country": "DE",
       "score": "21",
-      "channel": "Email",
-      "draft": "✅",
-      "sent": "—",
-      "response": "—",
       "status": "📝 Draft ready",
-      "notes": "Benchmark lead for current ICP"
+      "draft": "✅ queued",
+      "contact": "support@navucko.com",
+      "": ""
     },
     {
       "_": "2",
@@ -150,12 +318,10 @@
       "founder": "Stefan / Christian / Tom / Raphael",
       "country": "DE",
       "score": "17",
-      "channel": "Email",
-      "draft": "✅",
-      "sent": "—",
-      "response": "—",
       "status": "📝 Draft ready",
-      "notes": "Founder-led spice brand"
+      "draft": "✅ queued",
+      "contact": "hallo@pfeffersackundsoehne.de",
+      "": ""
     },
     {
       "_": "3",
@@ -163,12 +329,10 @@
       "founder": "Nami / Katharina",
       "country": "DE",
       "score": "16",
-      "channel": "Email",
-      "draft": "✅",
-      "sent": "—",
-      "response": "—",
       "status": "📝 Draft ready",
-      "notes": "Smaller beauty brand; monitor maturity"
+      "draft": "✅ queued",
+      "contact": "contact@binu-beauty.de",
+      "": ""
     },
     {
       "_": "4",
@@ -176,43 +340,363 @@
       "founder": "Benjamin Luzolo",
       "country": "DE",
       "score": "18",
-      "channel": "Email / site contact",
-      "draft": "—",
-      "sent": "—",
-      "response": "—",
-      "status": "🔵 Needs review",
-      "notes": "Offer fit less direct because service mix"
+      "status": "📝 Draft ready",
+      "draft": "✅ queued",
+      "contact": "kontakt@blackpolish.de",
+      "": ""
+    },
+    {
+      "_": "5",
+      "company": "OH APRIL",
+      "website": "oh-april.com",
+      "founder": "Carmen Kroll & Julia Zwingenberg",
+      "score": "18",
+      "language": "DE",
+      "why_they_fit": "Sustainable fashion, Instagram-driven abandonment",
+      "draft_status": "✅ queued",
+      "": ""
+    },
+    {
+      "_": "6",
+      "company": "Ooia",
+      "website": "ooia.com",
+      "founder": "Kati & Kristine",
+      "score": "17",
+      "language": "DE",
+      "why_they_fit": "Period underwear, trust-sensitive first purchase",
+      "draft_status": "✅ queued",
+      "": ""
+    },
+    {
+      "_": "7",
+      "company": "Löwenanteil",
+      "website": "loewenanteil.com",
+      "founder": "founder",
+      "score": "17",
+      "language": "DE",
+      "why_they_fit": "Organic food DTC with subscription option",
+      "draft_status": "✅ queued",
+      "": ""
+    },
+    {
+      "_": "8",
+      "company": "Paper & Tea",
+      "website": "paperandtea.com",
+      "founder": "founders",
+      "score": "17",
+      "language": "DE",
+      "why_they_fit": "Premium specialty tea, discovery-driven browsing",
+      "draft_status": "✅ queued",
+      "": ""
+    },
+    {
+      "_": "9",
+      "company": "Wildling Shoes",
+      "website": "wildling.shoes",
+      "founder": "Anna Yona",
+      "score": "17",
+      "language": "DE",
+      "why_they_fit": "Barefoot minimal shoes, research-heavy decision",
+      "draft_status": "✅ queued",
+      "": ""
+    },
+    {
+      "_": "10",
+      "company": "Soulbottles",
+      "website": "soulbottles.de",
+      "founder": "Paul Kupfer",
+      "score": "16",
+      "language": "DE",
+      "why_they_fit": "Glass bottles with messages, gift + self-purchase",
+      "draft_status": "✅ queued",
+      "": ""
+    },
+    {
+      "_": "11",
+      "company": "Float",
+      "website": "float-style.de",
+      "founder": "Nadine",
+      "score": "18",
+      "language": "DE",
+      "why_they_fit": "Handcrafted jewelry, impulse-to-cart gap",
+      "draft_status": "✅ queued",
+      "": ""
+    },
+    {
+      "_": "12",
+      "company": "Sophistique",
+      "website": "sophistique.shop",
+      "founder": "Sophia",
+      "score": "18",
+      "language": "DE",
+      "why_they_fit": "Ballet-inspired jewelry, niche community",
+      "draft_status": "✅ queued",
+      "": ""
+    },
+    {
+      "_": "13",
+      "company": "Makaro",
+      "website": "makaro.de",
+      "founder": "Hanna & Matthias",
+      "score": "17",
+      "language": "DE",
+      "why_they_fit": "Handcrafted gold/silver jewelry, premium range",
+      "draft_status": "✅ queued",
+      "": ""
+    },
+    {
+      "_": "14",
+      "company": "Kloster Kitchen",
+      "website": "klosterkitchen.de",
+      "founder": "founder",
+      "score": "16",
+      "language": "DE",
+      "why_they_fit": "Functional beverages, subscription-first model",
+      "draft_status": "✅ queued",
+      "": ""
+    },
+    {
+      "_": "15",
+      "company": "Gitti",
+      "website": "gitti.com",
+      "founder": "Gitti Hesse & Larissa Becker",
+      "score": "16",
+      "language": "DE",
+      "why_they_fit": "Sustainable nail polish, Instagram-driven",
+      "draft_status": "✅ queued",
+      "": ""
+    },
+    {
+      "_": "16",
+      "company": "Erlich Textil",
+      "website": "erlich-textil.de",
+      "founder": "Artur Erlich",
+      "score": "16",
+      "language": "DE",
+      "why_they_fit": "Sustainable basics, multi-brand comparison",
+      "draft_status": "✅ queued",
+      "": ""
+    },
+    {
+      "_": "17",
+      "company": "DR. VIVIEN KARL",
+      "website": "drvivienkart.de",
+      "founder": "Dr. Vivien Karl",
+      "score": "16",
+      "language": "DE",
+      "why_they_fit": "Premium medical skincare, trust-building recovery",
+      "draft_status": "✅ queued",
+      "": ""
+    },
+    {
+      "_": "18",
+      "company": "Rascals",
+      "website": "rascals.de",
+      "founder": "founder",
+      "score": "17",
+      "language": "DE",
+      "why_they_fit": "Kids accessories, time-pressured parent buyers",
+      "draft_status": "✅ queued",
+      "": ""
+    },
+    {
+      "_": "19",
+      "company": "Pinqponq",
+      "website": "pinqponq.com",
+      "founder": "founders",
+      "score": "15",
+      "language": "DE",
+      "why_they_fit": "Sustainable backpacks €80–150, high consideration",
+      "draft_status": "✅ queued",
+      "": ""
+    },
+    {
+      "_": "20",
+      "company": "My Yo",
+      "website": "myyo.de",
+      "founder": "founders",
+      "score": "15",
+      "language": "DE",
+      "why_they_fit": "Young food startup, trial-first purchases",
+      "draft_status": "✅ queued",
+      "": ""
+    },
+    {
+      "_": "21",
+      "company": "HORST Lifestyle",
+      "website": "horstlifestyle.de",
+      "founder": "founder",
+      "score": "15",
+      "language": "DE",
+      "why_they_fit": "Lifestyle brand, foundational recovery setup",
+      "draft_status": "✅ queued",
+      "": ""
+    },
+    {
+      "_": "22",
+      "company": "Bears with Benefits",
+      "website": "bearswithbenefits.de",
+      "founder": "founders",
+      "score": "15",
+      "language": "DE",
+      "why_they_fit": "Supplement gummies, ingredient-research delay",
+      "draft_status": "✅ queued",
+      "": ""
+    },
+    {
+      "_": "23",
+      "company": "KAALEE Jewelry",
+      "website": "kaalee-jewelry.com",
+      "founder": "founders",
+      "score": "18",
+      "language": "DE",
+      "why_they_fit": "Textile-scrap jewelry, unique origin story",
+      "draft_status": "✅ queued",
+      "": ""
+    },
+    {
+      "_": "24",
+      "company": "Greenforce",
+      "website": "greenforce.eu",
+      "founder": "Thomas Isermann",
+      "score": "16",
+      "language": "DE",
+      "why_they_fit": "Plant-based food DTC, trial-to-commit gap",
+      "draft_status": "✅ queued",
+      "": ""
+    },
+    {
+      "_": "25",
+      "company": "KAALA Yoga",
+      "website": "kaala.de",
+      "founder": "Regina Winther & Carolin van Eupen",
+      "score": "16",
+      "language": "DE",
+      "why_they_fit": "Yoga accessories, mindful consideration phase",
+      "draft_status": "✅ queued",
+      "": ""
+    },
+    {
+      "_": "26",
+      "company": "TEVEO",
+      "website": "teveo.de",
+      "founder": "founder",
+      "score": "15",
+      "language": "DE",
+      "why_they_fit": "Sportswear DTC, fit-sizing hesitation",
+      "draft_status": "✅ queued",
+      "": ""
+    },
+    {
+      "_": "27",
+      "company": "Vivien Frank",
+      "website": "vivienfrank.com",
+      "founder": "Simona Isler",
+      "country": "CH",
+      "score": "19",
+      "language": "EN",
+      "why_they_fit": "Swiss jewelry from hobby origin, handcrafted",
+      "draft_status": "✅ queued",
+      "": ""
+    },
+    {
+      "_": "28",
+      "company": "FIVE Skincare",
+      "website": "fiveskincare.com",
+      "founder": "Anna Pfeiffer",
+      "country": "CH",
+      "score": "17",
+      "language": "DE",
+      "why_they_fit": "Natural skincare, DE market focus, trust phase",
+      "draft_status": "✅ queued",
+      "": ""
+    },
+    {
+      "_": "29",
+      "company": "Madame Kukla",
+      "website": "madamekukla.at",
+      "founder": "founder",
+      "country": "AT",
+      "score": "15",
+      "language": "DE",
+      "why_they_fit": "Versatile wrap dresses, decision-taking buyers",
+      "draft_status": "✅ queued",
+      "": ""
+    },
+    {
+      "_": "30",
+      "company": "Beau Soleil",
+      "website": "beausoleil.de",
+      "founder": "founder",
+      "country": "DE",
+      "score": "17",
+      "language": "DE",
+      "why_they_fit": "Jewelry DTC, discovery-to-cart-to-overthink",
+      "draft_status": "✅ queued",
+      "": ""
+    },
+    {
+      "company": "Einhorn",
+      "score": "14",
+      "reason": "Berlin startup, likely above ICP revenue",
+      "status": "⏸️ parked—revisit if scaling focus",
+      "": ""
+    },
+    {
+      "company": "The SISS BLISS",
+      "score": "13",
+      "reason": "€3M+ revenue, 15 employees—above ICP",
+      "status": "❌ excluded",
+      "": ""
     }
   ],
   "tasks": {
     "nexus": []
   },
-  "blockers": [],
+  "blockers": [
+    "~~Paperclip offline~~ → Started, all 5 agents reachable",
+    "~~All 4 engineering agents in error state~~ → Cleared to idle via PATCH /api/agents/{id}",
+    "~~LUNA P0 delivery not recorded~~ → Formal review created in `05_shared/phases/`",
+    "~~Truth layer drift after multi-day session gap~~ → Full refresh complete",
+    "~~Nova SOUL.md / AGENTS.md / MERCURY AGENTS.md drift in Paperclip~~ → Synced to source files",
+    "~~FORGE rate limited (Codex)~~ → Switched FORGE to Claude Opus 4.6",
+    "~~MERCURY model overkill~~ → Right-sized to Claude Haiku 4.5",
+    "~~PAWLY agent assignment TBD~~ → LUNA assigned, P0 delivered same day",
+    "~~Nova identity fragmented across 3+ files~~ → Single canonical source with symlink",
+    "~~Truth layer frozen since April 1~~ → Reconstructed and refreshed",
+    "~~.DS_Store files tracked in git~~ → Gitignore fixed",
+    "~~Uncommitted NEXUS work~~ → Committed and pushed"
+  ],
   "nextActions": [
     {
       "priority": 1,
-      "title": "1. AUREON — Execute A1 First Revenue (ONGOING — CRITICAL)",
-      "details": "**Owner:** Nicholas\n**Deadline:** €1,000 by April 14, 2026 — 10 days remaining\n\n**Actions:**\n- [ ] Confirm current lead count and status in `06_AUREON/04_tracking/pipeline.md`\n- [ ] Research leads to reach 30 total researched\n- [ ] Send personalized DMs (target: 20 total sent)\n- [ ] Book 3–5 discove"
+      "title": "1. AUREON — Execute A1 First Revenue 🔴 (CRITICAL — 6 DAYS)",
+      "details": "**Owner:** Nicholas\n**Deadline:** €1,000 by April 14, 2026 — **6 days remaining** ⏰\n\n**Actions:**\n- [ ] Send first batch of MERCURY's 3 German drafts (manual approve + send)\n- [ ] Reach 30 total researched leads in pipeline\n- [ ] Send 20 personalized DMs total this week\n- [ ] Book 3–5 discovery call"
     },
     {
       "priority": 2,
-      "title": "2. NEXUS — N4.6 Approved → Brief ATLAS to Start",
-      "details": "**Owner:** Nova\n**Brief:** `05_shared/phases/2026-04-04_NEXUS_N4_6_BRIEF.md`\n**Approved:** 2026-04-05 by Nicholas\n\n**Actions:**\n- [x] Nicholas approved N4.6 brief — 2026-04-05\n- [ ] Nova issues the brief to ATLAS via Paperclip — READY NOW\n- [ ] ATLAS executes N4.6 (Agent Actions + AUREON Control Int"
+      "title": "2. NEXUS — Begin N4.6 Execution 🟡",
+      "details": "**Owner:** ATLAS (Nova will issue start signal)\n**Brief:** `05_shared/phases/2026-04-04_NEXUS_N4_6_BRIEF.md`\n\n**Actions:**\n- [ ] ATLAS reads brief and posts plan-of-attack to NOV-25\n- [ ] Track A: Agent Actions (Inspect, Review Output, Redirect) functional\n- [ ] Track B: AUREON Control Surface in NE"
     },
     {
       "priority": 3,
-      "title": "3. VORTEX — Monitor, Resume When FORGE Unblocked",
-      "details": "**Owner:** Nova\n**Blocker:** FORGE rate limited (Codex — recovers automatically)\n\n**Actions:**\n- [ ] Check if FORGE rate limit has cleared\n- [ ] When cleared: draft V6 brief with Nicholas\n- [ ] Issue V6 brief to FORGE\n\n**Current phase:** V5 ✅ Complete — V6 pending brief\n\n---"
+      "title": "3. PAWLY — Provision External Services 🟡",
+      "details": "**Owner:** Nicholas\n**Why:** P1 cannot start until Supabase + RevenueCat exist\n\n**Actions:**\n- [ ] Create Supabase project (free tier OK for dev)\n- [ ] Run migration `001_initial_schema.sql` against new project\n- [ ] Get Supabase URL + anon key → write to `.env`\n- [ ] Create RevenueCat account\n- [ ]"
     },
     {
       "priority": 4,
-      "title": "4. Truth Layer — Maintain Daily Discipline",
-      "details": "**Owner:** Nova + Nicholas\n\n**Actions:**\n- [ ] Update `05_shared/01_CURRENT_STATE.md` at end of every session\n- [ ] Update this file when priority order changes\n- [ ] Update `SCOREBOARD.md` weekly (Monday or first session of week)\n- [ ] Run NEXUS after truth layer updates (triggers data refresh)\n\n**"
+      "title": "4. VORTEX — V6 Alignment Session 🟢",
+      "details": "**Owner:** Nova + Nicholas\n**Why:** V6 is the bridge from paper trading to real money — biggest decision in VORTEX history\n\n**Actions:**\n- [ ] Nova prepares V6 alignment doc with two paths:\n   - Path A: \"Foundation rebuild + edge discovery\" (slow, scientific)\n   - Path B: \"Whale-copy-trading MVP\" (f"
     },
     {
       "priority": 5,
-      "title": "5. Paperclip — Restore Agent Instructions",
-      "details": "**Owner:** Nicholas (UI paste) or Nova (via API with confirmation)\n\n**Actions:**\n- [ ] Restore Nova SOUL.md instructions in Paperclip agent config\n- [ ] Restore ATLAS SOUL.md instructions in Paperclip agent config\n- [ ] Verify FORGE instructions still intact (rate limited, not wiped)\n\n**Files:** `~/"
+      "title": "5. Paperclip — Durability Improvement 🟡",
+      "details": "**Owner:** Nova\n**Why:** Paperclip stops when terminal closes — daily friction\n\n**Actions:**\n- [ ] Investigate persistent launch options (LaunchAgent, screen, tmux)\n- [ ] Test durability across multiple session restarts\n- [ ] Document the chosen launch path in `07_PAPERCLIP/STARTUP.md`\n- [ ] Update "
+    },
+    {
+      "priority": 6,
+      "title": "6. Truth Layer — Daily Discipline 🟢",
+      "details": "**Owner:** Nova\n\n**Actions:**\n- [ ] Run session-close protocol every session (no exceptions)\n- [ ] Maintain <24h freshness on all `05_shared/` files\n- [ ] Check freshness via `bash scripts/check_truth_layer.sh` at startup\n\n---\n\n## Decision Queue (waiting on Nicholas)\n\n| Decision | Why It Matters | N"
     }
   ],
   "phaseTracker": [
@@ -225,16 +709,28 @@
       "status": "`~/workspace/company/03_HEPHAESTUS/03_PROJECTS/NEXUS`"
     },
     {
-      "field": "**Next Step**",
+      "field": "**GitHub**",
+      "status": "NovaAI88/Nexus (latest `6de9563`)"
+    },
+    {
+      "field": "**Active Brief**",
       "status": "N4.6 — Agent Actions + AUREON Control Integration"
     },
     {
-      "field": "**Gate**",
-      "status": "N4.6 brief written 2026-04-04 — awaiting Nicholas approval before ATLAS starts"
+      "field": "**Active Agent**",
+      "status": "ATLAS"
     },
     {
-      "field": "**Blockers**",
-      "status": "None"
+      "field": "**Status**",
+      "status": "🟡 Brief approved 2026-04-05 — ATLAS has not yet started execution. No commits since 04-06."
+    },
+    {
+      "field": "**Gate**",
+      "status": "ATLAS delivers → Nova reviews → score ≥7 → unlock N4.7"
+    },
+    {
+      "field": "**Next Staged**",
+      "status": "N4.7 — Email Approval Queue (`05_shared/phases/2026-04-05_NEXUS_N4_7_BRIEF.md`)"
     },
     {
       "field": "**Current Phase**",
@@ -245,20 +741,108 @@
       "status": "`~/workspace/company/03_HEPHAESTUS/03_PROJECTS/VORTEX`"
     },
     {
-      "field": "**Next Step**",
-      "status": "V6 — to be defined"
+      "field": "**GitHub**",
+      "status": "NovaAI88/vortex"
+    },
+    {
+      "field": "**Active Agent**",
+      "status": "FORGE (idle, awaiting V6 brief)"
+    },
+    {
+      "field": "**Status**",
+      "status": "🟢 Audit complete 2026-04-08. Real architecture, paper-trading scaffold, all execution mocked."
+    },
+    {
+      "field": "**Next Phase**",
+      "status": "V6 — Live Data Foundation (replace mockExchangeAdapter + mockConnector with real exchange APIs, persistent state)"
     },
     {
       "field": "**Gate**",
-      "status": "V5 complete; next phase requires formal brief"
+      "status": "Nicholas confirms capital plan + edge hypothesis → Nova writes V6 brief"
     },
     {
       "field": "**Blockers**",
-      "status": "FORGE rate limited (Codex usage limit)"
+      "status": "None — FORGE no longer rate limited (now Claude Opus 4.6)"
+    },
+    {
+      "field": "**Current Phase**",
+      "status": "P0 — Foundation ✅ DELIVERED"
+    },
+    {
+      "field": "**Score**",
+      "status": "**8/10** — Solid foundation, RevenueCat provisioning incomplete"
+    },
+    {
+      "field": "**Real Repo Path**",
+      "status": "`~/workspace/company/03_HEPHAESTUS/03_PROJECTS/PAWLY`"
+    },
+    {
+      "field": "**GitHub**",
+      "status": "NovaAI88/pawly"
+    },
+    {
+      "field": "**Active Agent**",
+      "status": "LUNA (idle, P0 approved)"
+    },
+    {
+      "field": "**Delivery**",
+      "status": "Commit `9921408` (2026-04-07) — 33 files, 14,561 insertions"
+    },
+    {
+      "field": "**Review**",
+      "status": "`05_shared/phases/2026-04-08_PAWLY_P0_REVIEW.md`"
+    },
+    {
+      "field": "**Next Phase**",
+      "status": "P1 — Core Loop (dog profiles, walk tracking, streaks, reminders)"
+    },
+    {
+      "field": "**Gate**",
+      "status": "Nicholas provisions Supabase project + RevenueCat account → Nova writes P1 brief"
+    },
+    {
+      "field": "**Blockers**",
+      "status": "External service provisioning (manual, only Nicholas can do)"
     },
     {
       "field": "**Phase**",
-      "status": "Active — supporting NEXUS and VORTEX"
+      "status": "A1 — First Revenue 🟡 Active"
+    },
+    {
+      "field": "**Target**",
+      "status": "€1,000 by **April 14, 2026** ⏰ — 6 days remaining"
+    },
+    {
+      "field": "**Offer**",
+      "status": "Abandoned Cart Recovery — €500 setup + €150/month"
+    },
+    {
+      "field": "**Market**",
+      "status": "Shopify stores €50k–€500k/year"
+    },
+    {
+      "field": "**Active Agent**",
+      "status": "MERCURY (NOV-26 lead research + draft queue)"
+    },
+    {
+      "field": "**Pipeline**",
+      "status": "14 leads researched, 3 German drafts ready, 0 DMs sent, 0 calls booked"
+    },
+    {
+      "field": "**Owner**",
+      "status": "Nicholas (outreach) + MERCURY (drafts) + Nova (review/escalate)"
+    },
+    {
+      "field": "**Blockers**",
+      "status": "None operational — execution pace is the only risk"
+    },
+    {
+      "field": "**Next Action**",
+      "status": "Nicholas sends first batch of DMs from MERCURY's draft queue"
+    },
+    {
+      "field": "**Phase**",
+      "status": "Active — supporting NEXUS, VORTEX, PAWLY"
     },
     {
       "field": "**Blockers**",
@@ -277,40 +861,24 @@
       "status": "Awaiting direction"
     },
     {
-      "field": "**Phase**",
-      "status": "A1 — First Revenue 🟡 Active"
-    },
-    {
-      "field": "**Target**",
-      "status": "€1,000 by April 14, 2026"
-    },
-    {
-      "field": "**Offer**",
-      "status": "Abandoned Cart Recovery — €500 setup + €150/month"
-    },
-    {
-      "field": "**Market**",
-      "status": "Shopify stores €50k–€500k/year"
-    },
-    {
-      "field": "**Next Action**",
-      "status": "Update pipeline, research leads, send DMs"
-    },
-    {
-      "field": "**Blockers**",
-      "status": "None — execution-ready"
-    },
-    {
       "field": "Product",
       "status": "Current Phase"
     },
     {
+      "field": "AUREON",
+      "status": "A1 🟡 Active"
+    },
+    {
       "field": "NEXUS",
-      "status": "N4.5 — Agents Control Layer ✅"
+      "status": "N4.5 ✅"
     },
     {
       "field": "VORTEX",
-      "status": "V5 — Profitability Loop ✅"
+      "status": "V5 ✅"
+    },
+    {
+      "field": "PAWLY",
+      "status": "P0 ✅ (8/10)"
     },
     {
       "field": "HEPHAESTUS",
@@ -319,16 +887,424 @@
     {
       "field": "XENON",
       "status": "Phase 4 ✅"
-    },
-    {
-      "field": "AUREON",
-      "status": "A1 🟡 Active"
     }
   ],
-  "lastGenerated": "2026-04-05T21:37:26.944Z",
+  "lastGenerated": "2026-04-08T13:23:17.637Z",
+  "aureonDrafts": [
+    {
+      "id": "draft_001-navucko",
+      "to": "support@navucko.com",
+      "company": "NAVUCKO",
+      "subject": "Kleine Idee zu Warenkorbabbrüchen bei NAVUCKO",
+      "body": "Hi Nataša,\n\nich habe mir NAVUCKO angesehen — sehr klare, liebevolle Marke. Gerade bei kleineren, emotional geführten Shops geht oft Umsatz verloren, wenn abgebrochene Warenkörbe und einfache Follow-up-Strecken nicht sauber abgefangen werden.\n\nIch helfe Shops dabei, genau diese verlorenen Käufe pragmatisch zurückzuholen, ohne den Store mit komplizierten Systemen zu überladen.\n\nFalls das bei euch noch nicht wirklich sauber aufgesetzt ist, kann ich dir kurz zeigen, wo ich bei NAVUCKO die größten Chancen sehe.\n\nWenn du magst, schreibe ich dir dazu eine kurze, konkrete Einschätzung.\n\nViele Grüße\nNicholas\nAUREON",
+      "status": "sent",
+      "createdAt": "2026-04-05T08:00:00Z",
+      "approvedAt": "2026-04-08T11:23:16.705Z",
+      "sentAt": "2026-04-08T11:23:16.705Z"
+    },
+    {
+      "id": "draft_002-pfeffersack",
+      "to": "hallo@pfeffersackundsoehne.de",
+      "company": "Pfeffersack & Soehne",
+      "subject": "Kleine Idee zu Warenkorbabbrüchen bei Pfeffersack & Soehne",
+      "body": "Hallo zusammen,\n\nich habe mir Pfeffersack & Soehne angesehen — sehr klare Produktwelt und starker DTC-Auftritt.\n\nGerade bei Shops dieser Größe geht oft Umsatz verloren, wenn Warenkorbabbrüche und einfache Follow-up-Strecken nicht wirklich sauber abgefangen werden.\n\nIch helfe kleineren Shops dabei, genau diese verlorenen Käufe pragmatisch zurückzuholen, ohne unnötig komplexe Systeme einzuführen.\n\nFalls das bei euch noch nicht wirklich sauber aufgesetzt ist, kann ich euch kurz zeigen, wo ich bei Pfeffersack & Soehne die größten Chancen sehe.\n\nWenn ihr mögt, schreibe ich euch dazu eine kurze, konkrete Einschätzung.\n\nViele Grüße\nNicholas\nAUREON",
+      "status": "sent",
+      "createdAt": "2026-04-05T08:15:00Z",
+      "approvedAt": "2026-04-08T11:23:22.745Z",
+      "sentAt": "2026-04-08T11:23:22.745Z"
+    },
+    {
+      "id": "draft_003-binu",
+      "to": "contact@binu-beauty.de",
+      "company": "BINU Beauty",
+      "subject": "Kleine Idee zu Warenkorbabbrüchen bei BINU Beauty",
+      "body": "Hi Nami, hi Katharina,\n\nich habe mir BINU Beauty angesehen — schöne, klare Marke und sehr fokussiertes Sortiment.\n\nGerade bei kleineren Shops geht oft Umsatz verloren, wenn Warenkorbabbrüche und einfache Follow-up-Strecken nicht sauber abgefangen werden.\n\nIch helfe Shops dabei, genau diese verlorenen Käufe pragmatisch zurückzuholen, ohne den Store mit komplizierten Systemen zu überladen.\n\nFalls das bei euch noch nicht wirklich sauber aufgesetzt ist, kann ich euch kurz zeigen, wo ich bei BINU die größten Chancen sehe.\n\nWenn ihr mögt, schreibe ich euch dazu eine kurze, konkrete Einschätzung.\n\nViele Grüße\nNicholas\nAUREON",
+      "status": "sent",
+      "createdAt": "2026-04-05T08:30:00Z",
+      "approvedAt": "2026-04-08T11:23:27.696Z",
+      "sentAt": "2026-04-08T11:23:27.696Z"
+    },
+    {
+      "id": "draft_004-blackpolish",
+      "to": "kontakt@blackpolish.de",
+      "company": "BLACKPOLISH",
+      "subject": "Kleine Idee zu Warenkorbabbrüchen bei BLACKPOLISH",
+      "body": "Hi Benjamin,\n\nich habe mir BLACKPOLISH angesehen — spezialisiertes Sneaker-Pflegesortiment mit echter Expertise und klarer Community dahinter.\n\nGerade bei Nischenprodukten wie Sneaker-Pflege zögern viele Käufer beim ersten Kauf noch einmal — die abgebrochenen Warenkörbe sind dort oft höher als man denkt.\n\nIch helfe Shopify-Shops dabei, genau diese verlorenen Erstkäufe pragmatisch zurückzuholen, ohne den Store mit komplizierten Systemen zu überladen.\n\nFalls das bei euch noch nicht wirklich sauber aufgesetzt ist, kann ich dir kurz zeigen, wo ich bei BLACKPOLISH die größten Chancen sehe.\n\n15 Minuten reichen — hättest du diese Woche kurz Zeit?\n\nViele Grüße\nNicholas\nAUREON",
+      "status": "bounced",
+      "createdAt": "2026-04-05T08:45:00Z",
+      "approvedAt": "2026-04-08T11:23:36.467Z",
+      "sentAt": "2026-04-08T11:23:36.467Z"
+    },
+    {
+      "id": "draft_005-ohapril",
+      "to": "hallo@oh-april.com",
+      "company": "OH APRIL",
+      "subject": "Kleine Idee zu Warenkorbabbrüchen bei OH APRIL",
+      "body": "Hi Carmen, hi Julia,\n\nich habe mir OH APRIL angesehen — sehr klare, minimalistische Kollektion und eine starke DTC-Präsenz über Instagram.\n\nGerade bei Social-getriebenen Modemarken wie eurer verlassen viele Shopperinnen den Warenkorb nach dem ersten Impuls wieder — eine einfache, automatisierte Recovery-Sequenz kann genau diese Käufe zurückholen.\n\nIch helfe kleinen Shops dabei, das pragmatisch aufzusetzen, ohne den Store mit unnötigen Tools zu überladen.\n\nFalls das bei euch noch nicht sauber aufgesetzt ist, würde ich euch gerne kurz zeigen, wo ich die größten Chancen bei OH APRIL sehe.\n\n15 Minuten reichen — hättet ihr diese Woche kurz Zeit?\n\nViele Grüße\nNicholas\nAUREON",
+      "status": "sent",
+      "createdAt": "2026-04-05T09:00:00Z",
+      "approvedAt": "2026-04-08T11:23:45.786Z",
+      "sentAt": "2026-04-08T11:23:45.786Z"
+    },
+    {
+      "id": "draft_006-ooia",
+      "to": "hallo@ooia.com",
+      "company": "Ooia",
+      "subject": "Kleine Idee zu Warenkorbabbrüchen bei Ooia",
+      "body": "Hi Kati, hi Kristine,\n\nich habe mir Ooia angesehen — tolle Marke, sehr klare Mission und ein Sortiment, das echte Überzeugung braucht, bevor jemand den ersten Kauf macht.\n\nGenau das ist bei Produkten wie euren das Problem: Viele Erstkäufer landen im Warenkorb, verlassen ihn aber noch einmal — weil sie das Produkt noch nicht kennen und der letzte Schritt Vertrauen kostet.\n\nIch helfe Shopify-Shops dabei, diese Käufe mit einer kurzen, markengerechten Recovery-Sequenz zurückzuholen.\n\nFalls das bei euch noch nicht wirklich sauber aufgesetzt ist, kann ich euch kurz zeigen, was bei Ooia die größten Chancen wären.\n\n15 Minuten reichen — hättet ihr diese Woche kurz Zeit?\n\nViele Grüße\nNicholas\nAUREON",
+      "status": "sent",
+      "createdAt": "2026-04-05T09:15:00Z",
+      "approvedAt": "2026-04-08T11:23:56.230Z",
+      "sentAt": "2026-04-08T11:23:56.230Z"
+    },
+    {
+      "id": "draft_007-loewenanteil",
+      "to": "hallo@loewenanteil.de",
+      "company": "Löwenanteil",
+      "subject": "Kleine Idee zu Warenkorbabbrüchen bei Löwenanteil",
+      "body": "Hallo,\n\nich habe mir Löwenanteil angesehen — starke Bio-Qualität, spannende Mix-and-Match-Konzepte und eine klare Positionierung für gesunde, bequeme Mahlzeiten.\n\nGerade bei DTC-Foodbrands mit Abo-Option passiert es häufig, dass Neukunden beim ersten Bestellversuch zögern und den Warenkorb wieder verlassen — der Schritt zum Erstabon fühlt sich noch zu groß an.\n\nIch helfe Shopify-Shops dabei, genau diese Erstkäufe mit einer kurzen Follow-up-Sequenz pragmatisch zurückzuholen.\n\nFalls das bei euch noch nicht wirklich sauber aufgesetzt ist, kann ich euch kurz zeigen, wo ich bei Löwenanteil die größten Chancen sehe.\n\n15 Minuten reichen — hättet ihr diese Woche kurz Zeit?\n\nViele Grüße\nNicholas\nAUREON",
+      "status": "sent",
+      "createdAt": "2026-04-05T09:30:00Z",
+      "approvedAt": "2026-04-08T11:24:03.858Z",
+      "sentAt": "2026-04-08T11:24:03.858Z"
+    },
+    {
+      "id": "draft_008-papertea",
+      "to": "hello@paperandtea.com",
+      "company": "Paper & Tea",
+      "subject": "Kleine Idee zu Warenkorbabbrüchen bei Paper & Tea",
+      "body": "Hallo,\n\nich habe mir Paper & Tea angesehen — sehr kuratorischer Ansatz, tolle Produktwelt und ein Sortiment, das zum Stöbern einlädt.\n\nGerade bei Premium-Tee ist die Kaufentscheidung oft emotional und impulsiv — viele Besucher laden den Warenkorb, verlassen ihn aber wieder, bevor sie bestellen.\n\nIch helfe Shopify-Shops dabei, genau diese abgebrochenen Käufe mit einer kurzen, markengerechten Recovery-Sequenz zurückzuholen.\n\nFalls das bei euch noch nicht sauber aufgesetzt ist, kann ich euch kurz zeigen, was bei Paper & Tea die größten Chancen wären.\n\n15 Minuten reichen — hättet ihr diese Woche kurz Zeit?\n\nViele Grüße\nNicholas\nAUREON",
+      "status": "sent",
+      "createdAt": "2026-04-05T09:45:00Z",
+      "approvedAt": "2026-04-08T11:24:08.108Z",
+      "sentAt": "2026-04-08T11:24:08.108Z"
+    },
+    {
+      "id": "draft_009-wildling",
+      "to": "hallo@wildling.shoes",
+      "company": "Wildling",
+      "subject": "Kleine Idee zu Warenkorbabbrüchen bei Wildling",
+      "body": "Hi Anna,\n\nich habe mir Wildling angesehen — sehr durchdachter Ansatz, starke Community und ein Produkt, das viele Eltern erst einmal in der Theorie überzeugen muss, bevor der Kauf passiert.\n\nGenau das macht Wildling zur klassischen Situation für hohe Warenkorbabbrüche: Eltern fügen die Schuhe zur Wunschliste hinzu, recherchieren noch mal und kehren dann vielleicht nicht zurück.\n\nIch helfe Shopify-Shops dabei, diese Käufe mit einer kurzen automatisierten Sequenz zurückzuholen.\n\nFalls das bei euch noch nicht sauber aufgesetzt ist, kann ich dir kurz zeigen, wo ich die größten Chancen bei Wildling sehe.\n\n15 Minuten reichen — hättest du diese Woche kurz Zeit?\n\nViele Grüße\nNicholas\nAUREON",
+      "status": "sent",
+      "createdAt": "2026-04-05T10:00:00Z",
+      "approvedAt": "2026-04-08T11:24:11.897Z",
+      "sentAt": "2026-04-08T11:24:11.897Z"
+    },
+    {
+      "id": "draft_010-soulbottles",
+      "to": "hallo@soulbottles.de",
+      "company": "soulbottles",
+      "subject": "Kleine Idee zu Warenkorbabbrüchen bei soulbottles",
+      "body": "Hi Paul,\n\nich habe mir soulbottles angesehen — schönes Konzept, starke Werte und ein Sortiment, das sowohl als Eigenverwendung als auch als Geschenk gekauft wird.\n\nGenau bei Geschenkprodukten passiert es oft: Jemand legt die Flasche in den Warenkorb, will noch den richtigen Spruch auswählen und kehrt nicht mehr zurück.\n\nIch helfe Shopify-Shops dabei, genau diese Abbrecher mit einer kurzen, markengerechten Sequenz zurückzuholen.\n\nFalls das bei euch noch nicht sauber aufgesetzt ist, kann ich dir kurz zeigen, was bei soulbottles die größten Chancen wären.\n\n15 Minuten reichen — hättest du diese Woche kurz Zeit?\n\nViele Grüße\nNicholas\nAUREON",
+      "status": "sent",
+      "createdAt": "2026-04-05T10:15:00Z",
+      "approvedAt": "2026-04-08T11:24:16.197Z",
+      "sentAt": "2026-04-08T11:24:16.197Z"
+    },
+    {
+      "id": "draft_011-float",
+      "to": "hallo@float-style.de",
+      "company": "Float",
+      "subject": "Kleine Idee zu Warenkorbabbrüchen bei Float",
+      "body": "Hi Nadine,\n\nich habe mir Float angesehen — handgemachte Schmuckstücke mit echter Handwerksgeschichte und einem klaren Stil, der eine eigene Community anspricht.\n\nGerade bei Handschmuck ist die Conversion-Strecke typischerweise länger: Käufer entdecken ein Stück, legen es in den Warenkorb und warten dann auf den richtigen Moment — der ohne Follow-up oft nicht kommt.\n\nIch helfe kleinen Shopify-Shops dabei, genau diese verlorenen Käufe pragmatisch zurückzuholen, ohne komplexe Systeme einführen zu müssen.\n\nFalls das bei Float noch nicht sauber aufgesetzt ist, kann ich dir kurz zeigen, wo ich die größten Chancen sehe.\n\n15 Minuten reichen — hättest du diese Woche kurz Zeit?\n\nViele Grüße\nNicholas\nAUREON",
+      "status": "sent",
+      "createdAt": "2026-04-05T10:30:00Z",
+      "approvedAt": "2026-04-08T11:24:19.612Z",
+      "sentAt": "2026-04-08T11:24:19.612Z"
+    },
+    {
+      "id": "draft_012-sophistique",
+      "to": "hallo@sophistique.shop",
+      "company": "Sophistique",
+      "subject": "Kleine Idee zu Warenkorbabbrüchen bei Sophistique",
+      "body": "Hi Sophia,\n\nich habe mir Sophistique angesehen — handgefertigter Schmuck mit einer sehr klaren Nische und einer Community, die die Leidenschaft dahinter wirklich versteht.\n\nGerade Nischenschmuck-Brands profitieren enorm von einfachen Recovery-Sequenzen: Käufer entdecken ein Stück, legen es in den Warenkorb und werden dann abgelenkt — ohne Follow-up geht der Kauf verloren.\n\nIch helfe kleinen Shopify-Shops dabei, genau diese Abbrüche pragmatisch zurückzuholen.\n\nFalls das bei Sophistique noch nicht sauber aufgesetzt ist, kann ich dir kurz zeigen, was bei euch die größten Chancen wären.\n\n15 Minuten reichen — hättest du diese Woche kurz Zeit?\n\nViele Grüße\nNicholas\nAUREON",
+      "status": "sent",
+      "createdAt": "2026-04-05T10:45:00Z",
+      "approvedAt": "2026-04-08T11:24:24.457Z",
+      "sentAt": "2026-04-08T11:24:24.457Z"
+    },
+    {
+      "id": "draft_013-makaro",
+      "to": "hallo@makaro.de",
+      "company": "Makaro",
+      "subject": "Kleine Idee zu Warenkorbabbrüchen bei Makaro",
+      "body": "Hi Hanna, hi Matthias,\n\nich habe mir Makaro angesehen — handgefertigter Gold- und Silberschmuck aus einer richtigen Goldschmiede, das ist ein klares Qualitätsmerkmal.\n\nGerade bei handgefertigtem Premierschmuck liegt der Kaufentscheidungsprozess oft bei mehreren Tagen — Käufer kommen, sind begeistert, legen in den Warenkorb und kehren ohne Nachfassung nicht zurück.\n\nIch helfe Shopify-Shops dabei, genau diese verlorenen Käufe mit einer kurzen Recovery-Sequenz pragmatisch zurückzuholen.\n\nFalls das bei euch noch nicht sauber aufgesetzt ist, kann ich euch kurz zeigen, wo ich bei Makaro die größten Chancen sehe.\n\n15 Minuten reichen — hättet ihr diese Woche kurz Zeit?\n\nViele Grüße\nNicholas\nAUREON",
+      "status": "sent",
+      "createdAt": "2026-04-05T11:00:00Z",
+      "approvedAt": "2026-04-08T11:24:28.655Z",
+      "sentAt": "2026-04-08T11:24:28.655Z"
+    },
+    {
+      "id": "draft_014-vivienfrank",
+      "to": "hello@vivienfrank.com",
+      "company": "Vivien Frank",
+      "subject": "Quick idea on abandoned carts — Vivien Frank",
+      "body": "Hi Simona,\n\nI came across Vivien Frank — really beautiful collection, I love the story of how it started from making jewelry for friends and grew into its own brand.\n\nFor jewelry shops like yours, abandoned carts are one of the highest-leverage revenue gaps: a buyer discovers a piece, adds it to their basket, and never comes back without a nudge.\n\nI help Shopify stores recover those lost sales with a short, brand-matched follow-up sequence — usually without any complex systems.\n\nIf that's not fully in place at Vivien Frank yet, I'd love to show you where I see the biggest opportunities.\n\n15 minutes is all it takes — do you have a quick slot this week?\n\nBest,\nNicholas\nAUREON",
+      "status": "sent",
+      "createdAt": "2026-04-05T11:15:00Z",
+      "approvedAt": "2026-04-08T11:24:33.070Z",
+      "sentAt": "2026-04-08T11:24:33.070Z"
+    },
+    {
+      "id": "draft_015-fiveskincare",
+      "to": "hello@fiveskincare.com",
+      "company": "FIVE Skincare",
+      "subject": "Kleine Idee zu Warenkorbabbrüchen bei FIVE Skincare",
+      "body": "Hi Anna,\n\nich habe mir FIVE Skincare angesehen — sehr saubere Positionierung mit Science-Ansatz und klarem Fokus auf den deutschen Markt als größten Naturkosmetik-Markt Europas.\n\nGerade bei Skincare-Neukunden passiert es häufig: Produkt wird entdeckt, in den Warenkorb gelegt — und dann stoppt der Kauf, weil noch Fragen zum Produkt offen sind.\n\nIch helfe Shopify-Shops dabei, genau diese Abbrüche mit einer kurzen, informierten Recovery-Sequenz pragmatisch zurückzuholen.\n\nFalls das bei FIVE noch nicht sauber aufgesetzt ist, kann ich dir kurz zeigen, wo ich die größten Chancen sehe.\n\n15 Minuten reichen — hättest du diese Woche kurz Zeit?\n\nViele Grüße\nNicholas\nAUREON",
+      "status": "sent",
+      "createdAt": "2026-04-05T11:30:00Z",
+      "approvedAt": "2026-04-08T11:24:39.668Z",
+      "sentAt": "2026-04-08T11:24:39.668Z"
+    },
+    {
+      "id": "draft_016-klosterkitchen",
+      "to": "hallo@klosterkitchen.de",
+      "company": "Kloster Kitchen",
+      "subject": "Kleine Idee zu Warenkorbabbrüchen bei Kloster Kitchen",
+      "body": "Hallo,\n\nich habe mir Kloster Kitchen angesehen — starker DTC-Ansatz für funktionale Getränke und ein klares Konzept mit Abo-Option.\n\nGerade bei Functional-Beverage-Marken mit Subscription-Fokus passiert es häufig, dass Neukunden die erste Bestellung nicht abschließen — der Schritt zum Abonnement wirkt noch zu groß.\n\nIch helfe Shopify-Shops dabei, genau diese Erstkäufe mit einer kurzen Follow-up-Sequenz pragmatisch zurückzuholen.\n\nFalls das bei euch noch nicht sauber aufgesetzt ist, kann ich euch kurz zeigen, wo ich bei Kloster Kitchen die größten Chancen sehe.\n\n15 Minuten reichen — hättet ihr diese Woche kurz Zeit?\n\nViele Grüße\nNicholas\nAUREON",
+      "status": "sent",
+      "createdAt": "2026-04-05T11:45:00Z",
+      "approvedAt": "2026-04-08T11:24:51.225Z",
+      "sentAt": "2026-04-08T11:24:51.225Z"
+    },
+    {
+      "id": "draft_017-gitti",
+      "to": "hello@gitti.com",
+      "company": "gitti",
+      "subject": "Kleine Idee zu Warenkorbabbrüchen bei gitti",
+      "body": "Hi Gitti, hi Larissa,\n\nich habe mir gitti angesehen — wirklich konsequent nachhaltige Beauty-Marke mit starker Instagram-Community und einem klaren Markenstandpunkt.\n\nGerade bei Community-getriebenen Beauty-Brands wie eurer entscheidet die erste Sekunde des Entdeckens viel — viele Shopperinnen landen im Warenkorb, kehren dann aber nicht mehr zum Checkout zurück.\n\nIch helfe Shopify-Shops dabei, genau diese Käufe mit einer kurzen, markengerechten Recovery-Sequenz zurückzuholen.\n\nFalls das bei gitti noch nicht sauber aufgesetzt ist, kann ich euch kurz zeigen, wo ich die größten Chancen sehe.\n\n15 Minuten reichen — hättet ihr diese Woche kurz Zeit?\n\nViele Grüße\nNicholas\nAUREON",
+      "status": "sent",
+      "createdAt": "2026-04-05T12:00:00Z",
+      "approvedAt": "2026-04-08T11:25:07.192Z",
+      "sentAt": "2026-04-08T11:25:07.192Z"
+    },
+    {
+      "id": "draft_018-erlichtextil",
+      "to": "hallo@erlich-textil.de",
+      "company": "Erlich Textil",
+      "subject": "Kleine Idee zu Warenkorbabbrüchen bei Erlich Textil",
+      "body": "Hi Artur,\n\nich habe mir Erlich Textil angesehen — klar positioniertes nachhaltiges Basics-Label mit echter Überzeugung hinter den Produkten.\n\nGerade bei nachhaltigen Basics vergleichen Käufer oft mehrere Marken gleichzeitig — viele legen in den Warenkorb, kaufen aber dann woanders, wenn es kein Follow-up gibt.\n\nIch helfe Shopify-Shops dabei, genau diese Abbrüche mit einer kurzen Recovery-Sequenz pragmatisch zurückzuholen.\n\nFalls das bei Erlich Textil noch nicht sauber aufgesetzt ist, kann ich dir kurz zeigen, wo ich die größten Chancen sehe.\n\n15 Minuten reichen — hättest du diese Woche kurz Zeit?\n\nViele Grüße\nNicholas\nAUREON",
+      "status": "sent",
+      "createdAt": "2026-04-05T12:15:00Z",
+      "approvedAt": "2026-04-08T11:25:15.999Z",
+      "sentAt": "2026-04-08T11:25:15.999Z"
+    },
+    {
+      "id": "draft_019-drvivienkart",
+      "to": "kontakt@drvivienkart.de",
+      "company": "DR. VIVIEN KARL",
+      "subject": "Kleine Idee zu Warenkorbabbrüchen bei DR. VIVIEN KARL",
+      "body": "Hallo Dr. Karl,\n\nich habe mir DR. VIVIEN KARL angesehen — sehr durchdachter, medizinisch-fundierter Skincare-Ansatz mit einer Positionierung, die echtes Vertrauen aufbaut.\n\nGerade bei Premium-Skincare mit medizinischer Komponente zögern Erstkäufer oft beim Checkout — sie müssen erst Vertrauen in das Produkt aufbauen, das ein Standard-Warenkorb allein nicht leisten kann.\n\nIch helfe Shopify-Shops dabei, genau diese Käufe mit einer kurzen, vertrauensbildenden Recovery-Sequenz zurückzuholen.\n\nFalls das bei euch noch nicht sauber aufgesetzt ist, würde ich gerne kurz zeigen, wo ich die größten Chancen bei DR. VIVIEN KARL sehe.\n\n15 Minuten reichen — hättest du diese Woche kurz Zeit?\n\nViele Grüße\nNicholas\nAUREON",
+      "status": "sent",
+      "createdAt": "2026-04-05T12:30:00Z",
+      "approvedAt": "2026-04-08T11:25:21.513Z",
+      "sentAt": "2026-04-08T11:25:21.513Z"
+    },
+    {
+      "id": "draft_020-rascals",
+      "to": "hallo@rascals.de",
+      "company": "Rascals",
+      "subject": "Kleine Idee zu Warenkorbabbrüchen bei Rascals",
+      "body": "Hallo,\n\nich habe mir Rascals angesehen — liebevoll gestaltete Produkte für Familien mit einer klaren Positionierung in einem Markt, in dem Eltern sehr genau überlegen, bevor sie kaufen.\n\nGerade Eltern shoppen oft unter Zeitdruck — sie entdecken ein Produkt, legen es in den Warenkorb, werden von den Kindern abgelenkt und kehren nicht mehr zurück.\n\nIch helfe Shopify-Shops dabei, genau diese abgebrochenen Käufe mit einer kurzen Recovery-Sequenz zurückzuholen.\n\nFalls das bei Rascals noch nicht sauber aufgesetzt ist, kann ich euch kurz zeigen, wo ich die größten Chancen sehe.\n\n15 Minuten reichen — hättet ihr diese Woche kurz Zeit?\n\nViele Grüße\nNicholas\nAUREON",
+      "status": "sent",
+      "createdAt": "2026-04-05T12:45:00Z",
+      "approvedAt": "2026-04-08T11:25:28.799Z",
+      "sentAt": "2026-04-08T11:25:28.799Z"
+    },
+    {
+      "id": "draft_021-pinqponq",
+      "to": "hello@pinqponq.com",
+      "company": "pinqponq",
+      "subject": "Kleine Idee zu Warenkorbabbrüchen bei pinqponq",
+      "body": "Hallo,\n\nich habe mir pinqponq angesehen — sehr klare, nachhaltige Positionierung für Taschen und Rucksäcke mit einem starken DTC-Modell aus Köln.\n\nGerade bei höherpreisigen nachhaltigen Produkten im €80–150-Bereich zögern Käufer beim Checkout häufig — sie wollen noch mal nachdenken, und ohne Follow-up passiert das nicht mehr.\n\nIch helfe Shopify-Shops dabei, genau diese abgebrochenen Käufe mit einer kurzen Recovery-Sequenz pragmatisch zurückzuholen.\n\nFalls das bei euch noch nicht sauber aufgesetzt ist, kann ich euch kurz zeigen, wo ich die größten Chancen bei pinqponq sehe.\n\n15 Minuten reichen — hättet ihr diese Woche kurz Zeit?\n\nViele Grüße\nNicholas\nAUREON",
+      "status": "sent",
+      "createdAt": "2026-04-05T13:00:00Z",
+      "approvedAt": "2026-04-08T11:25:35.044Z",
+      "sentAt": "2026-04-08T11:25:35.044Z"
+    },
+    {
+      "id": "draft_022-myyo",
+      "to": "hallo@myyo.de",
+      "company": "My Yo",
+      "subject": "Kleine Idee zu Warenkorbabbrüchen bei My Yo",
+      "body": "Hallo,\n\nich habe mir My Yo angesehen — junges Berliner Startup mit einem sehr klaren Nischenprodukt, das echte Begeisterung braucht, um den ersten Kauf auszulösen.\n\nGerade bei neuen Food-Konzepten wie euren passiert es häufig, dass Neukunden zögern — sie wollen das Produkt probieren, verlassen aber den Warenkorb beim letzten Schritt.\n\nIch helfe Shopify-Shops dabei, genau diese abgebrochenen Käufe mit einer kurzen Recovery-Sequenz pragmatisch zurückzuholen.\n\nFalls das bei euch noch nicht sauber aufgesetzt ist, kann ich euch kurz zeigen, was bei My Yo die größten Chancen wären.\n\n15 Minuten reichen — hättet ihr diese Woche kurz Zeit?\n\nViele Grüße\nNicholas\nAUREON",
+      "status": "sent",
+      "createdAt": "2026-04-05T13:15:00Z",
+      "approvedAt": "2026-04-08T11:25:43.249Z",
+      "sentAt": "2026-04-08T11:25:43.249Z"
+    },
+    {
+      "id": "draft_023-horst",
+      "to": "hallo@horstlifestyle.de",
+      "company": "HORST",
+      "subject": "Kleine Idee zu Warenkorbabbrüchen bei HORST",
+      "body": "Hallo,\n\nich habe mir HORST Lifestyle angesehen — klare Positionierung als kleines, authentisches Lifestyle-Label mit eigenem Stil.\n\nGerade bei Lifestyle-Marken im Aufbau ist Cart-Recovery oft eines der einfachsten Hebel, um Umsatz zu steigern, ohne in mehr Traffic zu investieren.\n\nIch helfe Shopify-Shops dabei, diesen Hebel pragmatisch aufzusetzen — in der Regel sehen Shops innerhalb von 30 Tagen erste messbare Ergebnisse.\n\nFalls das bei euch noch nicht sauber aufgesetzt ist, kann ich euch kurz zeigen, wo ich die größten Chancen bei HORST sehe.\n\n15 Minuten reichen — hättet ihr diese Woche kurz Zeit?\n\nViele Grüße\nNicholas\nAUREON",
+      "status": "sent",
+      "createdAt": "2026-04-05T13:30:00Z",
+      "approvedAt": "2026-04-08T11:25:51.852Z",
+      "sentAt": "2026-04-08T11:25:51.852Z"
+    },
+    {
+      "id": "draft_024-bearswithbenefits",
+      "to": "info@bearswithbenefits.de",
+      "company": "Bears with Benefits",
+      "subject": "Kleine Idee zu Warenkorbabbrüchen bei Bears with Benefits",
+      "body": "Hallo,\n\nich habe mir Bears with Benefits angesehen — very clever Markenpräsentation für Nahrungsergänzung im Gummibären-Format, mit klarer DTC-Strecke.\n\nGerade bei Nahrungsergänzungsmitteln zögern Erstkäufer oft beim Checkout — sie wollen die Inhaltsstoffe noch mal prüfen, und ohne Follow-up passiert der Kauf dann woanders.\n\nIch helfe Shopify-Shops dabei, genau diese Abbrüche mit einer kurzen Recovery-Sequenz pragmatisch zurückzuholen.\n\nFalls das bei euch noch nicht sauber aufgesetzt ist, kann ich euch kurz zeigen, was bei Bears with Benefits die größten Chancen wären.\n\n15 Minuten reichen — hättet ihr diese Woche kurz Zeit?\n\nViele Grüße\nNicholas\nAUREON",
+      "status": "sent",
+      "createdAt": "2026-04-05T13:45:00Z",
+      "approvedAt": "2026-04-08T11:26:00.386Z",
+      "sentAt": "2026-04-08T11:26:00.386Z"
+    },
+    {
+      "id": "draft_025-kaalee",
+      "to": "hallo@kaalee-jewelry.com",
+      "company": "KAALEE",
+      "subject": "Kleine Idee zu Warenkorbabbrüchen bei KAALEE",
+      "body": "Hallo,\n\nich habe mir KAALEE angesehen — sehr originelles Konzept: Schmuck aus Textilabresten, handgefertigt nach traditionellem Goldschmiedehandwerk in Pforzheim. Das ist eine echte Geschichte, die steckt hinter den Produkten.\n\nGerade bei Schmuck mit so einer ungewöhnlichen Entstehungsgeschichte passiert es häufig, dass Käufer erst entdecken, begeistert sind, aber beim Checkout noch mal pausieren — sie wollen das noch mal Freunden zeigen oder \"morgen nochmal schauen\".\n\nIch helfe Shopify-Shops dabei, genau diese Abbrüche mit einer kurzen, markengerechten Recovery-Sequenz zurückzuholen.\n\nFalls das bei euch noch nicht sauber aufgesetzt ist, kann ich euch kurz zeigen, was bei KAALEE die größten Chancen wären.\n\n15 Minuten reichen — hättet ihr diese Woche kurz Zeit?\n\nViele Grüße\nNicholas\nAUREON",
+      "status": "sent",
+      "createdAt": "2026-04-05T14:00:00Z",
+      "approvedAt": "2026-04-08T11:26:08.502Z",
+      "sentAt": "2026-04-08T11:26:08.502Z"
+    },
+    {
+      "id": "draft_026-madamekukla",
+      "to": "office@madamekukla.at",
+      "company": "Madame Kukla",
+      "subject": "Kleine Idee zu Warenkorbabbrüchen bei Madame Kukla",
+      "body": "Hallo,\n\nich habe mir Madame Kukla angesehen — sehr cleveres Wickelkleid-Konzept mit variabler Tragbarkeit, das genau das richtige Argument für Käuferinnen ist, die sich für Mode nicht zu viel Zeit nehmen wollen.\n\nGerade bei Kleidung mit viel Entscheidungsfreiheit (wie euren variablen Kleidern) zögern Käuferinnen oft kurz vor dem Checkout — sie wollen es sich noch einmal überlegen.\n\nIch helfe Shopify-Shops dabei, genau diese Abbrüche mit einer kurzen Recovery-Sequenz pragmatisch zurückzuholen.\n\nFalls das bei euch noch nicht sauber aufgesetzt ist, kann ich euch kurz zeigen, wo ich die größten Chancen bei Madame Kukla sehe.\n\n15 Minuten reichen — hättet ihr diese Woche kurz Zeit?\n\nViele Grüße\nNicholas\nAUREON",
+      "status": "sent",
+      "createdAt": "2026-04-05T14:15:00Z",
+      "approvedAt": "2026-04-08T11:26:14.982Z",
+      "sentAt": "2026-04-08T11:26:14.982Z"
+    },
+    {
+      "id": "draft_027-greenforce",
+      "to": "hallo@greenforce.eu",
+      "company": "GREENFORCE",
+      "subject": "Kleine Idee zu Warenkorbabbrüchen bei GREENFORCE",
+      "body": "Hallo,\n\nich habe mir GREENFORCE angesehen — sehr klare DTC-Positionierung für pflanzliche Lebensmittel mit echter Überzeugung hinter dem Sortiment.\n\nGerade bei Plant-Based-DTC-Brands zögern Neukunden häufig beim ersten Kauf — sie wollen erst einen Test machen, verlassen aber den Warenkorb ohne den finalen Push.\n\nIch helfe Shopify-Shops dabei, genau diese Erstkäufe mit einer kurzen Recovery-Sequenz pragmatisch zurückzuholen.\n\nFalls das bei euch noch nicht sauber aufgesetzt ist, kann ich euch kurz zeigen, wo ich bei GREENFORCE die größten Chancen sehe.\n\n15 Minuten reichen — hättet ihr diese Woche kurz Zeit?\n\nViele Grüße\nNicholas\nAUREON",
+      "status": "sent",
+      "createdAt": "2026-04-05T14:30:00Z",
+      "approvedAt": "2026-04-08T11:26:26.779Z",
+      "sentAt": "2026-04-08T11:26:26.779Z"
+    },
+    {
+      "id": "draft_028-kaala",
+      "to": "hallo@kaala.de",
+      "company": "kaala",
+      "subject": "Kleine Idee zu Warenkorbabbrüchen bei kaala",
+      "body": "Hi Regina, hi Carolin,\n\nich habe mir kaala angesehen — sehr stimmige Welt für Yoga und Achtsamkeit, mit einem klaren Produktansatz für die Community.\n\nGerade bei Yoga-Accessoires ist die Kaufentscheidung oft durchdacht — Käuferinnen legen Produkte in den Warenkorb, wollen dann aber noch mal nachdenken, und kehren ohne Nudge nicht zurück.\n\nIch helfe Shopify-Shops dabei, genau diese Abbrüche mit einer kurzen, ruhigen und markengerechten Recovery-Sequenz zurückzuholen.\n\nFalls das bei euch noch nicht sauber aufgesetzt ist, kann ich euch kurz zeigen, was bei kaala die größten Chancen wären.\n\n15 Minuten reichen — hättet ihr diese Woche kurz Zeit?\n\nViele Grüße\nNicholas\nAUREON",
+      "status": "sent",
+      "createdAt": "2026-04-05T14:45:00Z",
+      "approvedAt": "2026-04-08T11:26:36.792Z",
+      "sentAt": "2026-04-08T11:26:36.792Z"
+    },
+    {
+      "id": "draft_029-teveo",
+      "to": "hallo@teveo.de",
+      "company": "TEVEO",
+      "subject": "Kleine Idee zu Warenkorbabbrüchen bei TEVEO",
+      "body": "Hallo,\n\nich habe mir TEVEO angesehen — funktionale Sportswear mit klarem DTC-Ansatz und einer gut aufgebauten Shopify-Präsenz.\n\nGerade bei Sportswear legen Käufer Größen in den Warenkorb, sind sich bei der Passform nicht ganz sicher und verlassen den Checkout noch einmal — ohne Follow-up geht dieser Kauf verloren.\n\nIch helfe Shopify-Shops dabei, genau diese Abbrüche mit einer kurzen Recovery-Sequenz pragmatisch zurückzuholen.\n\nFalls das bei euch noch nicht sauber aufgesetzt ist, kann ich euch kurz zeigen, wo ich die größten Chancen bei TEVEO sehe.\n\n15 Minuten reichen — hättet ihr diese Woche kurz Zeit?\n\nViele Grüße\nNicholas\nAUREON",
+      "status": "sent",
+      "createdAt": "2026-04-05T15:00:00Z",
+      "approvedAt": "2026-04-08T11:26:32.802Z",
+      "sentAt": "2026-04-08T11:26:32.802Z"
+    },
+    {
+      "id": "draft_030-beausoleil",
+      "to": "hallo@beausoleil.de",
+      "company": "Beau Soleil",
+      "subject": "Kleine Idee zu Warenkorbabbrüchen bei Beau Soleil",
+      "body": "Hallo,\n\nich habe mir Beau Soleil angesehen — sehr schöner Schmuck mit einer klaren Ästhetik und einem DTC-Auftritt über Shopify.\n\nGerade bei Schmuckmarken mit Entdeckungspotenzial über Social und Google passiert es häufig: Käufer sind begeistert, legen in den Warenkorb — und kaufen dann später vielleicht woanders, wenn es kein Follow-up gibt.\n\nIch helfe kleinen Shopify-Shops dabei, genau diese Käufe mit einer kurzen, markengerechten Recovery-Sequenz zurückzuholen.\n\nFalls das bei euch noch nicht sauber aufgesetzt ist, kann ich euch kurz zeigen, was bei Beau Soleil die größten Chancen wären.\n\n15 Minuten reichen — hättet ihr diese Woche kurz Zeit?\n\nViele Grüße\nNicholas\nAUREON",
+      "status": "sent",
+      "createdAt": "2026-04-05T15:15:00Z",
+      "approvedAt": "2026-04-08T11:26:41.195Z",
+      "sentAt": "2026-04-08T11:26:41.195Z"
+    }
+  ],
   "currentFocus": {
     "hephaestus": "# HEPHAESTUS — Current Focus\n\n**Last updated:** 2026-03-22\n\n---\n\n## Active Focus\n\n**Phase 3 — Department structure and engineering visibility**\n\nHEPHAESTUS is being established as a functional department. The immediate work is structural — getting visibility in place before any product implementation begins.\n\n---\n\n## Current State\n\n| Area | Status | Notes |\n|------|--------|-------|\n| Department files | ✅ Populated | This session |\n| VORTEX canonical location | ✅ Established | `03_PROJECTS/VORTE",
     "xenon": "# XENON — Current Focus\n\n**Last updated:** 2026-03-22\n\n---\n\n## Active Focus\n\n**Phase 4 — Department structure established**\n\nXENON is structurally in place. No campaigns are running yet. First campaign definition is the immediate next step once Nicholas decides on channel and format.\n\n---\n\n## Current State\n\n| Area | Status | Notes |\n|------|--------|-------|\n| Department structure | ✅ Complete | This session |\n| First campaign defined | 🔴 Not started | Awaiting direction |\n| Channel accounts | "
   },
-  "agents": []
+  "agents": [
+    {
+      "id": "46380603-f859-4ed3-adbb-7d82fd2a061c",
+      "name": "Nova 👩🏼‍💼",
+      "role": "ceo",
+      "title": "AI Cofounder / Operator",
+      "tier": "executive",
+      "status": "idle",
+      "adapterType": "openclaw_gateway",
+      "lastHeartbeatAt": "2026-04-08T12:26:29.617Z",
+      "assignments": [],
+      "capabilities": "Company operator, system architect, execution driver, clarity enforcer. Owns strategy, prioritization, routing, anti-chaos discipline, and final decisions across NovaAI. Optimizes for clean execution,",
+      "urlKey": "nova"
+    },
+    {
+      "id": "95dbd07e-d5a4-4a44-ab6f-43e5c8ca841c",
+      "name": "ATLAS",
+      "role": "engineer",
+      "title": "NEXUS Engineer",
+      "tier": "engineering",
+      "status": "running",
+      "adapterType": "claude_local",
+      "lastHeartbeatAt": "2026-04-08T11:18:25.060Z",
+      "assignments": [],
+      "capabilities": "Frontend implementation, React components, UI/UX, product logic, App Store readiness, truth layer sync, and issue execution with strict scope control.",
+      "urlKey": "atlas"
+    },
+    {
+      "id": "8d3a298e-e920-47cc-8d6c-eedca2a54304",
+      "name": "MERCURY",
+      "role": "cmo",
+      "title": "AUREON Revenue Operator",
+      "tier": "revenue",
+      "status": "idle",
+      "adapterType": "claude_local",
+      "lastHeartbeatAt": "2026-04-08T10:13:07.310Z",
+      "assignments": [],
+      "capabilities": "Lead research, inbox organization, outreach draft preparation, reply draft preparation, opportunity escalation, and supervised revenue operations for AUREON.",
+      "urlKey": "mercury"
+    },
+    {
+      "id": "e6b72bb7-7273-43b5-be63-77ce0a0ee305",
+      "name": "FORGE",
+      "role": "engineer",
+      "title": "VORTEX Engineer",
+      "tier": "engineering",
+      "status": "idle",
+      "adapterType": "claude_local",
+      "lastHeartbeatAt": "2026-04-08T11:18:25.003Z",
+      "assignments": [],
+      "capabilities": "VORTEX backend implementation, trading logic, APIs, tests, observability, signal diagnostics, and issue execution with strict scope control.",
+      "urlKey": "forge"
+    },
+    {
+      "id": "e7b9be61-8303-4a5e-813b-4a24b9d0e74d",
+      "name": "LUNA",
+      "role": "engineer",
+      "title": "PAWLY Engineer",
+      "tier": "engineering",
+      "status": "idle",
+      "adapterType": "claude_local",
+      "lastHeartbeatAt": "2026-04-08T10:09:34.874Z",
+      "assignments": [],
+      "capabilities": "Mobile app development, React Native, Apple Watch integration, habit formation UX, walk tracking, route intelligence, subscription systems, and issue execution with strict scope control.",
+      "urlKey": "luna"
+    },
+    {
+      "id": "30b06903-ead5-4742-ae02-090394c6c4e4",
+      "name": "Nicholas",
+      "role": "ceo",
+      "title": "Founder / Principal",
+      "tier": "executive",
+      "status": "idle",
+      "adapterType": "process",
+      "lastHeartbeatAt": null,
+      "assignments": [],
+      "capabilities": "Company owner, principal decision-maker, final approver, and board-level direction.",
+      "urlKey": "nicholas",
+      "isHuman": true
+    }
+  ]
 }
