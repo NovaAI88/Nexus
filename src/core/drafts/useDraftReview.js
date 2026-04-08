@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
+import { approveDraft as apiApprove, rejectDraft as apiReject } from './sendServiceClient';
 
 // Draft status lifecycle
 export const DRAFT_STATUSES = {
@@ -190,7 +191,8 @@ AUREON`;
   }
 }
 
-// Build structured draft objects from pipeline leads
+// Build structured draft objects from pipeline leads (fallback when the
+// real queue.json is not available — generates template content on the fly).
 export function buildDrafts(leads, storedStatuses) {
   return leads
     .filter((l) => l.draft === '✅' || (l.status && l.status.toLowerCase().includes('draft')))
@@ -216,14 +218,73 @@ export function buildDrafts(leads, storedStatuses) {
     });
 }
 
-export function useDraftReview(leads) {
+// Map the canonical queue.json status values onto the NEXUS UI status enum.
+function mapQueueStatus(queueStatus) {
+  switch ((queueStatus || '').toLowerCase()) {
+    case 'approved': return DRAFT_STATUSES.APPROVED;
+    case 'rejected': return DRAFT_STATUSES.REJECTED;
+    case 'sent':     return DRAFT_STATUSES.APPROVED;
+    case 'held':     return DRAFT_STATUSES.ARCHIVED;
+    case 'discarded':return DRAFT_STATUSES.REJECTED;
+    case 'pending':
+    default:         return DRAFT_STATUSES.AWAITING_REVIEW;
+  }
+}
+
+// Cross-reference each real draft with a pipeline lead (for score/founder)
+// so the UI can show the same rich metadata it shows for template drafts.
+function findLeadForDraft(draft, leads) {
+  if (!draft || !leads?.length) return null;
+  const co = (draft.company || '').toLowerCase().trim();
+  if (!co) return null;
+  return leads.find((l) => (l.company || '').toLowerCase().trim() === co) || null;
+}
+
+// Build draft objects from the real AUREON queue.json — preferred path.
+export function buildRealDrafts(realDrafts, leads, storedStatuses) {
+  return realDrafts.map((d) => {
+    const storedStatus = storedStatuses[d.id];
+    const queueStatus = mapQueueStatus(d.status);
+    const lead = findLeadForDraft(d, leads);
+    const founder = lead?.founder || '';
+    return {
+      id: d.id,
+      leadId: lead?._ || null,
+      company: d.company || lead?.company || '(unknown)',
+      founder,
+      to: d.to || '',                                                  // raw email, used by mailto:
+      recipient: founder ? `${founder} — ${d.company}` : d.company,    // display label
+      channel: 'Email',
+      subject: d.subject,
+      body: d.body,
+      score: lead?.score || null,
+      notes: lead?.notes || '',
+      rawStatus: d.status,
+      sourceStatus: d.status, // raw queue.json status, for the send pipeline
+      sentAt: d.sentAt || null,
+      // localStorage overrides queue.json only when user has taken action
+      // that hasn't been persisted to the file yet.
+      draftStatus: storedStatus || queueStatus,
+    };
+  });
+}
+
+export function useDraftReview(leads, realDrafts) {
   const [storedStatuses, setStoredStatuses] = useState(() => loadStoredStatuses());
   const [selectedDraftId, setSelectedDraftId] = useState(null);
   const [activeFilter, setActiveFilter] = useState('awaiting_review');
   const [editingNoteId, setEditingNoteId] = useState(null);
   const [notes, setNotes] = useState({});
+  // In-flight tracking + last error (per draft) for the send-service calls
+  const [pendingIds, setPendingIds] = useState(() => new Set());
+  const [lastError, setLastError] = useState(null); // { draftId, action, error, detail, hint }
 
-  const drafts = useMemo(() => buildDrafts(leads, storedStatuses), [leads, storedStatuses]);
+  const drafts = useMemo(() => {
+    if (Array.isArray(realDrafts) && realDrafts.length > 0) {
+      return buildRealDrafts(realDrafts, leads, storedStatuses);
+    }
+    return buildDrafts(leads, storedStatuses);
+  }, [leads, realDrafts, storedStatuses]);
 
   const updateStatus = useCallback((draftId, newStatus) => {
     setStoredStatuses((prev) => {
@@ -237,10 +298,68 @@ export function useDraftReview(leads) {
     }
   }, []);
 
-  const approve = useCallback((draftId) => updateStatus(draftId, DRAFT_STATUSES.APPROVED), [updateStatus]);
-  const reject = useCallback((draftId) => updateStatus(draftId, DRAFT_STATUSES.REJECTED), [updateStatus]);
+  // Approve: calls the send-service, which sends via Proton Bridge and
+  // writes the canonical status to queue.json. On success we mirror the
+  // status in localStorage so the UI updates immediately. On failure we
+  // keep the draft in "awaiting_review" and surface a clear error.
+  const approve = useCallback(async (draftId) => {
+    setLastError(null);
+    setPendingIds((prev) => new Set(prev).add(draftId));
+    try {
+      const result = await apiApprove(draftId);
+      if (!result.ok) {
+        setLastError({
+          draftId,
+          action: 'approve',
+          error: result.error,
+          detail: result.detail,
+          hint: result.hint,
+          status: result.status,
+        });
+        return result;
+      }
+      updateStatus(draftId, DRAFT_STATUSES.APPROVED);
+      return result;
+    } finally {
+      setPendingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(draftId);
+        return next;
+      });
+    }
+  }, [updateStatus]);
+
+  // Reject: updates queue.json via the backend (no email sent).
+  const reject = useCallback(async (draftId) => {
+    setLastError(null);
+    setPendingIds((prev) => new Set(prev).add(draftId));
+    try {
+      const result = await apiReject(draftId);
+      if (!result.ok) {
+        setLastError({
+          draftId,
+          action: 'reject',
+          error: result.error,
+          detail: result.detail,
+          hint: result.hint,
+          status: result.status,
+        });
+        return result;
+      }
+      updateStatus(draftId, DRAFT_STATUSES.REJECTED);
+      return result;
+    } finally {
+      setPendingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(draftId);
+        return next;
+      });
+    }
+  }, [updateStatus]);
+
   const archive = useCallback((draftId) => updateStatus(draftId, DRAFT_STATUSES.ARCHIVED), [updateStatus]);
   const returnToReview = useCallback((draftId) => updateStatus(draftId, DRAFT_STATUSES.AWAITING_REVIEW), [updateStatus]);
+  const dismissError = useCallback(() => setLastError(null), []);
 
   const saveNote = useCallback((draftId, noteText) => {
     setNotes((prev) => ({ ...prev, [draftId]: noteText }));
@@ -282,5 +401,8 @@ export function useDraftReview(leads) {
     setEditingNoteId,
     notes,
     saveNote,
+    pendingIds,
+    lastError,
+    dismissError,
   };
 }

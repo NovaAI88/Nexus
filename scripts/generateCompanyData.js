@@ -186,19 +186,39 @@ function parseCalendar(md) {
     }
   }
 
+  // Try explicit "Phase Deadlines" section with subsections first
   const phaseSection = sections['Phase Deadlines'] || '';
-  const subSections = extractSections(phaseSection, 3);
-  for (const [heading, content] of Object.entries(subSections)) {
-    const nameMatch = heading.match(/^([A-Z][A-Z0-9_]+)/);
-    if (!nameMatch) continue;
-    const name = nameMatch[1].toLowerCase();
+  if (phaseSection) {
+    const subSections = extractSections(phaseSection, 3);
+    for (const [heading, content] of Object.entries(subSections)) {
+      const nameMatch = heading.match(/^([A-Z][A-Z0-9_]+)/);
+      if (!nameMatch) continue;
+      const name = nameMatch[1].toLowerCase();
+      const rows = parseMarkdownTable(content);
+      if (rows.length > 0) {
+        phaseDeadlines[name] = rows.map((r) => ({
+          phase: cleanMarkdown(r.phase || ''),
+          start: cleanMarkdown(r.start || ''),
+          targetEnd: cleanMarkdown(r.target_end || r['target end'] || ''),
+          status: cleanMarkdown(r.status || ''),
+        })).filter((r) => r.phase);
+      }
+    }
+  }
+
+  // Also parse "Phase Status — PRODUCT" sections (alternate CALENDAR.md format)
+  for (const [heading, content] of Object.entries(sections)) {
+    const statusMatch = heading.match(/^Phase Status\s*[—–-]\s*([A-Z][A-Z0-9_]+)/);
+    if (!statusMatch) continue;
+    const name = statusMatch[1].toLowerCase();
+    if (phaseDeadlines[name]) continue; // explicit Phase Deadlines wins
     const rows = parseMarkdownTable(content);
     if (rows.length > 0) {
       phaseDeadlines[name] = rows.map((r) => ({
         phase: cleanMarkdown(r.phase || ''),
         start: cleanMarkdown(r.start || ''),
         targetEnd: cleanMarkdown(r.target_end || r['target end'] || ''),
-        status: cleanMarkdown(r.status || ''),
+        status: cleanMarkdown(r.status || r.name || ''),
       })).filter((r) => r.phase);
     }
   }
@@ -244,24 +264,61 @@ function parsePhaseTracker(md) {
   });
 }
 
+function parseMarkdownTables(text) {
+  // Parse multiple markdown tables from text, returning an array of table arrays
+  const lines = text.split('\n');
+  const tables = [];
+  let currentHeaders = null;
+  let currentRows = [];
+
+  for (const line of lines) {
+    if (!line.trim().startsWith('|')) {
+      if (currentHeaders && currentRows.length > 0) {
+        tables.push({ headers: currentHeaders, rows: currentRows });
+      }
+      currentHeaders = null;
+      currentRows = [];
+      continue;
+    }
+    // Skip separator rows
+    if (line.match(/^\|(?:\s*[:-]+\s*\|)+\s*$/)) continue;
+
+    const cells = line.split('|').map((c) => c.trim()).filter((_, i, arr) => i > 0 && i < arr.length);
+    if (!currentHeaders) {
+      currentHeaders = cells.map((h) => h.toLowerCase().replace(/[^a-z0-9]/g, '_'));
+    } else {
+      const row = {};
+      currentHeaders.forEach((h, i) => { row[h] = cells[i] || ''; });
+      currentRows.push(row);
+    }
+  }
+  if (currentHeaders && currentRows.length > 0) {
+    tables.push({ headers: currentHeaders, rows: currentRows });
+  }
+  return tables;
+}
+
 function parsePipeline(md) {
   if (!md) return [];
-  const table = parseMarkdownTable(md);
-  return table.filter((r) => {
-    const company = cleanMarkdown(r.company || '');
-    const marker = cleanMarkdown(r._ || '');
-    const score = cleanMarkdown(r.score || '');
-    // Must have a real company name
-    if (!company || company.length <= 2) return false;
-    // Skip legend/header rows — real leads have a numeric row number or a numeric score
-    const hasNumericIndex = /^\d+$/.test(marker.trim());
-    const hasNumericScore = /^\d+$/.test(score.trim());
-    if (!hasNumericIndex && !hasNumericScore) return false;
-    // Skip known junk strings
-    if (company === 'Current' || company === 'Meaning' || company === '---' || company === 'Reason') return false;
-    if (marker === 'Metric' || marker === '---' || marker === 'Company') return false;
-    return true;
-  });
+  // Parse all tables and collect rows from tables that have a "company" column
+  const tables = parseMarkdownTables(md);
+  const leads = [];
+  for (const table of tables) {
+    if (!table.headers.includes('company')) continue;
+    for (const r of table.rows) {
+      const company = cleanMarkdown(r.company || '');
+      const marker = cleanMarkdown(r._ || '');
+      const score = cleanMarkdown(r.score || '');
+      if (!company || company.length <= 2) continue;
+      const hasNumericIndex = /^\d+$/.test(marker.trim());
+      const hasNumericScore = /^\d+$/.test(score.trim());
+      if (!hasNumericIndex && !hasNumericScore) continue;
+      if (company === 'Current' || company === 'Meaning' || company === '---' || company === 'Reason') continue;
+      if (marker === 'Metric' || marker === '---' || marker === 'Company') continue;
+      leads.push(r);
+    }
+  }
+  return leads;
 }
 
 /** Assign each Paperclip role to a display tier for grouping in the Agents page. */
@@ -431,6 +488,42 @@ async function generate() {
   if (pipeline) {
     output.pipeline = parsePipeline(pipeline);
     console.log(`  - ${output.pipeline.length} pipeline entries`);
+  }
+
+  // AUREON drafts queue — the real personalized drafts MERCURY writes.
+  // This is the source of truth for outreach content; the pipeline.md parser
+  // only gives lead metadata, not the actual draft bodies.
+  const draftsQueueRaw = readFile('06_AUREON/drafts/queue.json');
+  if (draftsQueueRaw) {
+    try {
+      const parsedDrafts = JSON.parse(draftsQueueRaw);
+      if (Array.isArray(parsedDrafts)) {
+        output.aureonDrafts = parsedDrafts.map((d) => {
+          // Derive company name from the subject line. German subjects follow
+          // "... bei <Company>", English follow "... — <Company>".
+          const subj = d.subject || '';
+          let company = '';
+          const deMatch = subj.match(/\sbei\s+(.+?)\s*$/i);
+          const enMatch = subj.match(/[—-]\s*(.+?)\s*$/);
+          if (deMatch) company = deMatch[1].trim();
+          else if (enMatch) company = enMatch[1].trim();
+          return {
+            id: d.id,
+            to: d.to || '',
+            company,
+            subject: d.subject || '',
+            body: d.body || '',
+            status: d.status || 'pending',
+            createdAt: d.created_at || null,
+            approvedAt: d.approved_at || null,
+            sentAt: d.sent_at || null,
+          };
+        });
+        console.log(`  - ${output.aureonDrafts.length} AUREON drafts from queue.json`);
+      }
+    } catch (err) {
+      console.warn('  [drafts] Failed to parse queue.json:', err.message);
+    }
   }
 
   const nexusTasks = readFile('02_NEXUS/PRODUCT/03_TASKS.md');

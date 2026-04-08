@@ -476,6 +476,13 @@ function App() {
     } catch { return []; }
   }, []);
 
+  const generatedAureonDrafts = useMemo(() => {
+    try {
+      const gen = require('./data/companyData.generated.json');
+      return Array.isArray(gen?.aureonDrafts) ? gen.aureonDrafts : [];
+    } catch { return []; }
+  }, []);
+
   // N1: truth-layer data from generated JSON
   const companyIntelligence = useMemo(() => {
     try {
@@ -638,6 +645,7 @@ function App() {
                   aureonStats={aureonStats}
                   aureonPrimaryAction={aureonPrimaryAction}
                   generatedPipeline={generatedPipeline}
+                  generatedAureonDrafts={generatedAureonDrafts}
                 />
               } />
               <Route path="/company" element={

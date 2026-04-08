@@ -119,7 +119,7 @@ function DraftQueueItem({ draft, isSelected, onSelect }) {
   );
 }
 
-function DraftDetailPanel({ draft, onApprove, onReject, onArchive, onReturn, editingNoteId, setEditingNoteId, notes, onSaveNote }) {
+function DraftDetailPanel({ draft, onApprove, onReject, onArchive, onReturn, editingNoteId, setEditingNoteId, notes, onSaveNote, isPending }) {
   const [noteText, setNoteText] = useState(notes[draft.id] || '');
   const isEditing = editingNoteId === draft.id;
 
@@ -197,13 +197,25 @@ function DraftDetailPanel({ draft, onApprove, onReject, onArchive, onReturn, edi
       <div className="draft-review-actions">
         {draft.draftStatus === DRAFT_STATUSES.AWAITING_REVIEW || draft.draftStatus === DRAFT_STATUSES.GENERATED ? (
           <>
-            <button className="draft-action-btn draft-action-approve" onClick={() => onApprove(draft.id)}>
-              Approve
+            <button
+              className="draft-action-btn draft-action-approve"
+              disabled={isPending}
+              onClick={() => onApprove(draft.id)}
+            >
+              {isPending ? 'Sending…' : 'Approve & Send'}
             </button>
-            <button className="draft-action-btn draft-action-reject" onClick={() => onReject(draft.id)}>
+            <button
+              className="draft-action-btn draft-action-reject"
+              disabled={isPending}
+              onClick={() => onReject(draft.id)}
+            >
               Reject
             </button>
-            <button className="draft-action-btn draft-action-hold" onClick={() => onArchive(draft.id)}>
+            <button
+              className="draft-action-btn draft-action-hold"
+              disabled={isPending}
+              onClick={() => onArchive(draft.id)}
+            >
               Hold
             </button>
           </>
@@ -224,6 +236,26 @@ const FILTER_TABS = [
   { key: 'all', label: 'All' },
 ];
 
+function SendErrorBanner({ lastError, onDismiss }) {
+  if (!lastError) return null;
+  const headline =
+    lastError.error === 'service_unreachable'
+      ? 'Send service is not running'
+      : lastError.action === 'approve'
+        ? 'Failed to send email'
+        : 'Failed to reject draft';
+  return (
+    <div className="draft-error-banner" role="alert">
+      <div className="draft-error-banner-body">
+        <strong className="draft-error-banner-title">{headline}</strong>
+        {lastError.detail && <p className="draft-error-banner-detail">{lastError.detail}</p>}
+        {lastError.hint && <p className="draft-error-banner-hint">{lastError.hint}</p>}
+      </div>
+      <button className="draft-error-banner-dismiss" onClick={onDismiss}>Dismiss</button>
+    </div>
+  );
+}
+
 function DraftReviewSystem({ draftReview }) {
   const {
     filteredDrafts,
@@ -241,6 +273,9 @@ function DraftReviewSystem({ draftReview }) {
     setEditingNoteId,
     notes,
     saveNote,
+    pendingIds,
+    lastError,
+    dismissError,
   } = draftReview;
 
   if (counts.all === 0) {
@@ -253,6 +288,8 @@ function DraftReviewSystem({ draftReview }) {
 
   return (
     <div className="draft-review-system">
+      <SendErrorBanner lastError={lastError} onDismiss={dismissError} />
+
       {/* Filter tabs */}
       <div className="draft-filter-bar">
         {FILTER_TABS.map((tab) => {
@@ -300,6 +337,7 @@ function DraftReviewSystem({ draftReview }) {
             setEditingNoteId={setEditingNoteId}
             notes={notes}
             onSaveNote={saveNote}
+            isPending={pendingIds.has(selectedDraft.id)}
           />
         )}
       </div>
@@ -411,10 +449,11 @@ function RevenuePage({
   aureonStats,
   aureonPrimaryAction,
   generatedPipeline,
+  generatedAureonDrafts,
 }) {
   const leads = generatedPipeline?.length > 0 ? generatedPipeline : (pipelineEntries || []);
   const milestones = revenueMilestones || [];
-  const draftReview = useDraftReview(leads);
+  const draftReview = useDraftReview(leads, generatedAureonDrafts);
 
   const totalLeads = leads.length;
   const draftsReady = draftReview.counts.awaiting_review;
