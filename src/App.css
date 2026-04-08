@@ -7471,6 +7471,16 @@ body.light ::-webkit-scrollbar-thumb:hover {
 .stage-replied     { background: rgba(245, 158, 11, 0.12);  color: #fcd34d; }
 .stage-call-booked { background: rgba(111, 207, 151, 0.15); color: #6fcf97; }
 .stage-closed      { background: rgba(99, 102, 241, 0.15);  color: #c7d2fe; }
+.stage-bounced     { background: rgba(235, 87, 87, 0.12);   color: #fca5a5; }
+
+.aureon-bounce-note {
+  font-size: 11px;
+  color: #fca5a5;
+  background: rgba(235, 87, 87, 0.08);
+  border: 1px solid rgba(235, 87, 87, 0.15);
+  border-radius: var(--radius-4);
+  padding: var(--space-6) var(--space-10);
+}
 
 .aureon-empty {
   font-size: 12px;

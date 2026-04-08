@@ -283,8 +283,8 @@
     {
       "name": "AUREON",
       "phase": "A1 — First Revenue  Active",
-      "status": "MERCURY active on NOV-26 (lead research). Pipeline has 14 leads identified. 3 German drafts ready. 0 DMs sent. 0 calls booked. Execution is the bottleneck.",
-      "blockers": "None operational — execution pace is the only risk.",
+      "status": "Outreach execution is live. 06_AUREON/drafts/queue.json shows 30 approvals recorded, 30 sent attempts, 29 sent, 1 bounced, 0 held. Pipeline now reflects active outbound rather than draft staging. Revenue bottleneck has shifted from draft generation to reply handling and conversion.",
+      "blockers": "No outbound-start blocker. Current risks are bounce handling, reply follow-up speed, and converting first responses into calls.",
       "source": "current_state"
     }
   ],
@@ -670,8 +670,8 @@
   "nextActions": [
     {
       "priority": 1,
-      "title": "1. AUREON — Execute A1 First Revenue 🔴 (CRITICAL — 6 DAYS)",
-      "details": "**Owner:** Nicholas\n**Deadline:** €1,000 by April 14, 2026 — **6 days remaining** ⏰\n\n**Actions:**\n- [ ] Send first batch of MERCURY's 3 German drafts (manual approve + send)\n- [ ] Reach 30 total researched leads in pipeline\n- [ ] Send 20 personalized DMs total this week\n- [ ] Book 3–5 discovery call"
+      "title": "1. AUREON — Convert Outbound Into Replies and Calls 🔴 (CRITICAL — 6 DAYS)",
+      "details": "**Owner:** Nicholas\n**Deadline:** €1,000 by April 14, 2026 — **6 days remaining** ⏰\n\n**Actions:**\n- [ ] Confirm outbound totals in `queue.json` and `pipeline.md` are fully aligned\n- [ ] Handle the 1 bounced send immediately and recover the lead if possible\n- [ ] Monitor inbox for first replies from "
     },
     {
       "priority": 2,
@@ -889,7 +889,7 @@
       "status": "Phase 4 ✅"
     }
   ],
-  "lastGenerated": "2026-04-08T13:23:17.637Z",
+  "lastGenerated": "2026-04-08T13:37:30.633Z",
   "aureonDrafts": [
     {
       "id": "draft_001-navucko",
@@ -1235,7 +1235,7 @@
       "tier": "executive",
       "status": "idle",
       "adapterType": "openclaw_gateway",
-      "lastHeartbeatAt": "2026-04-08T12:26:29.617Z",
+      "lastHeartbeatAt": "2026-04-08T13:26:57.523Z",
       "assignments": [],
       "capabilities": "Company operator, system architect, execution driver, clarity enforcer. Owns strategy, prioritization, routing, anti-chaos discipline, and final decisions across NovaAI. Optimizes for clean execution,",
       "urlKey": "nova"
@@ -1248,8 +1248,16 @@
       "tier": "engineering",
       "status": "running",
       "adapterType": "claude_local",
-      "lastHeartbeatAt": "2026-04-08T11:18:25.060Z",
-      "assignments": [],
+      "lastHeartbeatAt": "2026-04-08T13:25:34.227Z",
+      "assignments": [
+        {
+          "id": "9fa60925-ef91-48a5-9dd6-3c3520561440",
+          "identifier": "NOV-25",
+          "title": "N4.6 — Agent Actions + AUREON Control Integration",
+          "status": "in_progress",
+          "priority": "high"
+        }
+      ],
       "capabilities": "Frontend implementation, React components, UI/UX, product logic, App Store readiness, truth layer sync, and issue execution with strict scope control.",
       "urlKey": "atlas"
     },

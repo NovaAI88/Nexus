@@ -365,6 +365,7 @@ const AUREON_STAGE_META = {
   'replied':     { label: 'Replied',     cls: 'stage-replied'     },
   'call-booked': { label: 'Call Booked', cls: 'stage-call-booked' },
   'closed':      { label: 'Closed',      cls: 'stage-closed'      },
+  'bounced':     { label: 'Bounced',     cls: 'stage-bounced'     },
 };
 
 function AureonStageBadge({ rawStatus }) {
@@ -393,11 +394,38 @@ function AureonKPIBar({ current, target, deadline }) {
   );
 }
 
-function AureonControlSurface({ leads }) {
-  const total       = leads.length;
-  const dmSent      = leads.filter((l) => ['dm-sent', 'replied', 'call-booked', 'closed'].includes(aureonStage(l.status))).length;
-  const callsBooked = leads.filter((l) => ['call-booked', 'closed'].includes(aureonStage(l.status))).length;
+function AureonControlSurface({ leads, aureonDrafts }) {
+  const drafts = aureonDrafts || [];
+  const hasDraftData = drafts.length > 0;
+
+  // Use aureonDrafts (queue.json) as truth for outreach metrics when available
+  const totalLeads  = hasDraftData ? drafts.length : leads.length;
+  const dmSent      = hasDraftData
+    ? drafts.filter((d) => d.status === 'sent').length
+    : leads.filter((l) => ['dm-sent', 'replied', 'call-booked', 'closed'].includes(aureonStage(l.status))).length;
+  const bounced     = hasDraftData ? drafts.filter((d) => d.status === 'bounced').length : 0;
+  const callsBooked = hasDraftData
+    ? drafts.filter((d) => d.status === 'call-booked' || d.status === 'closed').length
+    : leads.filter((l) => ['call-booked', 'closed'].includes(aureonStage(l.status))).length;
   const convRate    = dmSent > 0 ? ((callsBooked / dmSent) * 100).toFixed(0) : '—';
+
+  // Build the lead list from drafts (truthful) or fall back to pipeline
+  const displayLeads = hasDraftData
+    ? drafts.map((d) => ({
+        key: d.id,
+        company: d.company || d.to,
+        stage: d.status === 'sent' ? 'dm-sent'
+             : d.status === 'bounced' ? 'bounced'
+             : d.status === 'replied' ? 'replied'
+             : d.status === 'call-booked' ? 'call-booked'
+             : d.status === 'closed' ? 'closed'
+             : 'researched',
+      }))
+    : leads.map((l, i) => ({
+        key: l._ || i,
+        company: l.company,
+        stage: aureonStage(l.status),
+      }));
 
   return (
     <div className="aureon-control-surface">
@@ -405,7 +433,7 @@ function AureonControlSurface({ leads }) {
 
       <div className="aureon-summary-row">
         <div className="aureon-summary-cell">
-          <strong className="aureon-summary-value">{total}</strong>
+          <strong className="aureon-summary-value">{totalLeads}</strong>
           <span className="aureon-summary-label">Active Leads</span>
         </div>
         <div className="aureon-summary-cell">
@@ -422,12 +450,18 @@ function AureonControlSurface({ leads }) {
         </div>
       </div>
 
-      {leads.length > 0 ? (
+      {bounced > 0 && (
+        <div className="aureon-bounce-note">
+          {bounced} bounce{bounced > 1 ? 's' : ''} detected
+        </div>
+      )}
+
+      {displayLeads.length > 0 ? (
         <div className="aureon-lead-status-list">
-          {leads.map((lead, i) => (
-            <div key={lead._ || i} className="aureon-lead-status-row">
+          {displayLeads.map((lead) => (
+            <div key={lead.key} className="aureon-lead-status-row">
               <span className="aureon-lead-status-company">{lead.company}</span>
-              <AureonStageBadge rawStatus={lead.status} />
+              <AureonStageBadge rawStatus={lead.stage} />
             </div>
           ))}
         </div>
@@ -504,7 +538,7 @@ function RevenuePage({
         {/* AUREON Control Surface */}
         <div style={{ gridColumn: '1 / -1' }}>
           <SectionCard title="AUREON Pipeline Control" variant="primary">
-            <AureonControlSurface leads={leads} />
+            <AureonControlSurface leads={leads} aureonDrafts={generatedAureonDrafts} />
           </SectionCard>
         </div>
 
