@@ -261,30 +261,30 @@
   "departments": [
     {
       "name": "NEXUS",
-      "phase": "history: N1 → N2 → N3 → N4 → N4.1 → N4.2 → N4.3 → N4.4 → N4.5 → N5 → R1",
-      "status": "Brief approved 2026-04-05. ATLAS has NOT yet delivered. No new commits since 2026-04-06.",
-      "blockers": "None — ATLAS needs to start execution",
+      "phase": "",
+      "status": "active",
+      "blockers": "None",
       "source": "current_state"
     },
     {
       "name": "VORTEX",
-      "phase": "history:",
+      "phase": "",
       "status": "active",
-      "blockers": "None — FORGE switched to Claude Opus 4.6 (no longer rate limited)",
+      "blockers": "None",
       "source": "current_state"
     },
     {
       "name": "PAWLY",
       "phase": "",
       "status": "active",
-      "blockers": "Nicholas must create Supabase project + RevenueCat account before P1 backend wiring",
+      "blockers": "None",
       "source": "current_state"
     },
     {
       "name": "AUREON",
       "phase": "A1 — First Revenue  Active",
-      "status": "Outreach execution is live. 06_AUREON/drafts/queue.json shows 30 approvals recorded, 30 sent attempts, 29 sent, 1 bounced, 0 held. Pipeline now reflects active outbound rather than draft staging. Revenue bottleneck has shifted from draft generation to reply handling and conversion.",
-      "blockers": "No outbound-start blocker. Current risks are bounce handling, reply follow-up speed, and converting first responses into calls.",
+      "status": "active",
+      "blockers": "None",
       "source": "current_state"
     }
   ],
@@ -654,49 +654,45 @@
     "nexus": []
   },
   "blockers": [
-    "~~Paperclip offline~~ → Started, all 5 agents reachable",
-    "~~All 4 engineering agents in error state~~ → Cleared to idle via PATCH /api/agents/{id}",
-    "~~LUNA P0 delivery not recorded~~ → Formal review created in `05_shared/phases/`",
-    "~~Truth layer drift after multi-day session gap~~ → Full refresh complete",
-    "~~Nova SOUL.md / AGENTS.md / MERCURY AGENTS.md drift in Paperclip~~ → Synced to source files",
-    "~~FORGE rate limited (Codex)~~ → Switched FORGE to Claude Opus 4.6",
-    "~~MERCURY model overkill~~ → Right-sized to Claude Haiku 4.5",
-    "~~PAWLY agent assignment TBD~~ → LUNA assigned, P0 delivered same day",
-    "~~Nova identity fragmented across 3+ files~~ → Single canonical source with symlink",
-    "~~Truth layer frozen since April 1~~ → Reconstructed and refreshed",
-    "~~.DS_Store files tracked in git~~ → Gitignore fixed",
-    "~~Uncommitted NEXUS work~~ → Committed and pushed"
+    "~~Paperclip dies when launched from attached session~~ → LaunchAgent-backed persistent startup added",
+    "~~Paperclip load-failed due to backend dying~~ → durable launch path and Safari route corrected",
+    "~~Hardening direction unclear~~ → formal hardening plan created in `01_NOVA/SYSTEM_HARDENING_PLAN_2026-04-10.md`",
+    "Truth layer drift was previously refreshed, but reconciliation was not maintained",
+    "N4.6 approved after closeout rework",
+    "revenue in the next 7 days,",
+    "execution trust,",
+    "or phase truth,"
   ],
   "nextActions": [
     {
       "priority": 1,
-      "title": "1. AUREON — Convert Outbound Into Replies and Calls 🔴 (CRITICAL — 6 DAYS)",
-      "details": "**Owner:** Nicholas\n**Deadline:** €1,000 by April 14, 2026 — **6 days remaining** ⏰\n\n**Actions:**\n- [ ] Confirm outbound totals in `queue.json` and `pipeline.md` are fully aligned\n- [ ] Handle the 1 bounced send immediately and recover the lead if possible\n- [ ] Monitor inbox for first replies from "
+      "title": "0. Anthropic API Key — Unblock System Migration 🔴",
+      "details": "**Owner:** Nicholas\n**Why:** OpenClaw + all agents are reconfigured for Claude but cannot function until an API key is added\n\n**Actions:**\n- [ ] Go to console.anthropic.com and create an API key\n- [ ] Provide key to Nova to wire into OpenClaw auth profile\n- [ ] Verify Nova responds in OpenClaw Chat "
     },
     {
       "priority": 2,
-      "title": "2. NEXUS — Begin N4.6 Execution 🟡",
-      "details": "**Owner:** ATLAS (Nova will issue start signal)\n**Brief:** `05_shared/phases/2026-04-04_NEXUS_N4_6_BRIEF.md`\n\n**Actions:**\n- [ ] ATLAS reads brief and posts plan-of-attack to NOV-25\n- [ ] Track A: Agent Actions (Inspect, Review Output, Redirect) functional\n- [ ] Track B: AUREON Control Surface in NE"
+      "title": "1. Truth Layer Reconciliation 🔴",
+      "details": "**Owner:** Nova\n**Why:** execution cannot be trusted until the control layer matches repo and Paperclip reality\n\n**Actions:**\n- [ ] Rewrite stale `05_shared/` files from canonical reality\n- [ ] Correct AUREON outbound truth across tracker files\n- [ ] Correct NEXUS phase truth across tracker and queu"
     },
     {
       "priority": 3,
-      "title": "3. PAWLY — Provision External Services 🟡",
-      "details": "**Owner:** Nicholas\n**Why:** P1 cannot start until Supabase + RevenueCat exist\n\n**Actions:**\n- [ ] Create Supabase project (free tier OK for dev)\n- [ ] Run migration `001_initial_schema.sql` against new project\n- [ ] Get Supabase URL + anon key → write to `.env`\n- [ ] Create RevenueCat account\n- [ ]"
+      "title": "2. AUREON — Convert Outbound Into Replies and Calls 🔴",
+      "details": "**Owner:** Nicholas\n**Deadline:** €1,000 by April 14, 2026 — 4 days remaining\n\n**Actions:**\n- [ ] Recover the 1 bounced lead with corrected contact path if possible\n- [ ] Monitor inbox for first replies from the 29 successful sends\n- [ ] Draft fast reply responses for any live interest\n- [ ] Book 3–"
     },
     {
       "priority": 4,
-      "title": "4. VORTEX — V6 Alignment Session 🟢",
-      "details": "**Owner:** Nova + Nicholas\n**Why:** V6 is the bridge from paper trading to real money — biggest decision in VORTEX history\n\n**Actions:**\n- [ ] Nova prepares V6 alignment doc with two paths:\n   - Path A: \"Foundation rebuild + edge discovery\" (slow, scientific)\n   - Path B: \"Whale-copy-trading MVP\" (f"
+      "title": "3. VORTEX — Finish V6.0 Groundwork 🟡",
+      "details": "**Owner:** Nova / FORGE lane\n**Why:** V6.0 is the correct bridge step toward real trading without pretending live readiness\n\n**Actions:**\n- [ ] Finish V6.0 repo hygiene + scaffold work cleanly\n- [ ] Wire new interfaces into execution/ingestion paths where safe\n- [ ] Commit V6.0 delivery in VORTEX re"
     },
     {
       "priority": 5,
-      "title": "5. Paperclip — Durability Improvement 🟡",
-      "details": "**Owner:** Nova\n**Why:** Paperclip stops when terminal closes — daily friction\n\n**Actions:**\n- [ ] Investigate persistent launch options (LaunchAgent, screen, tmux)\n- [ ] Test durability across multiple session restarts\n- [ ] Document the chosen launch path in `07_PAPERCLIP/STARTUP.md`\n- [ ] Update "
+      "title": "4. NEXUS — Resolve N4.8 Closeout 🟡",
+      "details": "**Owner:** Nova / ATLAS\n\n**Actions:**\n- [ ] Reconcile N4.8 state in queue vs review files\n- [ ] Decide: clean closeout rework or deliberate defer\n- [ ] Require commit-backed delivery before any approval\n- [ ] Keep ATLAS stopped until the next bounded instruction is clear\n\n---"
     },
     {
       "priority": 6,
-      "title": "6. Truth Layer — Daily Discipline 🟢",
-      "details": "**Owner:** Nova\n\n**Actions:**\n- [ ] Run session-close protocol every session (no exceptions)\n- [ ] Maintain <24h freshness on all `05_shared/` files\n- [ ] Check freshness via `bash scripts/check_truth_layer.sh` at startup\n\n---\n\n## Decision Queue (waiting on Nicholas)\n\n| Decision | Why It Matters | N"
+      "title": "5. PAWLY — Provision External Services 🟡",
+      "details": "**Owner:** Nicholas\n\n**Actions:**\n- [ ] Create Supabase project\n- [ ] Run migration `001_initial_schema.sql`\n- [ ] Create RevenueCat account\n- [ ] Configure offerings\n- [ ] Confirm to Nova so P1 brief can be written\n\n---\n\n## Hardening Decisions Now in Effect\n\n| Decision | Meaning |\n|----------|-----"
     }
   ],
   "phaseTracker": [
@@ -889,7 +885,7 @@
       "status": "Phase 4 ✅"
     }
   ],
-  "lastGenerated": "2026-04-08T13:51:30.843Z",
+  "lastGenerated": "2026-04-10T09:54:24.313Z",
   "aureonDrafts": [
     {
       "id": "draft_001-navucko",
@@ -1226,93 +1222,5 @@
     "hephaestus": "# HEPHAESTUS — Current Focus\n\n**Last updated:** 2026-03-22\n\n---\n\n## Active Focus\n\n**Phase 3 — Department structure and engineering visibility**\n\nHEPHAESTUS is being established as a functional department. The immediate work is structural — getting visibility in place before any product implementation begins.\n\n---\n\n## Current State\n\n| Area | Status | Notes |\n|------|--------|-------|\n| Department files | ✅ Populated | This session |\n| VORTEX canonical location | ✅ Established | `03_PROJECTS/VORTE",
     "xenon": "# XENON — Current Focus\n\n**Last updated:** 2026-03-22\n\n---\n\n## Active Focus\n\n**Phase 4 — Department structure established**\n\nXENON is structurally in place. No campaigns are running yet. First campaign definition is the immediate next step once Nicholas decides on channel and format.\n\n---\n\n## Current State\n\n| Area | Status | Notes |\n|------|--------|-------|\n| Department structure | ✅ Complete | This session |\n| First campaign defined | 🔴 Not started | Awaiting direction |\n| Channel accounts | "
   },
-  "agents": [
-    {
-      "id": "46380603-f859-4ed3-adbb-7d82fd2a061c",
-      "name": "Nova 👩🏼‍💼",
-      "role": "ceo",
-      "title": "AI Cofounder / Operator",
-      "tier": "executive",
-      "status": "idle",
-      "adapterType": "openclaw_gateway",
-      "lastHeartbeatAt": "2026-04-08T13:26:57.523Z",
-      "assignments": [],
-      "capabilities": "Company operator, system architect, execution driver, clarity enforcer. Owns strategy, prioritization, routing, anti-chaos discipline, and final decisions across NovaAI. Optimizes for clean execution,",
-      "urlKey": "nova"
-    },
-    {
-      "id": "95dbd07e-d5a4-4a44-ab6f-43e5c8ca841c",
-      "name": "ATLAS",
-      "role": "engineer",
-      "title": "NEXUS Engineer",
-      "tier": "engineering",
-      "status": "running",
-      "adapterType": "claude_local",
-      "lastHeartbeatAt": "2026-04-08T13:50:20.427Z",
-      "assignments": [
-        {
-          "id": "9fa60925-ef91-48a5-9dd6-3c3520561440",
-          "identifier": "NOV-25",
-          "title": "N4.6 — Agent Actions + AUREON Control Integration",
-          "status": "in_progress",
-          "priority": "high"
-        }
-      ],
-      "capabilities": "Frontend implementation, React components, UI/UX, product logic, App Store readiness, truth layer sync, and issue execution with strict scope control.",
-      "urlKey": "atlas"
-    },
-    {
-      "id": "8d3a298e-e920-47cc-8d6c-eedca2a54304",
-      "name": "MERCURY",
-      "role": "cmo",
-      "title": "AUREON Revenue Operator",
-      "tier": "revenue",
-      "status": "idle",
-      "adapterType": "claude_local",
-      "lastHeartbeatAt": "2026-04-08T10:13:07.310Z",
-      "assignments": [],
-      "capabilities": "Lead research, inbox organization, outreach draft preparation, reply draft preparation, opportunity escalation, and supervised revenue operations for AUREON.",
-      "urlKey": "mercury"
-    },
-    {
-      "id": "e6b72bb7-7273-43b5-be63-77ce0a0ee305",
-      "name": "FORGE",
-      "role": "engineer",
-      "title": "VORTEX Engineer",
-      "tier": "engineering",
-      "status": "idle",
-      "adapterType": "claude_local",
-      "lastHeartbeatAt": "2026-04-08T11:18:25.003Z",
-      "assignments": [],
-      "capabilities": "VORTEX backend implementation, trading logic, APIs, tests, observability, signal diagnostics, and issue execution with strict scope control.",
-      "urlKey": "forge"
-    },
-    {
-      "id": "e7b9be61-8303-4a5e-813b-4a24b9d0e74d",
-      "name": "LUNA",
-      "role": "engineer",
-      "title": "PAWLY Engineer",
-      "tier": "engineering",
-      "status": "idle",
-      "adapterType": "claude_local",
-      "lastHeartbeatAt": "2026-04-08T10:09:34.874Z",
-      "assignments": [],
-      "capabilities": "Mobile app development, React Native, Apple Watch integration, habit formation UX, walk tracking, route intelligence, subscription systems, and issue execution with strict scope control.",
-      "urlKey": "luna"
-    },
-    {
-      "id": "30b06903-ead5-4742-ae02-090394c6c4e4",
-      "name": "Nicholas",
-      "role": "ceo",
-      "title": "Founder / Principal",
-      "tier": "executive",
-      "status": "idle",
-      "adapterType": "process",
-      "lastHeartbeatAt": null,
-      "assignments": [],
-      "capabilities": "Company owner, principal decision-maker, final approver, and board-level direction.",
-      "urlKey": "nicholas",
-      "isHuman": true
-    }
-  ]
+  "agents": []
 }
