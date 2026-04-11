@@ -6,33 +6,11 @@ import {
   DRAFT_STATUS_LABELS,
   DRAFT_STATUSES,
 } from '../core/drafts/useDraftReview';
-
-// ─── Shared helpers ───────────────────────────────────────────────────────────
-
-function parseStatus(rawStatus) {
-  if (!rawStatus) return null;
-  const s = rawStatus.toLowerCase();
-  if (s.includes('draft')) return 'draft';
-  if (s.includes('review')) return 'review';
-  if (s.includes('sent')) return 'sent';
-  if (s.includes('respon') || s.includes('replied')) return 'replied';
-  if (s.includes('hot')) return 'hot';
-  if (s.includes('closed') || s.includes('deal')) return 'closed';
-  if (s.includes('dead')) return 'dead';
-  if (s.includes('hold')) return 'hold';
-  return null;
-}
-
-const STATUS_LABELS = {
-  draft: 'Draft Ready',
-  review: 'Needs Review',
-  sent: 'Sent',
-  replied: 'Replied',
-  hot: 'Hot',
-  closed: 'Closed',
-  dead: 'Dead',
-  hold: 'On Hold',
-};
+import {
+  useLeadPipeline,
+  STAGES,
+  STAGE_META,
+} from '../core/aureon/useLeadPipeline';
 
 // ─── Pipeline components ──────────────────────────────────────────────────────
 
@@ -40,46 +18,6 @@ function ScoreBadge({ score }) {
   const n = parseInt(score, 10);
   const cls = n >= 20 ? 'revenue-score-high' : n >= 16 ? 'revenue-score-mid' : 'revenue-score-low';
   return <span className={`revenue-score-badge ${cls}`}>{score}</span>;
-}
-
-function StatusBadge({ rawStatus }) {
-  const key = parseStatus(rawStatus);
-  if (!key) return null;
-  return (
-    <span className={`revenue-status-badge revenue-status-${key}`}>
-      {STATUS_LABELS[key] || rawStatus}
-    </span>
-  );
-}
-
-function LeadRow({ lead }) {
-  return (
-    <div className="revenue-lead-row">
-      <div className="revenue-lead-header">
-        <span className="revenue-lead-company">{lead.company}</span>
-        <div className="revenue-lead-badges">
-          {lead.score && <ScoreBadge score={lead.score} />}
-          <StatusBadge rawStatus={lead.status} />
-        </div>
-      </div>
-      {(lead.founder || lead.channel) && (
-        <div className="revenue-lead-meta">
-          {lead.founder && <span className="revenue-lead-founder">{lead.founder}</span>}
-          {lead.channel && <span className="revenue-lead-channel">{lead.channel}</span>}
-        </div>
-      )}
-      {lead.notes && <p className="revenue-lead-notes">{lead.notes}</p>}
-    </div>
-  );
-}
-
-function MetricCell({ label, value, highlight }) {
-  return (
-    <div className={`revenue-metric-cell${highlight ? ' revenue-metric-highlight' : ''}`}>
-      <span className="revenue-metric-label">{label}</span>
-      <strong className="revenue-metric-value">{value ?? 0}</strong>
-    </div>
-  );
 }
 
 // ─── Draft Review components ──────────────────────────────────────────────────
@@ -130,7 +68,6 @@ function DraftDetailPanel({ draft, onApprove, onReject, onArchive, onReturn, edi
 
   return (
     <div className="draft-detail-panel">
-      {/* Header */}
       <div className="draft-detail-header">
         <div className="draft-detail-title-row">
           <span className="draft-detail-company">{draft.company}</span>
@@ -144,7 +81,6 @@ function DraftDetailPanel({ draft, onApprove, onReject, onArchive, onReturn, edi
         )}
       </div>
 
-      {/* Email envelope fields */}
       <div className="draft-detail-envelope">
         <div className="draft-detail-field">
           <span className="draft-detail-field-label">To</span>
@@ -160,12 +96,10 @@ function DraftDetailPanel({ draft, onApprove, onReject, onArchive, onReturn, edi
         </div>
       </div>
 
-      {/* Email body */}
       <div className="draft-detail-body">
         <pre className="draft-body-text">{draft.body}</pre>
       </div>
 
-      {/* Reviewer note */}
       <div className="draft-detail-note-section">
         {isEditing ? (
           <div className="draft-note-edit">
@@ -173,7 +107,7 @@ function DraftDetailPanel({ draft, onApprove, onReject, onArchive, onReturn, edi
               className="draft-note-textarea"
               value={noteText}
               onChange={(e) => setNoteText(e.target.value)}
-              placeholder="Add a reviewer note…"
+              placeholder="Add a reviewer note..."
               rows={3}
             />
             <div className="draft-note-edit-actions">
@@ -193,7 +127,6 @@ function DraftDetailPanel({ draft, onApprove, onReject, onArchive, onReturn, edi
         )}
       </div>
 
-      {/* Review actions */}
       <div className="draft-review-actions">
         {draft.draftStatus === DRAFT_STATUSES.AWAITING_REVIEW || draft.draftStatus === DRAFT_STATUSES.GENERATED ? (
           <>
@@ -202,7 +135,7 @@ function DraftDetailPanel({ draft, onApprove, onReject, onArchive, onReturn, edi
               disabled={isPending}
               onClick={() => onApprove(draft.id)}
             >
-              {isPending ? 'Sending…' : 'Approve & Send'}
+              {isPending ? 'Sending...' : 'Approve & Send'}
             </button>
             <button
               className="draft-action-btn draft-action-reject"
@@ -290,7 +223,6 @@ function DraftReviewSystem({ draftReview }) {
     <div className="draft-review-system">
       <SendErrorBanner lastError={lastError} onDismiss={dismissError} />
 
-      {/* Filter tabs */}
       <div className="draft-filter-bar">
         {FILTER_TABS.map((tab) => {
           const count = tab.key === 'all' ? counts.all : counts[tab.key];
@@ -307,9 +239,7 @@ function DraftReviewSystem({ draftReview }) {
         })}
       </div>
 
-      {/* Split pane: queue list + detail */}
       <div className={`draft-review-pane${selectedDraft ? ' draft-review-pane--split' : ''}`}>
-        {/* Queue list */}
         <div className="draft-queue-list">
           {filteredDrafts.length === 0 ? (
             <p className="draft-queue-empty">No drafts in this category.</p>
@@ -325,7 +255,6 @@ function DraftReviewSystem({ draftReview }) {
           )}
         </div>
 
-        {/* Detail panel */}
         {selectedDraft && (
           <DraftDetailPanel
             draft={selectedDraft}
@@ -345,129 +274,249 @@ function DraftReviewSystem({ draftReview }) {
   );
 }
 
-// ─── AUREON Control Surface ───────────────────────────────────────────────────
+// ─── Outreach KPI Dashboard ──────────────────────────────────────────────────
 
 const A1_TARGET_AMOUNT = 1000;
 const A1_DEADLINE_DATE = '2026-04-14';
 
-function aureonStage(rawStatus) {
-  const s = (rawStatus || '').toLowerCase().replace(/[^\w\s-]/g, '');
-  if (s.includes('closed') || s.includes('deal')) return 'closed';
-  if (s.includes('call') || s.includes('hot')) return 'call-booked';
-  if (s.includes('replied') || s.includes('responded')) return 'replied';
-  if (s.includes('sent') || s.includes('dm')) return 'dm-sent';
-  return 'researched';
+function OutreachKPIDashboard({ funnel, revenueMilestones }) {
+  const daysLeft = Math.max(0, Math.floor((new Date(A1_DEADLINE_DATE) - new Date()) / 86400000));
+  const activeTarget = (revenueMilestones || []).find((m) => m.status === 'In Progress');
+
+  return (
+    <div className="outreach-kpi-dashboard">
+      {/* Revenue Target Progress */}
+      <div className="outreach-kpi-target">
+        <div className="outreach-kpi-target-header">
+          <span className="outreach-kpi-target-label">A1 Revenue Target</span>
+          <span className="outreach-kpi-target-deadline">{daysLeft}d remaining</span>
+        </div>
+        <div className="outreach-kpi-target-track">
+          <div
+            className="outreach-kpi-target-fill"
+            style={{ width: `${Math.min((funnel.closed * 650 / A1_TARGET_AMOUNT) * 100, 100)}%` }}
+          />
+        </div>
+        <div className="outreach-kpi-target-footer">
+          <span>
+            {funnel.closed > 0
+              ? `${funnel.closed} closed (est. ${(funnel.closed * 650).toLocaleString()} EUR)`
+              : '0 EUR raised'}
+          </span>
+          <span>{A1_TARGET_AMOUNT.toLocaleString()} EUR target</span>
+        </div>
+      </div>
+
+      {/* Funnel Metrics Grid */}
+      <div className="outreach-kpi-funnel">
+        <div className="outreach-funnel-step">
+          <strong className="outreach-funnel-value">{funnel.total}</strong>
+          <span className="outreach-funnel-label">Total Leads</span>
+        </div>
+        <div className="outreach-funnel-arrow">&rarr;</div>
+        <div className="outreach-funnel-step">
+          <strong className="outreach-funnel-value">{funnel.sent}</strong>
+          <span className="outreach-funnel-label">DMs Sent</span>
+        </div>
+        <div className="outreach-funnel-arrow">&rarr;</div>
+        <div className="outreach-funnel-step">
+          <strong className="outreach-funnel-value">{funnel.replied}</strong>
+          <span className="outreach-funnel-label">Replied</span>
+        </div>
+        <div className="outreach-funnel-arrow">&rarr;</div>
+        <div className="outreach-funnel-step">
+          <strong className="outreach-funnel-value">{funnel.callsBooked}</strong>
+          <span className="outreach-funnel-label">Calls Booked</span>
+        </div>
+        <div className="outreach-funnel-arrow">&rarr;</div>
+        <div className="outreach-funnel-step outreach-funnel-step--highlight">
+          <strong className="outreach-funnel-value">{funnel.closed}</strong>
+          <span className="outreach-funnel-label">Closed</span>
+        </div>
+      </div>
+
+      {/* Conversion Rates */}
+      <div className="outreach-kpi-rates">
+        <div className="outreach-rate-cell">
+          <span className="outreach-rate-value">{funnel.dmToReply}%</span>
+          <span className="outreach-rate-label">DM &rarr; Reply</span>
+        </div>
+        <div className="outreach-rate-cell">
+          <span className="outreach-rate-value">{funnel.replyToCall}%</span>
+          <span className="outreach-rate-label">Reply &rarr; Call</span>
+        </div>
+        <div className="outreach-rate-cell">
+          <span className="outreach-rate-value">{funnel.callToClose}%</span>
+          <span className="outreach-rate-label">Call &rarr; Close</span>
+        </div>
+        <div className="outreach-rate-cell outreach-rate-cell--overall">
+          <span className="outreach-rate-value">{funnel.overallConversion}%</span>
+          <span className="outreach-rate-label">Overall</span>
+        </div>
+      </div>
+
+      {funnel.bounced > 0 && (
+        <div className="outreach-kpi-bounce-note">
+          {funnel.bounced} bounce{funnel.bounced > 1 ? 's' : ''} detected — check contact info
+        </div>
+      )}
+
+      {activeTarget && (
+        <div className="outreach-kpi-milestone">
+          <span>{activeTarget.target}</span>
+          <strong>{activeTarget.amount}</strong>
+          <span>by {activeTarget.deadline}</span>
+        </div>
+      )}
+    </div>
+  );
 }
 
-const AUREON_STAGE_META = {
-  'researched':  { label: 'Researched',  cls: 'stage-researched'  },
-  'dm-sent':     { label: 'DM Sent',     cls: 'stage-dm-sent'     },
-  'replied':     { label: 'Replied',     cls: 'stage-replied'     },
-  'call-booked': { label: 'Call Booked', cls: 'stage-call-booked' },
-  'closed':      { label: 'Closed',      cls: 'stage-closed'      },
-  'bounced':     { label: 'Bounced',     cls: 'stage-bounced'     },
+// ─── Lead Lifecycle Board ────────────────────────────────────────────────────
+
+const STAGE_COLORS = {
+  'researched':  'lifecycle-stage-researched',
+  'dm-sent':     'lifecycle-stage-dm-sent',
+  'replied':     'lifecycle-stage-replied',
+  'call-booked': 'lifecycle-stage-call-booked',
+  'closed':      'lifecycle-stage-closed',
 };
 
-function AureonStageBadge({ rawStatus }) {
-  const stage = aureonStage(rawStatus);
-  const meta = AUREON_STAGE_META[stage] || AUREON_STAGE_META['researched'];
-  return <span className={`aureon-stage-badge ${meta.cls}`}>{meta.label}</span>;
-}
+function LeadCard({ lead, onAdvance, onRevert, onSetStage }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const meta = STAGE_META[lead.stage] || STAGE_META['researched'];
+  const canAdvance = meta.order < 4;
+  const canRevert = meta.order > 0;
 
-function AureonKPIBar({ current, target, deadline }) {
-  const progress = Math.min((current / target) * 100, 100);
-  const daysLeft = Math.max(0, Math.floor((new Date(deadline) - new Date()) / 86400000));
   return (
-    <div className="aureon-kpi">
-      <div className="aureon-kpi-header">
-        <span className="aureon-kpi-label">A1 Target — €{target.toLocaleString()}</span>
-        <span className="aureon-kpi-deadline">{daysLeft}d remaining · April 14</span>
+    <div className="lifecycle-lead-card">
+      <div className="lifecycle-lead-header">
+        <span className="lifecycle-lead-company">{lead.company}</span>
+        {lead.score && <ScoreBadge score={lead.score} />}
       </div>
-      <div className="aureon-kpi-track">
-        <div className="aureon-kpi-fill" style={{ width: `${progress}%` }} />
-      </div>
-      <div className="aureon-kpi-footer">
-        <span className="aureon-kpi-current">€{current.toLocaleString()} raised</span>
-        <span className="aureon-kpi-pct">{progress.toFixed(0)}%</span>
+      {lead.founder && (
+        <span className="lifecycle-lead-founder">{lead.founder}</span>
+      )}
+      {lead.contact && (
+        <span className="lifecycle-lead-contact">{lead.contact}</span>
+      )}
+      <div className="lifecycle-lead-actions">
+        {canAdvance && (
+          <button
+            className="lifecycle-action-btn lifecycle-action-advance"
+            onClick={() => onAdvance(lead.id)}
+            title={`Move to ${STAGE_META[STAGES[meta.order + 1]]?.label}`}
+          >
+            Advance &rarr;
+          </button>
+        )}
+        {canRevert && (
+          <button
+            className="lifecycle-action-btn lifecycle-action-revert"
+            onClick={() => onRevert(lead.id)}
+            title={`Move back to ${STAGE_META[STAGES[meta.order - 1]]?.label}`}
+          >
+            &larr;
+          </button>
+        )}
+        <div className="lifecycle-stage-menu-wrapper">
+          <button
+            className="lifecycle-action-btn lifecycle-action-menu"
+            onClick={() => setMenuOpen(!menuOpen)}
+            title="Set stage"
+          >
+            ...
+          </button>
+          {menuOpen && (
+            <div className="lifecycle-stage-menu">
+              {STAGES.map((s) => (
+                <button
+                  key={s}
+                  className={`lifecycle-stage-menu-item${lead.stage === s ? ' lifecycle-stage-menu-item--active' : ''}`}
+                  onClick={() => { onSetStage(lead.id, s); setMenuOpen(false); }}
+                >
+                  {STAGE_META[s].label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
-function AureonControlSurface({ leads, aureonDrafts }) {
-  const drafts = aureonDrafts || [];
-  const hasDraftData = drafts.length > 0;
+function LeadLifecycleBoard({ byStage, advanceLead, revertLead, setLeadStage }) {
+  return (
+    <div className="lifecycle-board">
+      {STAGES.map((stage) => {
+        const leads = byStage[stage] || [];
+        const meta = STAGE_META[stage];
+        const colorClass = STAGE_COLORS[stage] || '';
+        return (
+          <div key={stage} className={`lifecycle-column ${colorClass}`}>
+            <div className="lifecycle-column-header">
+              <span className="lifecycle-column-title">{meta.label}</span>
+              <span className="lifecycle-column-count">{leads.length}</span>
+            </div>
+            <div className="lifecycle-column-body">
+              {leads.length === 0 ? (
+                <div className="lifecycle-column-empty">No leads</div>
+              ) : (
+                leads.map((lead) => (
+                  <LeadCard
+                    key={lead.id}
+                    lead={lead}
+                    onAdvance={advanceLead}
+                    onRevert={revertLead}
+                    onSetStage={setLeadStage}
+                  />
+                ))
+              )}
+            </div>
+          </div>
+        );
+      })}
 
-  // Use aureonDrafts (queue.json) as truth for outreach metrics when available
-  const totalLeads  = hasDraftData ? drafts.length : leads.length;
-  const dmSent      = hasDraftData
-    ? drafts.filter((d) => d.status === 'sent').length
-    : leads.filter((l) => ['dm-sent', 'replied', 'call-booked', 'closed'].includes(aureonStage(l.status))).length;
-  const bounced     = hasDraftData ? drafts.filter((d) => d.status === 'bounced').length : 0;
-  const callsBooked = hasDraftData
-    ? drafts.filter((d) => d.status === 'call-booked' || d.status === 'closed').length
-    : leads.filter((l) => ['call-booked', 'closed'].includes(aureonStage(l.status))).length;
-  const convRate    = dmSent > 0 ? ((callsBooked / dmSent) * 100).toFixed(0) : '—';
+      {/* Bounced column (separate) */}
+      {(byStage['bounced'] || []).length > 0 && (
+        <div className="lifecycle-column lifecycle-stage-bounced">
+          <div className="lifecycle-column-header">
+            <span className="lifecycle-column-title">Bounced</span>
+            <span className="lifecycle-column-count">{byStage['bounced'].length}</span>
+          </div>
+          <div className="lifecycle-column-body">
+            {byStage['bounced'].map((lead) => (
+              <LeadCard
+                key={lead.id}
+                lead={lead}
+                onAdvance={advanceLead}
+                onRevert={revertLead}
+                onSetStage={setLeadStage}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
-  // Build the lead list from drafts (truthful) or fall back to pipeline
-  const displayLeads = hasDraftData
-    ? drafts.map((d) => ({
-        key: d.id,
-        company: d.company || d.to,
-        stage: d.status === 'sent' ? 'dm-sent'
-             : d.status === 'bounced' ? 'bounced'
-             : d.status === 'replied' ? 'replied'
-             : d.status === 'call-booked' ? 'call-booked'
-             : d.status === 'closed' ? 'closed'
-             : 'researched',
-      }))
-    : leads.map((l, i) => ({
-        key: l._ || i,
-        company: l.company,
-        stage: aureonStage(l.status),
-      }));
+// ─── Primary Action ──────────────────────────────────────────────────────────
+
+function PrimaryActionBar({ funnel, aureonPrimaryAction }) {
+  const derivedAction = (() => {
+    if (funnel.replied > 0) return { label: `Respond to ${funnel.replied} ${funnel.replied === 1 ? 'reply' : 'replies'} now`, urgency: 'critical' };
+    if (funnel.callsBooked > 0 && funnel.closed === 0) return { label: `Prepare for ${funnel.callsBooked} booked ${funnel.callsBooked === 1 ? 'call' : 'calls'}`, urgency: 'high' };
+    if (funnel.sent > 0 && funnel.replied === 0) return { label: 'Monitor inbox for replies — follow up if silent 48h+', urgency: 'high' };
+    return { label: 'Research and add new leads to pipeline', urgency: 'low' };
+  })();
+  const action = aureonPrimaryAction || derivedAction;
 
   return (
-    <div className="aureon-control-surface">
-      <AureonKPIBar current={0} target={A1_TARGET_AMOUNT} deadline={A1_DEADLINE_DATE} />
-
-      <div className="aureon-summary-row">
-        <div className="aureon-summary-cell">
-          <strong className="aureon-summary-value">{totalLeads}</strong>
-          <span className="aureon-summary-label">Active Leads</span>
-        </div>
-        <div className="aureon-summary-cell">
-          <strong className="aureon-summary-value">{dmSent}</strong>
-          <span className="aureon-summary-label">DMs Sent</span>
-        </div>
-        <div className="aureon-summary-cell">
-          <strong className="aureon-summary-value">{callsBooked}</strong>
-          <span className="aureon-summary-label">Calls Booked</span>
-        </div>
-        <div className="aureon-summary-cell">
-          <strong className="aureon-summary-value">{convRate}{convRate !== '—' ? '%' : ''}</strong>
-          <span className="aureon-summary-label">Conversion</span>
-        </div>
-      </div>
-
-      {bounced > 0 && (
-        <div className="aureon-bounce-note">
-          {bounced} bounce{bounced > 1 ? 's' : ''} detected
-        </div>
-      )}
-
-      {displayLeads.length > 0 ? (
-        <div className="aureon-lead-status-list">
-          {displayLeads.map((lead) => (
-            <div key={lead.key} className="aureon-lead-status-row">
-              <span className="aureon-lead-status-company">{lead.company}</span>
-              <AureonStageBadge rawStatus={lead.stage} />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="aureon-empty">No leads in pipeline. Add leads to begin A1 execution.</p>
-      )}
+    <div className={`outreach-primary-action outreach-primary-action--${action.urgency || 'low'}`}>
+      <span className="outreach-primary-action-label">Focus Now</span>
+      <strong className="outreach-primary-action-text">{action.label}</strong>
     </div>
   );
 }
@@ -486,140 +535,73 @@ function RevenuePage({
   generatedAureonDrafts,
 }) {
   const leads = generatedPipeline?.length > 0 ? generatedPipeline : (pipelineEntries || []);
-  const milestones = revenueMilestones || [];
   const draftReview = useDraftReview(leads, generatedAureonDrafts);
+  const pipeline = useLeadPipeline(generatedAureonDrafts, leads);
 
-  const totalLeads = leads.length;
-  const draftsReady = draftReview.counts.awaiting_review;
-  const outreachSent = leads.filter(
-    (l) => (l.sent && l.sent !== '—' && l.sent !== '') || parseStatus(l.status) === 'sent'
-  ).length;
-  const replies = leads.filter(
-    (l) =>
-      (l.response && l.response !== '—' && l.response !== '' && l.response !== 'None') ||
-      parseStatus(l.status) === 'replied'
-  ).length;
+  const [activeTab, setActiveTab] = useState('lifecycle');
 
-  const attentionLeads = leads.filter((l) => {
-    const s = parseStatus(l.status);
-    return s === 'hot' || s === 'replied';
-  });
-
-  const derivedAction = (() => {
-    if (replies > 0) return { label: `Respond to ${replies} ${replies === 1 ? 'reply' : 'replies'} now`, urgency: 'critical' };
-    if (draftsReady > 0) return { label: `Review and approve ${draftsReady} ready ${draftsReady === 1 ? 'draft' : 'drafts'}`, urgency: 'high' };
-    return { label: 'Research and add new leads to pipeline', urgency: 'low' };
-  })();
-  const primaryAction = aureonPrimaryAction || derivedAction;
-
-  const activeTarget = milestones.find((m) => m.status === 'In Progress');
+  const tabs = [
+    { key: 'lifecycle', label: 'Lead Pipeline' },
+    { key: 'drafts', label: `Draft Queue${draftReview.counts.awaiting_review > 0 ? ` (${draftReview.counts.awaiting_review})` : ''}` },
+  ];
 
   return (
     <PageContainer
-      title="Revenue"
-      subtitle="AUREON · Pipeline · Outreach execution"
+      title="AUREON Outreach Engine"
+      subtitle="Pipeline control, draft review, conversion tracking"
       date={date}
       primaryAction={null}
     >
-      <div className="page-grid two-column">
+      <div className="outreach-engine">
+        {/* Primary Action */}
+        <PrimaryActionBar funnel={pipeline.funnel} aureonPrimaryAction={aureonPrimaryAction} />
 
-        {/* Metrics strip */}
-        <div style={{ gridColumn: '1 / -1' }}>
-          <SectionCard title="Pipeline Metrics" variant="primary">
-            <div className="revenue-metrics-row">
-              <MetricCell label="Total Leads" value={totalLeads} />
-              <MetricCell label="Drafts Ready" value={draftsReady} highlight={draftsReady > 0} />
-              <MetricCell label="Outreach Sent" value={outreachSent} />
-              <MetricCell label="Replies" value={replies} highlight={replies > 0} />
-            </div>
-          </SectionCard>
-        </div>
-
-        {/* AUREON Control Surface */}
-        <div style={{ gridColumn: '1 / -1' }}>
-          <SectionCard title="AUREON Pipeline Control" variant="primary">
-            <AureonControlSurface leads={leads} aureonDrafts={generatedAureonDrafts} />
-          </SectionCard>
-        </div>
-
-        {/* Primary action */}
-        <SectionCard title="Primary Action">
-          <div className={`revenue-action-block revenue-action-${primaryAction.urgency || 'low'}`}>
-            <span className="revenue-action-label">Focus now</span>
-            <strong className="revenue-action-text">{primaryAction.label}</strong>
-          </div>
-          {activeTarget && (
-            <div className="revenue-target-chip">
-              <span className="label">Target</span>
-              <strong>{activeTarget.amount}</strong>
-              <span className="label">by {activeTarget.deadline}</span>
-            </div>
-          )}
-          {!aureonConnected && (
-            <p className="revenue-disconnect-note">AUREON not connected — pipeline from truth layer</p>
-          )}
+        {/* KPI Dashboard */}
+        <SectionCard title="Outreach KPIs" variant="primary">
+          <OutreachKPIDashboard
+            funnel={pipeline.funnel}
+            revenueMilestones={revenueMilestones}
+          />
         </SectionCard>
 
-        {/* Revenue milestones */}
-        {milestones.length > 0 && (
-          <SectionCard title="Revenue Targets">
-            <div className="revenue-milestone-list">
-              {milestones.map((m, i) => {
-                const statusKey = m.status?.toLowerCase().replace(/\s+/g, '-') || 'pending';
-                return (
-                  <div key={i} className={`revenue-milestone-row revenue-milestone-${statusKey}`}>
-                    <div className="revenue-milestone-header">
-                      <span className="revenue-milestone-target">{m.target}</span>
-                      <span className="revenue-milestone-amount">{m.amount}</span>
-                    </div>
-                    <div className="revenue-milestone-footer">
-                      <span className="label">{m.deadline}</span>
-                      <span className={`revenue-milestone-status revenue-milestone-status-${statusKey}`}>{m.status}</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+        {/* Tab Switcher */}
+        <div className="outreach-tab-bar">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              className={`outreach-tab${activeTab === tab.key ? ' outreach-tab--active' : ''}`}
+              onClick={() => setActiveTab(tab.key)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === 'lifecycle' && (
+          <SectionCard title="Lead Lifecycle" variant="primary">
+            <LeadLifecycleBoard
+              byStage={pipeline.byStage}
+              advanceLead={pipeline.advanceLead}
+              revertLead={pipeline.revertLead}
+              setLeadStage={pipeline.setLeadStage}
+            />
           </SectionCard>
         )}
 
-        {/* Hot / attention leads */}
-        {attentionLeads.length > 0 && (
-          <div style={{ gridColumn: '1 / -1' }}>
-            <SectionCard title={`Hot / Needs Action (${attentionLeads.length})`}>
-              <div className="revenue-lead-list">
-                {attentionLeads.map((lead, i) => (
-                  <LeadRow key={lead._ || i} lead={lead} />
-                ))}
-              </div>
-            </SectionCard>
-          </div>
-        )}
-
-        {/* Draft Review System — N4.4 */}
-        <div style={{ gridColumn: '1 / -1' }}>
-          <SectionCard title={`Draft Queue${draftsReady > 0 ? ` — ${draftsReady} awaiting review` : ''}`} variant="primary">
+        {activeTab === 'drafts' && (
+          <SectionCard
+            title={`Draft Queue${draftReview.counts.awaiting_review > 0 ? ` — ${draftReview.counts.awaiting_review} awaiting review` : ''}`}
+            variant="primary"
+          >
             <DraftReviewSystem draftReview={draftReview} />
           </SectionCard>
-        </div>
+        )}
 
-        {/* Full pipeline */}
-        <div style={{ gridColumn: '1 / -1' }}>
-          {leads.length > 0 ? (
-            <SectionCard title={`Pipeline — ${leads.length} Active Leads`}>
-              <div className="revenue-lead-list">
-                {leads.map((lead, i) => (
-                  <LeadRow key={lead._ || i} lead={lead} />
-                ))}
-              </div>
-            </SectionCard>
-          ) : (
-            <SectionCard title="Pipeline">
-              <p className="revenue-empty-note">No leads loaded. Add leads to begin AUREON execution.</p>
-            </SectionCard>
-          )}
-        </div>
-
+        {/* Disconnection note */}
+        {!aureonConnected && (
+          <p className="outreach-disconnect-note">AUREON live sync not connected — showing truth-layer data</p>
+        )}
       </div>
     </PageContainer>
   );

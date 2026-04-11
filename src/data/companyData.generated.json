@@ -3,56 +3,45 @@
     {
       "name": "NEXUS",
       "deptId": "nexus",
-      "phase": "N4.5 — Agents Control Layer  Complete",
-      "lastCompleted": "Agent roster, role/status/assignment visibility, tier grouping (executive/engineering/revenue), action scaffolding reserved for N4.6, live Paperclip data polling via useAgentData",
-      "nextStep": "N4.6 — Agent Actions + AUREON Control Integration",
-      "blockers": "None",
-      "target": "",
-      "health": "NEXUS is a functional execution OS. Agent control layer live. N4.6 activates real agent actions + AUREON integration.",
+      "phase": "N4.9 — Weekly Redesign + AI Chat Planner",
+      "lastCompleted": "N4.6 (8/10) — Agent Actions + AUREON Control Integration",
+      "nextStep": "N4.7 — after N4.9 review gate clears",
+      "blockers": "None — N4.9 in delivery",
+      "target": "NEXUS product revenue — first paying customer",
+      "health": "N4.9 in delivery, pending Nova review",
       "source": "company_status"
     },
     {
       "name": "VORTEX",
       "deptId": "hephaestus",
-      "phase": "V5 — Profitability Loop  Complete",
-      "lastCompleted": "V5 Profitability Loop — full trading loop with profitability controls",
-      "nextStep": "V6 — to be defined when FORGE unblocked",
-      "blockers": "FORGE rate limited (Codex — recovers automatically)",
-      "target": "",
-      "health": "V5 complete. V6 brief will be issued once FORGE rate limit clears.",
-      "source": "company_status"
-    },
-    {
-      "name": "HEPHAESTUS",
-      "deptId": "hephaestus",
-      "phase": "Active — supporting NEXUS and VORTEX",
-      "lastCompleted": "",
-      "nextStep": "Support N4.6 (ATLAS) and V6 when FORGE unblocked",
-      "blockers": "None",
-      "target": "",
-      "health": "Active and supporting both product repos.",
-      "source": "company_status"
-    },
-    {
-      "name": "XENON",
-      "deptId": "xenon",
-      "phase": "Phase 4 — Complete",
-      "lastCompleted": "All department files, launch strategy docs, campaign template, channel tracker",
-      "nextStep": "Nicholas decides channel + format → first campaign",
-      "blockers": "Awaiting direction from Nicholas",
-      "target": "",
-      "health": "Complete — activation pending channel decision.",
+      "phase": "V6.0 — Adapter Interfaces",
+      "lastCompleted": "V5 (8/10) — Profitability Loop",
+      "nextStep": "V6.1 after V6.0 formal review",
+      "blockers": "Formal review pending",
+      "target": "Live trading profitability by Q3 2026",
+      "health": "V6.0 committed, awaiting Nova review",
       "source": "company_status"
     },
     {
       "name": "AUREON",
       "deptId": "aureon",
-      "phase": "A1 — First Revenue  Active",
-      "lastCompleted": "",
-      "nextStep": "",
-      "blockers": "None — execution is the only constraint",
-      "target": "€1,000 by April 14, 2026 (10 days remaining)",
-      "health": "Pipeline exists but outreach has not started. 10 days to €1,000 target. This is the highest-urgency item in the company.",
+      "phase": "A1 — First Revenue",
+      "lastCompleted": "MERCURY outbound generation complete",
+      "nextStep": "A2 after €1,000 milestone",
+      "blockers": "0 calls booked from 29 DMs — conversion focus needed",
+      "target": "€1,000 by April 14, 2026",
+      "health": "4 days to deadline, 0 calls booked",
+      "source": "company_status"
+    },
+    {
+      "name": "XENON",
+      "deptId": "xenon",
+      "phase": "Phase 4 — Content + Distribution",
+      "lastCompleted": "Phase 4 complete",
+      "nextStep": "Channel decision from Nicholas",
+      "blockers": "Awaiting channel strategy decision",
+      "target": "Distribution pipeline supporting NEXUS launch",
+      "health": "Standby — awaiting direction",
       "source": "company_status"
     }
   ],
@@ -128,7 +117,7 @@
         "phase": "N4.6",
         "start": "",
         "targetEnd": "",
-        "status": "Approved — delivery awaiting review gate"
+        "status": "Approved (8/10)"
       },
       {
         "phase": "N4.7",
@@ -140,7 +129,7 @@
         "phase": "N4.8",
         "start": "",
         "targetEnd": "",
-        "status": "Not yet briefed"
+        "status": "Briefed — not yet approved"
       },
       {
         "phase": "N6",
@@ -187,10 +176,54 @@
         "status": "Complete"
       },
       {
-        "phase": "V6",
+        "phase": "V6.0",
         "start": "",
         "targetEnd": "",
-        "status": "Pending brief (FORGE rate limited)"
+        "status": "Committed — pending formal review"
+      },
+      {
+        "phase": "V6.1",
+        "start": "",
+        "targetEnd": "",
+        "status": "Pending V6.0 review"
+      },
+      {
+        "phase": "V7",
+        "start": "",
+        "targetEnd": "",
+        "status": "Pending V6+"
+      },
+      {
+        "phase": "V8",
+        "start": "",
+        "targetEnd": "",
+        "status": "Pending V7"
+      }
+    ],
+    "pawly": [
+      {
+        "phase": "P0",
+        "start": "",
+        "targetEnd": "",
+        "status": "Approved (8/10)"
+      },
+      {
+        "phase": "P1",
+        "start": "",
+        "targetEnd": "",
+        "status": "Blocked — Supabase + RevenueCat provisioning required"
+      },
+      {
+        "phase": "P2",
+        "start": "",
+        "targetEnd": "",
+        "status": "Pending P1"
+      },
+      {
+        "phase": "P3",
+        "start": "",
+        "targetEnd": "",
+        "status": "Pending P2"
       }
     ],
     "aureon": [
@@ -198,7 +231,7 @@
         "phase": "A1",
         "start": "",
         "targetEnd": "",
-        "status": "Active"
+        "status": "Active — 4 days"
       },
       {
         "phase": "A2",
@@ -225,7 +258,7 @@
       "target": "AUREON First Revenue",
       "amount": "€1,000",
       "deadline": "April 14, 2026",
-      "status": "Active — 10 days"
+      "status": "Active — 4 days"
     },
     {
       "target": "AUREON Monthly Recurring",
@@ -292,11 +325,15 @@
     "hephaestus": [
       {
         "done": false,
-        "text": "Any AETHER legacy code migration — evaluate after audit, not before"
+        "text": "Real money in VORTEX — not until V8 approved with full risk controls"
       },
       {
         "done": false,
-        "text": "Any external-facing products not yet defined"
+        "text": "Multi-user support in NEXUS — post N6"
+      },
+      {
+        "done": false,
+        "text": "Any product work without a formal brief from Nova"
       }
     ]
   },
@@ -698,7 +735,7 @@
   "phaseTracker": [
     {
       "field": "**Current Phase**",
-      "status": "N4.5 — Agents Control Layer ✅ Complete"
+      "status": "N4.8 — Shell Redesign 🟡 Briefed — not yet approved (6/10)"
     },
     {
       "field": "**Real Repo Path**",
@@ -706,31 +743,27 @@
     },
     {
       "field": "**GitHub**",
-      "status": "NovaAI88/Nexus (latest `6de9563`)"
-    },
-    {
-      "field": "**Active Brief**",
-      "status": "N4.6 — Agent Actions + AUREON Control Integration"
+      "status": "NovaAI88/Nexus"
     },
     {
       "field": "**Active Agent**",
-      "status": "ATLAS"
+      "status": "ATLAS (stopped — awaiting N4.8 approval)"
     },
     {
       "field": "**Status**",
-      "status": "🟡 Brief approved 2026-04-05 — ATLAS has not yet started execution. No commits since 04-06."
+      "status": "N4.8 was briefed and attempted. Review score 6/10 — below threshold. Requires clean closeout before approval."
     },
     {
       "field": "**Gate**",
-      "status": "ATLAS delivers → Nova reviews → score ≥7 → unlock N4.7"
+      "status": "N4.8 closeout → Nova reviews → score ≥7 → unlock N4.7 brief"
     },
     {
       "field": "**Next Staged**",
-      "status": "N4.7 — Email Approval Queue (`05_shared/phases/2026-04-05_NEXUS_N4_7_BRIEF.md`)"
+      "status": "N4.7 — AUREON Outreach Engine in NEXUS (not yet briefed)"
     },
     {
       "field": "**Current Phase**",
-      "status": "V5 — Profitability Loop ✅ Complete"
+      "status": "V6.0 — Real Exchange Adapter Interfaces 🟡 Committed — pending formal review"
     },
     {
       "field": "**Real Repo Path**",
@@ -738,35 +771,27 @@
     },
     {
       "field": "**GitHub**",
-      "status": "NovaAI88/vortex"
+      "status": "NovaAI88/vortex (latest `9be6357`)"
     },
     {
       "field": "**Active Agent**",
-      "status": "FORGE (idle, awaiting V6 brief)"
+      "status": "FORGE (stopped — awaiting V6.0 review)"
     },
     {
       "field": "**Status**",
-      "status": "🟢 Audit complete 2026-04-08. Real architecture, paper-trading scaffold, all execution mocked."
-    },
-    {
-      "field": "**Next Phase**",
-      "status": "V6 — Live Data Foundation (replace mockExchangeAdapter + mockConnector with real exchange APIs, persistent state)"
+      "status": "V6.0 scope (adapter interfaces + Binance scaffold) committed. Pending formal Nova review and quality score."
     },
     {
       "field": "**Gate**",
-      "status": "Nicholas confirms capital plan + edge hypothesis → Nova writes V6 brief"
+      "status": "Nova reviews V6.0 → score ≥7 → unlock V6.1 brief"
     },
     {
-      "field": "**Blockers**",
-      "status": "None — FORGE no longer rate limited (now Claude Opus 4.6)"
+      "field": "**Next Staged**",
+      "status": "V6.1 — Binance Testnet Live Connection"
     },
     {
       "field": "**Current Phase**",
-      "status": "P0 — Foundation ✅ DELIVERED"
-    },
-    {
-      "field": "**Score**",
-      "status": "**8/10** — Solid foundation, RevenueCat provisioning incomplete"
+      "status": "P1 — Core Loop 🔴 Blocked"
     },
     {
       "field": "**Real Repo Path**",
@@ -778,35 +803,31 @@
     },
     {
       "field": "**Active Agent**",
-      "status": "LUNA (idle, P0 approved)"
+      "status": "LUNA (stopped — awaiting P1 unblock)"
     },
     {
       "field": "**Delivery**",
-      "status": "Commit `9921408` (2026-04-07) — 33 files, 14,561 insertions"
+      "status": "P0 commit `9921408` (2026-04-07) — 33 files, 14,561 insertions"
     },
     {
       "field": "**Review**",
       "status": "`05_shared/phases/2026-04-08_PAWLY_P0_REVIEW.md`"
     },
     {
-      "field": "**Next Phase**",
-      "status": "P1 — Core Loop (dog profiles, walk tracking, streaks, reminders)"
-    },
-    {
       "field": "**Gate**",
-      "status": "Nicholas provisions Supabase project + RevenueCat account → Nova writes P1 brief"
+      "status": "Nicholas provisions Supabase + RevenueCat → Nova writes P1 brief → LUNA executes"
     },
     {
       "field": "**Blockers**",
-      "status": "External service provisioning (manual, only Nicholas can do)"
+      "status": "Supabase project + RevenueCat account — manual provisioning required (only Nicholas can do)"
     },
     {
       "field": "**Phase**",
-      "status": "A1 — First Revenue 🟡 Active"
+      "status": "A1 — First Revenue 🔴 Active — 4 days to target"
     },
     {
       "field": "**Target**",
-      "status": "€1,000 by **April 14, 2026** ⏰ — 6 days remaining"
+      "status": "€1,000 by **April 14, 2026** ⏰"
     },
     {
       "field": "**Offer**",
@@ -818,23 +839,23 @@
     },
     {
       "field": "**Active Agent**",
-      "status": "MERCURY (NOV-26 lead research + draft queue)"
+      "status": "MERCURY (stopped — Nicholas executing outreach directly)"
     },
     {
       "field": "**Pipeline**",
-      "status": "14 leads researched, 3 German drafts ready, 0 DMs sent, 0 calls booked"
+      "status": "29 DMs sent (1 bounced), 0 replies confirmed, 0 calls booked"
     },
     {
       "field": "**Owner**",
-      "status": "Nicholas (outreach) + MERCURY (drafts) + Nova (review/escalate)"
+      "status": "Nicholas (outreach) + Nova (strategy/escalation)"
     },
     {
       "field": "**Blockers**",
-      "status": "None operational — execution pace is the only risk"
+      "status": "Conversion not yet proven — execution pace is the risk"
     },
     {
       "field": "**Next Action**",
-      "status": "Nicholas sends first batch of DMs from MERCURY's draft queue"
+      "status": "Drive replies → book calls → close first client"
     },
     {
       "field": "**Phase**",
@@ -843,6 +864,10 @@
     {
       "field": "**Blockers**",
       "status": "None"
+    },
+    {
+      "field": "**Active Projects**",
+      "status": "NEXUS (N4.8), VORTEX (V6.0 review pending), PAWLY (P1 blocked)"
     },
     {
       "field": "**Phase**",
@@ -862,19 +887,19 @@
     },
     {
       "field": "AUREON",
-      "status": "A1 🟡 Active"
+      "status": "A1 — First Revenue"
     },
     {
       "field": "NEXUS",
-      "status": "N4.5 ✅"
+      "status": "N4.8 — Shell Redesign"
     },
     {
       "field": "VORTEX",
-      "status": "V5 ✅"
+      "status": "V6.0 — Adapter Interfaces"
     },
     {
       "field": "PAWLY",
-      "status": "P0 ✅ (8/10)"
+      "status": "P1 — Core Loop"
     },
     {
       "field": "HEPHAESTUS",
@@ -882,10 +907,10 @@
     },
     {
       "field": "XENON",
-      "status": "Phase 4 ✅"
+      "status": "Phase 4"
     }
   ],
-  "lastGenerated": "2026-04-10T09:54:24.313Z",
+  "lastGenerated": "2026-04-11T12:23:51.966Z",
   "aureonDrafts": [
     {
       "id": "draft_001-navucko",
@@ -1219,8 +1244,96 @@
     }
   ],
   "currentFocus": {
-    "hephaestus": "# HEPHAESTUS — Current Focus\n\n**Last updated:** 2026-03-22\n\n---\n\n## Active Focus\n\n**Phase 3 — Department structure and engineering visibility**\n\nHEPHAESTUS is being established as a functional department. The immediate work is structural — getting visibility in place before any product implementation begins.\n\n---\n\n## Current State\n\n| Area | Status | Notes |\n|------|--------|-------|\n| Department files | ✅ Populated | This session |\n| VORTEX canonical location | ✅ Established | `03_PROJECTS/VORTE",
+    "hephaestus": "# HEPHAESTUS — Current Focus\n\n**Last updated:** 2026-04-10\n\n---\n\n## Active Focus\n\n**All three engineering projects are active. Each agent is stopped, awaiting its next gate.**\n\n---\n\n## Current State\n\n| Project | Phase | Status | Agent | Blocker |\n|---------|-------|--------|-------|---------|\n| NEXUS | N4.8 — Shell Redesign | 🟡 Briefed, not approved (6/10) | ATLAS (stopped) | Closeout required before approval |\n| VORTEX | V6.0 — Adapter Interfaces | 🟡 Committed, pending review | FORGE (stopped",
     "xenon": "# XENON — Current Focus\n\n**Last updated:** 2026-03-22\n\n---\n\n## Active Focus\n\n**Phase 4 — Department structure established**\n\nXENON is structurally in place. No campaigns are running yet. First campaign definition is the immediate next step once Nicholas decides on channel and format.\n\n---\n\n## Current State\n\n| Area | Status | Notes |\n|------|--------|-------|\n| Department structure | ✅ Complete | This session |\n| First campaign defined | 🔴 Not started | Awaiting direction |\n| Channel accounts | "
   },
-  "agents": []
+  "agents": [
+    {
+      "id": "e7b9be61-8303-4a5e-813b-4a24b9d0e74d",
+      "name": "LUNA",
+      "role": "engineer",
+      "title": "PAWLY Engineer",
+      "tier": "engineering",
+      "status": "idle",
+      "adapterType": "claude_local",
+      "lastHeartbeatAt": "2026-04-11T08:40:24.291Z",
+      "assignments": [],
+      "capabilities": "Mobile app development, React Native, Apple Watch integration, habit formation UX, walk tracking, route intelligence, subscription systems, and issue execution with strict scope control.",
+      "urlKey": "luna"
+    },
+    {
+      "id": "95dbd07e-d5a4-4a44-ab6f-43e5c8ca841c",
+      "name": "ATLAS",
+      "role": "engineer",
+      "title": "NEXUS Engineer",
+      "tier": "engineering",
+      "status": "running",
+      "adapterType": "claude_local",
+      "lastHeartbeatAt": "2026-04-11T12:15:25.156Z",
+      "assignments": [
+        {
+          "id": "481f9d37-0ca7-430f-827a-46869f8badc3",
+          "identifier": "NOV-42",
+          "title": "N4.7 — AUREON Outreach Engine in NEXUS",
+          "status": "in_progress",
+          "priority": "high"
+        }
+      ],
+      "capabilities": "Frontend implementation, React components, UI/UX, product logic, App Store readiness, truth layer sync, and issue execution with strict scope control.",
+      "urlKey": "atlas"
+    },
+    {
+      "id": "8d3a298e-e920-47cc-8d6c-eedca2a54304",
+      "name": "MERCURY",
+      "role": "cmo",
+      "title": "AUREON Revenue Operator",
+      "tier": "revenue",
+      "status": "idle",
+      "adapterType": "claude_local",
+      "lastHeartbeatAt": "2026-04-11T09:55:24.292Z",
+      "assignments": [],
+      "capabilities": "Lead research, inbox organization, outreach draft preparation, reply draft preparation, opportunity escalation, and supervised revenue operations for AUREON.",
+      "urlKey": "mercury"
+    },
+    {
+      "id": "e6b72bb7-7273-43b5-be63-77ce0a0ee305",
+      "name": "FORGE",
+      "role": "engineer",
+      "title": "VORTEX Engineer",
+      "tier": "engineering",
+      "status": "idle",
+      "adapterType": "claude_local",
+      "lastHeartbeatAt": "2026-04-11T07:25:24.290Z",
+      "assignments": [],
+      "capabilities": "VORTEX backend implementation, trading logic, APIs, tests, observability, signal diagnostics, and issue execution with strict scope control.",
+      "urlKey": "forge"
+    },
+    {
+      "id": "46380603-f859-4ed3-adbb-7d82fd2a061c",
+      "name": "Nova 👩🏼‍💼",
+      "role": "ceo",
+      "title": "AI Cofounder / Operator",
+      "tier": "executive",
+      "status": "idle",
+      "adapterType": "claude_local",
+      "lastHeartbeatAt": "2026-04-11T11:48:17.420Z",
+      "assignments": [],
+      "capabilities": "Company operator, system architect, execution driver, clarity enforcer. Owns strategy, prioritization, routing, anti-chaos discipline, and final decisions across NovaAI. Optimizes for clean execution,",
+      "urlKey": "nova"
+    },
+    {
+      "id": "30b06903-ead5-4742-ae02-090394c6c4e4",
+      "name": "Nicholas",
+      "role": "ceo",
+      "title": "Founder / Principal",
+      "tier": "executive",
+      "status": "idle",
+      "adapterType": "process",
+      "lastHeartbeatAt": null,
+      "assignments": [],
+      "capabilities": "Company owner, principal decision-maker, final approver, and board-level direction.",
+      "urlKey": "nicholas",
+      "isHuman": true
+    }
+  ]
 }
