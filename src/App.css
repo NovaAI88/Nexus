@@ -7444,9 +7444,9 @@ body.light ::-webkit-scrollbar-thumb:hover {
   flex: 0.6;
 }
 
-/* Day header (timed) */
+/* Day header (timed) — matches Revenue column header visual weight */
 .week-day-header--timed {
-  padding: 8px 10px 6px;
+  padding: 10px 12px 8px;
   text-align: center;
   border-bottom: 1px solid var(--color-border-subtle);
   display: flex;
@@ -7461,29 +7461,25 @@ body.light ::-webkit-scrollbar-thumb:hover {
 .week-day-header--timed.is-today-header {
   background: var(--color-accent-soft);
 }
+/* Today column — blue accent top border like Revenue's active column */
+.week-day--timed.is-today {
+  border-top: 2px solid var(--color-accent);
+}
 .week-day-header-name {
   font-size: 10px;
-  letter-spacing: 0.08em;
   font-weight: 700;
-  color: var(--color-text-meta);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
+  color: var(--color-text-meta);
 }
 .week-day-header-num {
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 800;
   color: var(--color-text-strong);
   line-height: 1;
 }
 .week-day-header-num.is-today-num {
-  color: #fff;
-  background: var(--color-accent);
-  border-radius: 999px;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
+  color: var(--color-accent);
 }
 
 /* Time canvas */
@@ -7562,46 +7558,68 @@ body.light ::-webkit-scrollbar-thumb:hover {
   font-variant-numeric: tabular-nums;
 }
 
-/* Timed block (positioned) */
+/* Timed block (positioned) — matches .lifecycle-lead-card style */
 .week-block-timed {
   position: absolute;
   left: 4px;
   right: 4px;
-  min-height: 28px;
+  min-height: 36px;
   border-radius: 6px;
-  padding: 4px 8px;
+  padding: 6px 10px;
   overflow: hidden;
   cursor: grab;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  gap: 2px;
   z-index: 2;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.10);
-  transition: box-shadow 0.15s ease, transform 0.15s ease;
+  background: var(--color-surface-1, #fff);
+  border: 1px solid var(--color-border-subtle, rgba(0,0,0,0.06));
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  transition: box-shadow 140ms ease, transform 140ms ease;
+  border-left: 3px solid var(--block-color, var(--color-accent));
 }
 .week-block-timed:hover {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  transform: scale(1.01);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.10);
+  transform: none;
   z-index: 3;
 }
 .week-block-timed:active {
   cursor: grabbing;
   opacity: 0.85;
 }
+.week-block-timed-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
 .week-block-timed-label {
   font-size: 12px;
   font-weight: 600;
-  color: var(--color-text-strong);
+  color: var(--color-text-strong, #1A1D23);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   line-height: 1.3;
 }
+.week-block-timed-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--block-color, var(--color-accent));
+  background: transparent;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
 .week-block-timed-time {
-  font-size: 11px;
-  color: var(--color-text-meta);
+  font-size: 10px;
+  color: var(--color-text-muted, #8b95a5);
   line-height: 1.2;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .week-block-timed-type {
   font-size: 10px;
@@ -7615,17 +7633,18 @@ body.light ::-webkit-scrollbar-thumb:hover {
 }
 .week-block-timed-delete {
   position: absolute;
-  top: 2px;
-  right: 4px;
+  top: 4px;
+  right: 6px;
   background: transparent;
   border: none;
   color: var(--color-text-meta);
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
   padding: 0 2px;
   line-height: 1;
   opacity: 0;
   transition: opacity 0.15s, color 0.15s;
+  z-index: 4;
 }
 .week-block-timed:hover .week-block-timed-delete {
   opacity: 1;
@@ -8095,9 +8114,6 @@ body.light ::-webkit-scrollbar-thumb:hover {
 @media (max-width: 1080px) {
   .week-time-scroll-area {
     max-height: calc(100vh - 240px);
-  }
-  .week-day-header-num {
-    font-size: 22px;
   }
   .week-block-timed-label {
     font-size: 11px;

@@ -48,7 +48,7 @@ function blockTopPx(start) {
 }
 
 function blockHeightPx(start, end) {
-  return Math.max(28, timeToMins(end) - timeToMins(start));
+  return Math.max(36, timeToMins(end) - timeToMins(start));
 }
 
 function computeNowPx() {
@@ -706,6 +706,7 @@ function WeekDayColumn({
           const top = blockTopPx(block.start);
           const height = blockHeightPx(block.start, block.end);
           const colors = BLOCK_COLORS[block.type] || BLOCK_COLOR_DEFAULT;
+          const durationMins = timeToMins(block.end) - timeToMins(block.start);
           return (
             <div
               key={block.id}
@@ -713,14 +714,18 @@ function WeekDayColumn({
               style={{
                 top,
                 height,
-                background: colors.bg,
-                borderLeft: `3px solid ${colors.border}`,
+                '--block-color': colors.border,
               }}
               draggable
               onDragStart={(e) => onBlockDragStart(e, block, day.date)}
               title={`${block.start}–${block.end} ${block.label}`}
             >
-              <span className="week-block-timed-label">{block.label}</span>
+              <div className="week-block-timed-header">
+                <span className="week-block-timed-label">{block.label}</span>
+                {height >= 36 && (
+                  <span className="week-block-timed-badge">{durationMins}m</span>
+                )}
+              </div>
               {height >= 44 && (
                 <span className="week-block-timed-time">{block.start}–{block.end}</span>
               )}
@@ -750,6 +755,7 @@ function WeekDayColumn({
               style={{
                 top,
                 height,
+                '--block-color': colors.border,
                 border: `2px dashed ${colors.border}`,
               }}
               title={`Proposed: ${block.start}–${block.end} ${block.label}`}
