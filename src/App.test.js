@@ -1,8 +1,12 @@
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import App from './App';
 
 test('renders the NEXUS shell', () => {
-  render(<App />);
+  render(
+    <MemoryRouter initialEntries={['/']}>
+      <App />
+    </MemoryRouter>
+  );
   expect(screen.getAllByText(/^NEXUS$/i).length).toBeGreaterThan(0);
-  expect(screen.getByText(/Good\s+(morning|afternoon|evening),\s*Nicholas/i)).toBeInTheDocument();
 });

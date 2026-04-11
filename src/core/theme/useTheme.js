@@ -18,16 +18,17 @@ export function useTheme() {
   const [theme, setThemeState] = useState(() => {
     const stored = load(THEME_KEY, null);
     if (!stored) {
-      save(THEME_KEY, 'dark');
-      return 'dark';
+      save(THEME_KEY, 'light');
+      return 'light';
     }
     return stored;
   });
 
-  // Apply theme class to <body> on every change.
+  // Apply theme class to <body> and data-theme on <html> on every change.
   useEffect(() => {
     document.body.classList.remove('dark', 'light');
     document.body.classList.add(theme);
+    document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
   const setTheme = useCallback((next) => {

@@ -3,6 +3,7 @@ import { DragDropContext } from '../App';
 import { TASK_STATUS, TASK_PRIORITY } from '../core/tasks/useTaskEngine';
 
 const PRIORITY_LABELS = { high: '↑ High', normal: '— Normal', low: '↓ Low' };
+// eslint-disable-next-line no-unused-vars
 const STATUS_LABELS = {
   open: 'Open',
   in_progress: 'In Progress',

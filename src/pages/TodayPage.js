@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import TimelinePanel from '../components/TimelinePanel';
-import BlockSummaryPanel from '../components/BlockSummaryPanel';
 import PrimaryActionBanner from '../components/PrimaryActionBanner';
 import SuggestedTimelineBlock from '../components/SuggestedTimelineBlock';
-import CollapsibleSection from '../components/CollapsibleSection';
 
 function TodayPage({
   date,
@@ -21,10 +19,7 @@ function TodayPage({
   onRemoveBlock,
   onUpdateBlock,
   taskEnginePanel,
-  dayConstraintsPanel,
   quickLogPanel,
-  aureonPanel,
-  chatPanel,
   focusProject,
   sessionBudgetText,
   projectContextPreview,
@@ -34,10 +29,10 @@ function TodayPage({
   dismissDept,
   engineReasoning,
   energyBar,
-  lifeBlockPicker,
   currentZone,
 }) {
   const [contextExpanded, setContextExpanded] = useState(false);
+
   const activeNowTitle = activeBlock?.label || 'No active block';
   const activeNowMeta = activeBlock ? `${activeBlock.start}–${activeBlock.end}` : 'Start a block to begin';
 
@@ -66,17 +61,19 @@ function TodayPage({
   const allSuggestions = [
     ...recommendedBlocks.map((b) => ({ ...b, source: b.source || 'engine' })),
     ...lifeBlockSuggestions.map((b) => ({ ...b, source: 'life-engine' })),
-  ].sort((a, b) => {
-    const aMin = a.start.split(':').reduce((h, m) => Number(h) * 60 + Number(m));
-    const bMin = b.start.split(':').reduce((h, m) => Number(h) * 60 + Number(m));
-    return aMin - bMin;
-  });
+  ]
+    .sort((a, b) => {
+      const aMin = a.start.split(':').reduce((h, m) => Number(h) * 60 + Number(m));
+      const bMin = b.start.split(':').reduce((h, m) => Number(h) * 60 + Number(m));
+      return aMin - bMin;
+    })
+    .slice(0, 3); // max 3 suggestions shown
 
   const greeting = getGreeting(hours);
 
   return (
-    <div className="today-shell">
-      {/* ── Top bar: greeting + session budget ── */}
+    <div className="today-shell today-shell--focused">
+      {/* ── Top bar: greeting + time + energy zone ── */}
       <header className="today-topbar">
         <div className="today-topbar-left">
           <h1 className="today-date-title">{greeting}</h1>
@@ -94,12 +91,12 @@ function TodayPage({
         </div>
       </header>
 
-      {/* ── Day progress ── */}
+      {/* ── Day progress bar ── */}
       <div className="today-day-progress">
         <div className="today-day-progress-fill" style={{ width: `${dayProgress}%` }} />
       </div>
 
-      {/* ── Focus project strip (collapsed by default) ── */}
+      {/* ── Focus project strip ── */}
       {focusProject && (
         <button
           className={`today-project-strip${contextExpanded ? ' is-expanded' : ''}`}
@@ -116,126 +113,102 @@ function TodayPage({
         </button>
       )}
 
-      {/* ── Two-panel layout ── */}
-      <div className={`today-two-panel${focusMode ? ' is-focus' : ''}`}>
+      {/* ── Single column layout ── */}
+      <div className={`today-single-col${focusMode ? ' is-focus' : ''}`}>
 
-        {/* ──── LEFT: Tasks & Execution ──── */}
-        <div className="today-panel today-panel-tasks">
-          {/* Primary action from engine */}
-          {!focusMode && enginePrimaryAction && (
-            <PrimaryActionBanner
-              action={enginePrimaryAction}
-              reasoning={engineReasoning}
-              onSchedule={() => {
-                const first = recommendedBlocks[0];
-                if (first) onConfirmSuggestion(first);
-              }}
-              onSkip={() => {
-                if (enginePrimaryAction?.departmentId) dismissDept(enginePrimaryAction.departmentId);
-              }}
-            />
-          )}
-
-          {/* Active block status */}
-          <div className={`today-active-block${activeBlock ? ' has-active' : ''}`}>
-            <div className="today-active-header">
-              <div>
-                <span className="today-active-label">Active Now</span>
-                <h2 className="today-active-title">{activeNowTitle}</h2>
-                <span className="today-active-meta">{activeNowMeta}</span>
-              </div>
-              <div className="today-active-timer">
-                <span className="today-active-timer-display">
-                  {activeBlock ? timerDisplay : '--:--'}
-                </span>
-              </div>
-            </div>
-            <div className="today-active-progress">
-              <div
-                className="today-active-progress-fill"
-                style={{ width: `${activeBlock ? timerProgress : 0}%` }}
-              />
-            </div>
-            <div className="today-active-controls">
-              {focusMode ? (
-                <button className="today-btn today-btn-secondary" onClick={onExitFocus}>
-                  Exit Focus
-                </button>
-              ) : (
-                <button className="today-btn today-btn-primary" onClick={onStartBlock}>
-                  Start Block
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Task list */}
-          <div className="today-tasks-scroll">
-            {taskEnginePanel}
-          </div>
-
-          {/* Quick log */}
-          {quickLogPanel}
-
-          {/* Empty state when no blocks and no suggestions */}
-          {!activeBlock && allSuggestions.length === 0 && scheduleBlocks.length === 0 && (
-            <div className="today-empty-hint">
-              <p>No blocks scheduled yet. Use the chat planner or let the engine suggest your next move.</p>
-            </div>
-          )}
-        </div>
-
-        {/* ──── RIGHT: Timeline & Scheduling ──── */}
-        <div className="today-panel today-panel-timeline">
-          {/* Chat planner at the top */}
-          {chatPanel}
-
-          {energyBar}
-
-          <TimelinePanel
-            blocks={scheduleBlocks}
-            currentTime={currentTime}
-            currentBlockId={currentBlock?.id}
-            nextBlockId={nextBlock?.id}
-            onAddBlock={onAddBlock}
-            onRemoveBlock={onRemoveBlock}
-            onUpdateBlock={onUpdateBlock}
+        {/* Primary action from engine */}
+        {!focusMode && enginePrimaryAction && (
+          <PrimaryActionBanner
+            action={enginePrimaryAction}
+            reasoning={engineReasoning}
+            onSchedule={() => {
+              const first = recommendedBlocks[0];
+              if (first) onConfirmSuggestion(first);
+            }}
+            onSkip={() => {
+              if (enginePrimaryAction?.departmentId) dismissDept(enginePrimaryAction.departmentId);
+            }}
           />
+        )}
 
-          {allSuggestions.length > 0 && (
-            <CollapsibleSection title="Suggested" defaultOpen badge={`${allSuggestions.length}`}>
-              <div className="today-suggestions-list">
-                {allSuggestions.map((block) => (
-                  <SuggestedTimelineBlock
-                    key={block.id}
-                    block={{
-                      ...block,
-                      departmentId: block.departmentId || block.category || 'life',
-                    }}
-                    onConfirm={() => onConfirmSuggestion(block)}
-                    onDismiss={() => onDismissSuggestion(block)}
-                  />
-                ))}
-              </div>
-            </CollapsibleSection>
-          )}
-
-          <CollapsibleSection title="Life Blocks" defaultOpen={false}>
-            {lifeBlockPicker}
-          </CollapsibleSection>
-
-          <CollapsibleSection title="Current / Next Block" defaultOpen={false}>
-            <BlockSummaryPanel currentBlock={currentBlock} nextBlock={nextBlock} />
-          </CollapsibleSection>
-
-          <CollapsibleSection title="Day Constraints" defaultOpen={false}>
-            {dayConstraintsPanel}
-          </CollapsibleSection>
-
-          <CollapsibleSection title="Aureon" defaultOpen={false}>
-            {aureonPanel}
-          </CollapsibleSection>
+        {/* Active block */}
+        <div className={`today-active-block${activeBlock ? ' has-active' : ''}`}>
+          <div className="today-active-header">
+            <div>
+              <span className="today-active-label">Active Now</span>
+              <h2 className="today-active-title">{activeNowTitle}</h2>
+              <span className="today-active-meta">{activeNowMeta}</span>
+            </div>
+            <div className="today-active-timer">
+              <span className="today-active-timer-display">
+                {activeBlock ? timerDisplay : '--:--'}
+              </span>
+            </div>
+          </div>
+          <div className="today-active-progress">
+            <div
+              className="today-active-progress-fill"
+              style={{ width: `${activeBlock ? timerProgress : 0}%` }}
+            />
+          </div>
+          <div className="today-active-controls">
+            {focusMode ? (
+              <button className="today-btn today-btn-secondary" onClick={onExitFocus}>
+                Exit Focus
+              </button>
+            ) : (
+              <button className="today-btn today-btn-primary" onClick={onStartBlock}>
+                Start Block
+              </button>
+            )}
+          </div>
         </div>
+
+        {/* Energy bar */}
+        {energyBar}
+
+        {/* Timeline */}
+        <TimelinePanel
+          blocks={scheduleBlocks}
+          currentTime={currentTime}
+          currentBlockId={currentBlock?.id}
+          nextBlockId={nextBlock?.id}
+          onAddBlock={onAddBlock}
+          onRemoveBlock={onRemoveBlock}
+          onUpdateBlock={onUpdateBlock}
+        />
+
+        {/* Today tasks */}
+        <div className="today-tasks-scroll">
+          {taskEnginePanel}
+        </div>
+
+        {/* Suggested blocks — inline, max 3, no collapsible */}
+        {allSuggestions.length > 0 && (
+          <div className="today-suggestions-list">
+            {allSuggestions.map((block) => (
+              <SuggestedTimelineBlock
+                key={block.id}
+                block={{
+                  ...block,
+                  departmentId: block.departmentId || block.category || 'life',
+                }}
+                onConfirm={() => onConfirmSuggestion(block)}
+                onDismiss={() => onDismissSuggestion(block)}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Quick log */}
+        {quickLogPanel}
+
+        {/* Empty state */}
+        {!activeBlock && allSuggestions.length === 0 && scheduleBlocks.length === 0 && (
+          <div className="today-empty-hint">
+            <p>No blocks scheduled. Head to the Planner to build your week.</p>
+          </div>
+        )}
       </div>
     </div>
   );

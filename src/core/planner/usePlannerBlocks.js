@@ -93,11 +93,13 @@ export function usePlannerBlocks() {
     save(BLOCKS_KEY, next);
   }, []);
 
+  // eslint-disable-next-line no-unused-vars
   const persistTemplate = useCallback((next) => {
     setWeeklyTemplateState(next);
     save(WEEKLY_TEMPLATE_KEY, next);
   }, []);
 
+  // eslint-disable-next-line no-unused-vars
   const persistStopWork = useCallback((next) => {
     setStopWorkState(next);
     save(STOP_WORK_KEY, next);

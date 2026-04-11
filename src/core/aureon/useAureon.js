@@ -17,7 +17,10 @@ export function useAureon() {
   const [aureonState, setAureonState] = useState(() => loadAureonState());
 
   const isConnected = aureonState !== null;
-  const pipelineEntries = isConnected ? aureonState.pipelineEntries : [];
+  const pipelineEntries = useMemo(
+    () => (aureonState !== null ? aureonState.pipelineEntries : []),
+    [aureonState]
+  );
 
   const updatePipeline = useCallback((entries) => {
     const next = { pipelineEntries: entries };

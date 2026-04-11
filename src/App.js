@@ -14,10 +14,8 @@ import OverviewPage from './pages/OverviewPage';
 import RevenuePage from './pages/RevenuePage';
 import AgentsPage from './pages/AgentsPage';
 
-import PlannerBlocksPanel from './components/PlannerBlocksPanel';
 import TaskEnginePanel from './components/TaskEnginePanel';
 import QuickLogInput from './components/QuickLogInput';
-import AureonTodayPanel from './components/AureonTodayPanel';
 
 import { useProjects } from './core/projects/useProjects';
 import { migrateProjectsIfStale } from './core/projects/initialState';
@@ -37,7 +35,6 @@ import { useHealthData } from './core/health/useHealthData';
 
 import EnergyBar from './components/EnergyBar';
 import LifeBlockPicker from './components/LifeBlockPicker';
-import ChatPlannerInput from './components/ChatPlannerInput';
 
 function toMinutes(value) {
   const [hours, minutes] = value.split(':').map(Number);
@@ -111,7 +108,6 @@ function App() {
     updateBlock: updatePlannerBlock,
     removeBlock: removePlannerBlock,
     stopWork,
-    setStopWork,
   } = usePlannerBlocks();
 
   const { departments: companyDepts } = useCompanyState();
@@ -359,27 +355,6 @@ function App() {
     <QuickLogInput focusProject={focusProject} addEntry={addLogEntry} recentEntries={recentLog} compact />
   ), [focusProject, addLogEntry, recentLog]);
 
-  const plannerPanel = useMemo(() => (
-    <PlannerBlocksPanel
-      date={date}
-      plannerBlocks={getPlannerBlocks(date)}
-      addBlock={addPlannerBlock}
-      updateBlock={updatePlannerBlock}
-      removeBlock={removePlannerBlock}
-      stopWork={stopWork}
-      setStopWork={setStopWork}
-    />
-  ), [date, getPlannerBlocks, addPlannerBlock, updatePlannerBlock, removePlannerBlock, stopWork, setStopWork]);
-
-  const aureonPanel = useMemo(() => (
-    <AureonTodayPanel
-      isConnected={aureonConnected}
-      pipelineEntries={pipelineEntries}
-      stats={aureonStats}
-      primaryAction={aureonPrimaryAction}
-    />
-  ), [aureonConnected, pipelineEntries, aureonPrimaryAction, aureonStats]);
-
   const taskPanel = useMemo(() => (
     <TaskEnginePanel
       date={date}
@@ -416,15 +391,6 @@ function App() {
   const energyBarPanel = useMemo(() => (
     <EnergyBar zoneMap={effectiveZoneMap} currentMinutes={currentMinutes} />
   ), [effectiveZoneMap, currentMinutes]);
-
-  const chatPlannerPanel = useMemo(() => (
-    <ChatPlannerInput
-      date={date}
-      currentMinutes={currentMinutes}
-      freeGaps={freeGaps}
-      onAddBlock={addPlannerBlock}
-    />
-  ), [date, currentMinutes, freeGaps, addPlannerBlock]);
 
   const lifeBlockPickerPanel = useMemo(() => (
     <LifeBlockPicker
@@ -603,11 +569,8 @@ function App() {
                   onAddBlock={addPlannerBlock}
                   onRemoveBlock={(blockId) => removePlannerBlock(date, blockId)}
                   onUpdateBlock={(blockId, patch) => updatePlannerBlock(date, blockId, patch)}
-                  chatPanel={chatPlannerPanel}
                   taskEnginePanel={taskPanel}
-                  dayConstraintsPanel={plannerPanel}
                   quickLogPanel={quickLogPanel}
-                  aureonPanel={aureonPanel}
                   focusProject={focusProject}
                   sessionBudgetText={sessionBudgetText}
                   projectContextPreview={truncateText(focusProject?.nextAction || '', 96)}
@@ -617,7 +580,6 @@ function App() {
                   dismissDept={dismissDept}
                   engineReasoning={engineReasoning}
                   energyBar={energyBarPanel}
-                  lifeBlockPicker={lifeBlockPickerPanel}
                   currentZone={currentZone}
                 />
               } />
@@ -625,7 +587,6 @@ function App() {
                 <WeeklyPage
                   date={date}
                   projects={projects}
-                  departmentQueue={departmentQueue}
                   engineReasoning={engineReasoning}
                   addPlannerBlock={addPlannerBlock}
                   removePlannerBlock={removePlannerBlock}
@@ -633,6 +594,11 @@ function App() {
                   getTasksForDate={getTasksForDate}
                   setTaskStatus={setTaskStatus}
                   onNavigate={navigateTo}
+                  aureonConnected={aureonConnected}
+                  aureonStats={aureonStats}
+                  currentZone={currentZone}
+                  lifeBlockPicker={lifeBlockPickerPanel}
+                  freeGaps={freeGaps}
                 />
               } />
               <Route path="/revenue" element={
