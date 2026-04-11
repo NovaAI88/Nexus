@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import ProjectCard from '../components/ProjectCard';
+import FreshnessBadge from '../components/FreshnessBadge';
 
 const DEPT_COLORS = {
   nexus: '#6b7cff',
@@ -25,6 +26,7 @@ function CompanyPage({
   engineReasoning,
   onNavigate,
   date,
+  lastFetched,
 }) {
   const [expandedDept, setExpandedDept] = useState(null);
 
@@ -37,7 +39,10 @@ function CompanyPage({
           <h1 className="company-title">Company</h1>
           <p className="company-subtitle">All departments at a glance</p>
         </div>
-        <span className="company-date">{date}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <FreshnessBadge lastFetched={lastFetched} onRefresh={() => window.dispatchEvent(new Event('nexus:refresh'))} />
+          <span className="company-date">{date}</span>
+        </div>
       </header>
 
       {engineReasoning && (
@@ -109,8 +114,9 @@ function CompanyPage({
         })}
 
         {departmentQueue.length === 0 && (
-          <div className="company-empty">
-            <p>No department data available. Company state will appear here once initialized.</p>
+          <div className="empty-state">
+            <span className="empty-state-icon">◫</span>
+            <p className="empty-state-text">Company data not loaded. Try syncing.</p>
           </div>
         )}
       </div>

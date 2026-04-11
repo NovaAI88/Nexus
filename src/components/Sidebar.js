@@ -1,4 +1,5 @@
 import NavSection from './NavSection';
+import NavItem from './NavItem';
 
 function Sidebar({ navigation, activePage, onNavigate }) {
   return (
@@ -22,6 +23,14 @@ function Sidebar({ navigation, activePage, onNavigate }) {
       </div>
 
       <div className="sidebar-footer">
+        <div className="sidebar-settings">
+          <NavItem
+            label="Settings"
+            icon="⚙"
+            isActive={activePage === 'settings'}
+            onClick={() => onNavigate('settings')}
+          />
+        </div>
         <div className="sidebar-status-pill">
           <span className="sidebar-status-dot" />
           <span className="sidebar-status-text">All systems operational</span>

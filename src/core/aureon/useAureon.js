@@ -15,6 +15,7 @@ function loadAureonState() {
 
 export function useAureon() {
   const [aureonState, setAureonState] = useState(() => loadAureonState());
+  const [lastFetched] = useState(() => new Date().toISOString());
 
   const isConnected = aureonState !== null;
   const pipelineEntries = useMemo(
@@ -68,6 +69,7 @@ export function useAureon() {
     pipelineEntries,
     stats,
     primaryAction,
+    lastFetched,
     addEntry,
     updateEntry,
     removeEntry,

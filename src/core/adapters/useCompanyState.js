@@ -89,6 +89,7 @@ export function useCompanyState() {
     return stored;
   });
 
+  const [lastFetched] = useState(() => new Date().toISOString());
   const isLoaded = state !== null;
   const departments = useMemo(() => (isLoaded ? state.departments : []), [isLoaded, state]);
   const _generated = useMemo(() => (isLoaded ? state._generated ?? {} : {}), [isLoaded, state]);
@@ -117,6 +118,7 @@ export function useCompanyState() {
     isLoaded,
     departments,
     _generated,
+    lastFetched,
     updateDepartment,
     getDepartment,
   };

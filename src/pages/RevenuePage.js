@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import PageContainer from '../components/PageContainer';
 import SectionCard from '../components/SectionCard';
+import FreshnessBadge from '../components/FreshnessBadge';
 import {
   useDraftReview,
   DRAFT_STATUS_LABELS,
@@ -533,6 +534,7 @@ function RevenuePage({
   aureonPrimaryAction,
   generatedPipeline,
   generatedAureonDrafts,
+  lastFetched,
 }) {
   const leads = generatedPipeline?.length > 0 ? generatedPipeline : (pipelineEntries || []);
   const draftReview = useDraftReview(leads, generatedAureonDrafts);
@@ -551,8 +553,16 @@ function RevenuePage({
       subtitle="Pipeline control, draft review, conversion tracking"
       date={date}
       primaryAction={null}
+      headerExtra={<FreshnessBadge lastFetched={lastFetched} onRefresh={() => window.dispatchEvent(new Event('nexus:refresh'))} />}
     >
       <div className="outreach-engine">
+        {leads.length === 0 && draftReview.counts.all === 0 && (
+          <div className="empty-state">
+            <span className="empty-state-icon">◎</span>
+            <p className="empty-state-text">No leads yet. Start outreach from the AUREON pipeline.</p>
+          </div>
+        )}
+
         {/* Primary Action */}
         <PrimaryActionBar funnel={pipeline.funnel} aureonPrimaryAction={aureonPrimaryAction} />
 

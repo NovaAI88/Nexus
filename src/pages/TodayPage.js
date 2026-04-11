@@ -205,8 +205,9 @@ function TodayPage({
 
         {/* Empty state */}
         {!activeBlock && allSuggestions.length === 0 && scheduleBlocks.length === 0 && (
-          <div className="today-empty-hint">
-            <p>No blocks scheduled. Head to the Planner to build your week.</p>
+          <div className="empty-state">
+            <span className="empty-state-icon">●</span>
+            <p className="empty-state-text">No blocks planned. Add one or use the Weekly planner.</p>
           </div>
         )}
       </div>

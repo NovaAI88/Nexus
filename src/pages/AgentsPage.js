@@ -469,6 +469,13 @@ function AgentsPage({ date }) {
 
       <SystemHealthBar agents={agents} isLive={isLive} lastFetched={lastFetched} />
 
+      {agents.length === 0 && (
+        <div className="empty-state">
+          <span className="empty-state-icon">◍</span>
+          <p className="empty-state-text">Agent data unavailable. Check truth layer.</p>
+        </div>
+      )}
+
       <div className="acl-tiers">
         <TierSection
           title="Executive"

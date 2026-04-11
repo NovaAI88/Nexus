@@ -13,6 +13,7 @@ import CompanyPage from './pages/CompanyPage';
 import OverviewPage from './pages/OverviewPage';
 import RevenuePage from './pages/RevenuePage';
 import AgentsPage from './pages/AgentsPage';
+import SettingsPage from './pages/SettingsPage';
 
 import TaskEnginePanel from './components/TaskEnginePanel';
 import QuickLogInput from './components/QuickLogInput';
@@ -33,6 +34,7 @@ import { useReviewEngine } from './core/planning/useReviewEngine';
 import { useEnergyProfile } from './core/energy/useEnergyProfile';
 import { useHealthData } from './core/health/useHealthData';
 
+import ErrorBoundary from './components/ErrorBoundary';
 import EnergyBar from './components/EnergyBar';
 import LifeBlockPicker from './components/LifeBlockPicker';
 
@@ -100,7 +102,7 @@ function App() {
   const { focusProjectId, setFocusProject, clearFocusProject } = useFocusProject();
   const { tasks, getTasksForDate, getTasksForProject, addTask, updateTask, setTaskStatus, removeTask } = useTaskEngine();
   const { log: activityLog, addEntry: addLogEntry, getProjectLog } = useActivityLog();
-  const { isConnected: aureonConnected, pipelineEntries, stats: aureonStats, primaryAction: aureonPrimaryAction } = useAureon();
+  const { isConnected: aureonConnected, pipelineEntries, stats: aureonStats, primaryAction: aureonPrimaryAction, lastFetched: aureonLastFetched } = useAureon();
   const { theme, toggleTheme } = useTheme();
   const {
     getPlannerBlocks,
@@ -110,7 +112,7 @@ function App() {
     stopWork,
   } = usePlannerBlocks();
 
-  const { departments: companyDepts } = useCompanyState();
+  const { departments: companyDepts, lastFetched: companyLastFetched } = useCompanyState();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -123,6 +125,7 @@ function App() {
   const [activeBlockId, setActiveBlockId] = useState(null);
   const [draggedBlockId, setDraggedBlockId] = useState(null);
   const [dragOverMinutes, setDragOverMinutes] = useState(null);
+  const [showShortcuts, setShowShortcuts] = useState(false);
 
   useEffect(() => {
     // Tick every 1s when active block exists, 60s otherwise
@@ -139,6 +142,13 @@ function App() {
       const tag = e.target.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target.isContentEditable) return;
 
+      // Cmd+R / Ctrl+R — global data refresh
+      if (e.key === 'r' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        window.dispatchEvent(new Event('nexus:refresh'));
+        return;
+      }
+
       if (e.key === 'n' && !e.metaKey && !e.ctrlKey) {
         e.preventDefault();
         window.dispatchEvent(new Event('nexus:new-task'));
@@ -153,10 +163,21 @@ function App() {
           setFocusMode(true);
         }
       }
+      // Navigation shortcuts
+      const navMap = { t: 'today', w: 'week', c: 'company', a: 'agents', r: 'revenue' };
+      if (!e.metaKey && !e.ctrlKey && navMap[e.key]) {
+        e.preventDefault();
+        navigateTo(navMap[e.key]);
+      }
+      // ? — toggle shortcut hints
+      if (e.key === '?' || (e.key === '/' && e.shiftKey)) {
+        e.preventDefault();
+        setShowShortcuts((v) => !v);
+      }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [focusMode, navigate]);
+  }, [focusMode, navigate, navigateTo]);
 
   const date = useMemo(() => formatDate(now), [now]);
   const currentTime = useMemo(() => formatTime(now), [now]);
@@ -530,6 +551,7 @@ function App() {
             </div>
             <Routes>
               <Route path="/" element={
+                <ErrorBoundary pageName="Overview">
                 <OverviewPage
                   date={date}
                   currentTime={currentTime}
@@ -552,8 +574,10 @@ function App() {
                   reviewOutput={reviewOutput}
                   onNavigate={navigateTo}
                 />
+                </ErrorBoundary>
               } />
               <Route path="/today" element={
+                <ErrorBoundary pageName="Today">
                 <TodayPage
                   date={date}
                   currentTime={currentTime}
@@ -582,8 +606,10 @@ function App() {
                   energyBar={energyBarPanel}
                   currentZone={currentZone}
                 />
+                </ErrorBoundary>
               } />
               <Route path="/week" element={
+                <ErrorBoundary pageName="Weekly">
                 <WeeklyPage
                   date={date}
                   projects={projects}
@@ -600,8 +626,10 @@ function App() {
                   lifeBlockPicker={lifeBlockPickerPanel}
                   freeGaps={freeGaps}
                 />
+                </ErrorBoundary>
               } />
               <Route path="/revenue" element={
+                <ErrorBoundary pageName="Revenue">
                 <RevenuePage
                   date={date}
                   pipelineStats={pipelineStats}
@@ -612,9 +640,12 @@ function App() {
                   aureonPrimaryAction={aureonPrimaryAction}
                   generatedPipeline={generatedPipeline}
                   generatedAureonDrafts={generatedAureonDrafts}
+                  lastFetched={aureonLastFetched}
                 />
+                </ErrorBoundary>
               } />
               <Route path="/company" element={
+                <ErrorBoundary pageName="Company">
                 <CompanyPage
                   projects={projects}
                   departments={departments}
@@ -626,12 +657,31 @@ function App() {
                   engineReasoning={engineReasoning}
                   onNavigate={navigateTo}
                   date={date}
+                  lastFetched={companyLastFetched}
                 />
+                </ErrorBoundary>
               } />
-              <Route path="/agents" element={<AgentsPage date={date} />} />
-              <Route path="/history" element={<HistoryPage date={date} activityLog={activityLog} tasks={tasks} />} />
+              <Route path="/agents" element={<ErrorBoundary pageName="Agents"><AgentsPage date={date} /></ErrorBoundary>} />
+              <Route path="/history" element={<ErrorBoundary pageName="History"><HistoryPage date={date} activityLog={activityLog} tasks={tasks} /></ErrorBoundary>} />
+              <Route path="/settings" element={<ErrorBoundary pageName="Settings"><SettingsPage theme={theme} toggleTheme={toggleTheme} /></ErrorBoundary>} />
             </Routes>
           </main>
+          {showShortcuts && (
+            <div className="shortcut-hints-overlay">
+              <div className="shortcut-hints-title">Keyboard Shortcuts</div>
+              <div className="shortcut-hints-grid">
+                <span className="shortcut-key">T</span><span className="shortcut-desc">Today</span>
+                <span className="shortcut-key">W</span><span className="shortcut-desc">Weekly</span>
+                <span className="shortcut-key">C</span><span className="shortcut-desc">Company</span>
+                <span className="shortcut-key">A</span><span className="shortcut-desc">Agents</span>
+                <span className="shortcut-key">R</span><span className="shortcut-desc">Revenue</span>
+                <span className="shortcut-key">N</span><span className="shortcut-desc">New task</span>
+                <span className="shortcut-key">Space</span><span className="shortcut-desc">Focus mode</span>
+                <span className="shortcut-key">Cmd+R</span><span className="shortcut-desc">Refresh data</span>
+                <span className="shortcut-key">?</span><span className="shortcut-desc">Toggle this help</span>
+              </div>
+            </div>
+          )}
           <nav className="mobile-tab-bar" aria-label="Navigation">
             {nexusData.navigation.main.map((item) => (
               <button
