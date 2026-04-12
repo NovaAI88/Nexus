@@ -377,9 +377,9 @@
       "founder": "Benjamin Luzolo",
       "country": "DE",
       "score": "18",
-      "status": "📝 Draft ready",
+      "status": "📩 Bounce recovered",
       "draft": "✅ queued",
-      "contact": "kontakt@blackpolish.de",
+      "contact": "info@blackpolish.de (was kontakt@, bounced)",
       "": ""
     },
     {
@@ -910,7 +910,7 @@
       "status": "Phase 4"
     }
   ],
-  "lastGenerated": "2026-04-11T13:06:10.652Z",
+  "lastGenerated": "2026-04-12T17:48:04.147Z",
   "aureonDrafts": [
     {
       "id": "draft_001-navucko",
@@ -1247,5 +1247,101 @@
     "hephaestus": "# HEPHAESTUS — Current Focus\n\n**Last updated:** 2026-04-10\n\n---\n\n## Active Focus\n\n**All three engineering projects are active. Each agent is stopped, awaiting its next gate.**\n\n---\n\n## Current State\n\n| Project | Phase | Status | Agent | Blocker |\n|---------|-------|--------|-------|---------|\n| NEXUS | N4.8 — Shell Redesign | 🟡 Briefed, not approved (6/10) | ATLAS (stopped) | Closeout required before approval |\n| VORTEX | V6.0 — Adapter Interfaces | 🟡 Committed, pending review | FORGE (stopped",
     "xenon": "# XENON — Current Focus\n\n**Last updated:** 2026-03-22\n\n---\n\n## Active Focus\n\n**Phase 4 — Department structure established**\n\nXENON is structurally in place. No campaigns are running yet. First campaign definition is the immediate next step once Nicholas decides on channel and format.\n\n---\n\n## Current State\n\n| Area | Status | Notes |\n|------|--------|-------|\n| Department structure | ✅ Complete | This session |\n| First campaign defined | 🔴 Not started | Awaiting direction |\n| Channel accounts | "
   },
-  "agents": []
+  "agents": [
+    {
+      "id": "8d3a298e-e920-47cc-8d6c-eedca2a54304",
+      "name": "MERCURY",
+      "role": "cmo",
+      "title": "AUREON Revenue Operator",
+      "tier": "revenue",
+      "status": "idle",
+      "adapterType": "claude_local",
+      "lastHeartbeatAt": "2026-04-12T16:08:21.485Z",
+      "assignments": [
+        {
+          "id": "a3e5e7bc-5fe0-4c08-a4d9-54b9efeebcb0",
+          "identifier": "NOV-49",
+          "title": "A2 — Send Follow-Up DMs + Book Discovery Calls",
+          "status": "todo",
+          "priority": "critical"
+        }
+      ],
+      "capabilities": "Lead research, inbox organization, outreach draft preparation, reply draft preparation, opportunity escalation, and supervised revenue operations for AUREON.",
+      "urlKey": "mercury"
+    },
+    {
+      "id": "95dbd07e-d5a4-4a44-ab6f-43e5c8ca841c",
+      "name": "ATLAS",
+      "role": "engineer",
+      "title": "NEXUS Engineer",
+      "tier": "engineering",
+      "status": "running",
+      "adapterType": "claude_local",
+      "lastHeartbeatAt": "2026-04-12T16:06:49.345Z",
+      "assignments": [
+        {
+          "id": "58a1df55-0654-4bab-ba43-7d0f34710ba3",
+          "identifier": "NOV-50",
+          "title": "N1.0 — Foundation Reset + Design System",
+          "status": "in_progress",
+          "priority": "critical"
+        }
+      ],
+      "capabilities": "Frontend implementation, React components, UI/UX, product logic, App Store readiness, truth layer sync, and issue execution with strict scope control.",
+      "urlKey": "atlas"
+    },
+    {
+      "id": "e6b72bb7-7273-43b5-be63-77ce0a0ee305",
+      "name": "FORGE",
+      "role": "engineer",
+      "title": "VORTEX Engineer",
+      "tier": "engineering",
+      "status": "idle",
+      "adapterType": "claude_local",
+      "lastHeartbeatAt": "2026-04-12T16:06:50.524Z",
+      "assignments": [],
+      "capabilities": "VORTEX backend implementation, trading logic, APIs, tests, observability, signal diagnostics, and issue execution with strict scope control.",
+      "urlKey": "forge"
+    },
+    {
+      "id": "e7b9be61-8303-4a5e-813b-4a24b9d0e74d",
+      "name": "LUNA",
+      "role": "engineer",
+      "title": "PAWLY Engineer",
+      "tier": "engineering",
+      "status": "idle",
+      "adapterType": "claude_local",
+      "lastHeartbeatAt": "2026-04-12T16:06:49.354Z",
+      "assignments": [],
+      "capabilities": "Mobile app development, React Native, Apple Watch integration, habit formation UX, walk tracking, route intelligence, subscription systems, and issue execution with strict scope control.",
+      "urlKey": "luna"
+    },
+    {
+      "id": "46380603-f859-4ed3-adbb-7d82fd2a061c",
+      "name": "Nova 👩🏼‍💼",
+      "role": "ceo",
+      "title": "AI Cofounder / Operator",
+      "tier": "executive",
+      "status": "idle",
+      "adapterType": "claude_local",
+      "lastHeartbeatAt": "2026-04-12T17:07:24.426Z",
+      "assignments": [],
+      "capabilities": "Company operator, system architect, execution driver, clarity enforcer. Owns strategy, prioritization, routing, anti-chaos discipline, and final decisions across NovaAI. Optimizes for clean execution,",
+      "urlKey": "nova"
+    },
+    {
+      "id": "30b06903-ead5-4742-ae02-090394c6c4e4",
+      "name": "Nicholas",
+      "role": "ceo",
+      "title": "Founder / Principal",
+      "tier": "executive",
+      "status": "idle",
+      "adapterType": "process",
+      "lastHeartbeatAt": null,
+      "assignments": [],
+      "capabilities": "Company owner, principal decision-maker, final approver, and board-level direction.",
+      "urlKey": "nicholas",
+      "isHuman": true
+    }
+  ]
 }
