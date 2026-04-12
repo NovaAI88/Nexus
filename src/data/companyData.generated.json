@@ -910,7 +910,7 @@
       "status": "Phase 4"
     }
   ],
-  "lastGenerated": "2026-04-12T17:48:04.147Z",
+  "lastGenerated": "2026-04-12T18:40:06.702Z",
   "aureonDrafts": [
     {
       "id": "draft_001-navucko",
@@ -1277,12 +1277,12 @@
       "tier": "engineering",
       "status": "running",
       "adapterType": "claude_local",
-      "lastHeartbeatAt": "2026-04-12T16:06:49.345Z",
+      "lastHeartbeatAt": "2026-04-12T18:27:47.179Z",
       "assignments": [
         {
-          "id": "58a1df55-0654-4bab-ba43-7d0f34710ba3",
-          "identifier": "NOV-50",
-          "title": "N1.0 — Foundation Reset + Design System",
+          "id": "fe9dd9d1-7ee5-40c4-94ab-b44c990e880a",
+          "identifier": "NOV-57",
+          "title": "N8.0 — Web Production (Auth + Stripe + Deploy)",
           "status": "in_progress",
           "priority": "critical"
         }

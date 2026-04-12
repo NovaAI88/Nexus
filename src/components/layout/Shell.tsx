@@ -1,11 +1,25 @@
 import React from 'react';
 import Sidebar from './Sidebar';
+import OnboardingModal from '../OnboardingModal';
+import { useAuth } from '../../context/AuthContext';
+import { useMigration } from '../../hooks/useMigration';
 
 interface ShellProps {
   children: React.ReactNode;
 }
 
 export default function Shell({ children }: ShellProps) {
+  const { profile } = useAuth();
+  const { runMigration } = useMigration();
+
+  // Trigger migration + show onboarding for new users
+  const needsOnboarding = profile !== null && profile.onboarding_completed === false;
+
+  // Run migration when profile is loaded
+  React.useEffect(() => {
+    if (profile) runMigration();
+  }, [profile, runMigration]);
+
   return (
     <div
       style={{
@@ -38,6 +52,11 @@ export default function Shell({ children }: ShellProps) {
           {children}
         </div>
       </main>
+
+      {/* Onboarding modal for first-time users */}
+      {needsOnboarding && (
+        <OnboardingModal onComplete={() => {}} />
+      )}
     </div>
   );
 }
