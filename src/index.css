@@ -44,6 +44,12 @@ input, textarea {
   }
 }
 
+/* Spinner animation */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
 /* Task completion animation */
 @keyframes scaleCheck {
   0%   { transform: scale(1); }

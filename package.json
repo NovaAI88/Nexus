@@ -21,11 +21,13 @@
   "devDependencies": {
     "@capacitor/cli": "^6.2.1"
   },
+  "proxy": "http://localhost:3001",
   "scripts": {
     "refresh:company-data": "node scripts/generateCompanyData.js",
     "prestart": "npm run refresh:company-data",
     "prebuild": "npm run refresh:company-data",
     "start": "react-scripts start",
+    "start:server": "node server/server.js",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
